@@ -1,22 +1,37 @@
-; https://dev.to/huytd/emacs-from-scratch-1cg6
-;;https://www.reddit.com/r/emacs/comments/2edbau/what_are_some_great_emacsd_examples/ 
-;;https://github.com/caisah/emacs.dz
+;; https://dev.to/huytd/emacs-from-scratch-1cg6
+;; https://www.reddit.com/r/emacs/comments/2edbau/what_are_some_great_emacsd_examples/ 
+;; https://github.com/caisah/emacs.dz
 ;; https://github.com/syl20bnr/spacemacs/blob/master/doc/DOCUMENTATION.org#helm
 ;; https://emacs.sexy/#resources
 ;; https://www.reddit.com/r/emacs/comments/6s5470/useful_packages/
 ;; https://github.com/emacs-tw/awesome-emacs
 
-;; TODO
-;; https://github.com/Fuco1/free-keys
-;; http://www.grokcode.com/207/51-insanely-useful-emacs-shortcuts/
-;; https://github.com/redguardtoo/evil-nerd-commenter
-;; https://github.com/emacs-tw/awesome-emacs
-;; ess
-;; python
-
+;; Hack to open URLs from within WSL using browse-url-* commands
+(cond
+ ((eq system-type 'gnu/linux)
+  (when (string-match "Linux.*Microsoft.*Linux"
+		      (shell-command-to-string "uname -a"))
+    (setq
+     browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
+     browse-url-generic-args '("/c" "start" "")
+     browse-url-browser-function 'browse-url-generic)
+)))
 
 ;; Miminal UI for text-based emacs
 (menu-bar-mode -1)
+
+;; Provide winner-* commands
+(when (fboundp 'winner-mode)
+  (winner-mode 1))
+
+;; Open help-like buffers in current window to ease navigation
+;; (add-to-list 'display-buffer-alist
+;; 	     '("*Help*" display-buffer-same-window))
+;; (add-to-list 'display-buffer-alist
+;; 	     '("*Apropos*" display-buffer-same-window))
+;; (add-to-list 'display-buffer-alist
+;; 	     '("*info*" display-buffer-same-window))
+(setq same-window-buffer-names '("*info*"))
 
 ;; Package config
 (require 'package)
@@ -243,11 +258,15 @@
 	       (split-window-below)
 	       (windmove-down))
 	 "horz")
-	("m" delete-other-windows "max" :color blue)
+	("o" delete-other-windows "one" :color blue)
 	("a" ace-window "ace")
 	("s" ace-swap-window "swap")
 	("d" ace-delete-window "del")
-	("q" nil "cancel"))
+	("q" nil "cancel")
+	("z" (progn
+	       (winner-undo)
+	       (setq this-command 'winner-undo))) ;; Needed for winner-redo, it appears
+	("Z" winner-redo))
       :which-key "window")
  ;; "wn" 'evil-window-new ;; horizontal split, blank window
  ;; "wr" 'evil-window-rotate-downwards
