@@ -24,14 +24,14 @@
 (when (fboundp 'winner-mode)
   (winner-mode 1))
 
-;; Open help-like buffers in current window to ease navigation
-;; (add-to-list 'display-buffer-alist
-;; 	     '("*Help*" display-buffer-same-window))
-;; (add-to-list 'display-buffer-alist
-;; 	     '("*Apropos*" display-buffer-same-window))
-;; (add-to-list 'display-buffer-alist
-;; 	     '("*info*" display-buffer-same-window))
-(setq same-window-buffer-names '("*info*"))
+;; Override help-like buffers that split the frame
+;; (*info* buffers controlled by customized variable
+;; info-lookup-other-window-flag)
+(add-to-list 'display-buffer-alist
+	     '("*Help*" display-buffer-same-window))
+(add-to-list 'display-buffer-alist
+	     '("*Apropos*" display-buffer-same-window))
+
 
 ;; Package config
 (require 'package)
@@ -58,21 +58,21 @@
   :config
   (global-page-break-lines-mode))
 
-;; ;; http://tuhdo.github.io/helm-intro.html
-;; ;; https://github.com/emacs-helm
-;; ;; https://github.com/emacs-helm/helm/wiki
-;; ;; http://tuhdo.github.io/helm-projectile.html
-;; (use-package helm-config) ;; https://github.com/emacs-helm/helm/blob/master/helm-config.el
-;; (use-package helm
-;;   :ensure t
-;;   :bind (("C-x r b" . helm-filtered-bookmarks)
-;;  	 ("C-x C-f" . helm-find-files))
-;;   :init
-;;   (setq helm-mode-fuzzy-match t
-;;  	helm-completion-in-region-fuzzy-match t
-;;  	helm-candidate-number-list 50)
-;;   :config
-;;   (helm-mode 1))
+;; http://tuhdo.github.io/helm-intro.html
+;; https://github.com/emacs-helm
+;; https://github.com/emacs-helm/helm/wiki
+;; http://tuhdo.github.io/helm-projectile.html
+(use-package helm-config) ;; https://github.com/emacs-helm/helm/blob/master/helm-config.el
+(use-package helm
+  :ensure t
+  :bind (("C-x r b" . helm-filtered-bookmarks)
+ 	 ("C-x C-f" . helm-find-files))
+  :init
+  (setq helm-mode-fuzzy-match t
+ 	helm-completion-in-region-fuzzy-match t
+ 	helm-candidate-number-list 50)
+  :config
+  (helm-mode 1))
 
 (use-package helm-descbinds
   :ensure t)
@@ -82,15 +82,15 @@
   :config
   (setq org-log-done t))
 
-;; https://github.com/noctuid/evil-guide
-;; https://raw.githubusercontent.com/emacs-evil/evil/master/doc/evil.pdf
-;; evil-tutor-start
-;; https://www.emacswiki.org/emacs/Evil
-;; https://emacs.stackexchange.com/questions/12175/instructions-on-how-to-work-with-evil-mode (see config)
-;; https://github.com/emacs-evil/evil-collection
-;; https://www.linode.com/docs/tools-reference/tools/emacs-evil-mode/
-;; https://github.com/noctuid/evil-guide/issues/11
-;; https://github.com/emacs-evil/evil/blob/3766a521a60e6fb0073220199425de478de759ad/evil-maps.el
+;;https://github.com/noctuid/evil-guide
+;;https://raw.githubusercontent.com/emacs-evil/evil/master/doc/evil.pdf
+;;evil-tutor-start
+;;https://www.emacswiki.org/emacs/Evil
+;;https://emacs.stackexchange.com/questions/12175/instructions-on-how-to-work-with-evil-mode (see config)
+;;https://github.com/emacs-evil/evil-collection
+;;https://www.linode.com/docs/tools-reference/tools/emacs-evil-mode/
+;;https://github.com/noctuid/evil-guide/issues/11
+;;https://github.com/emacs-evil/evil/blob/3766a521a60e6fb0073220199425de478de759ad/evil-maps.el
 (use-package evil
   :ensure t
   :config
@@ -280,6 +280,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(info-lookup-other-window-flag nil)
  '(package-selected-packages (quote (evil use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
