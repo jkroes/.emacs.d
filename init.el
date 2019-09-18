@@ -24,6 +24,10 @@
 (when (fboundp 'winner-mode)
   (winner-mode 1))
 
+;; Provide line numbers globally
+(when (fboundp 'global-display-line-numbers-mode)
+  (global-display-line-numbers-mode 1))
+
 ;; Override help-like buffers that split the frame
 ;; (*info* buffers controlled by customized variable
 ;; info-lookup-other-window-flag)
@@ -62,17 +66,17 @@
 ;; https://github.com/emacs-helm
 ;; https://github.com/emacs-helm/helm/wiki
 ;; http://tuhdo.github.io/helm-projectile.html
-(use-package helm-config) ;; https://github.com/emacs-helm/helm/blob/master/helm-config.el
-(use-package helm
-  :ensure t
-  :bind (("C-x r b" . helm-filtered-bookmarks)
- 	 ("C-x C-f" . helm-find-files))
-  :init
-  (setq helm-mode-fuzzy-match t
- 	helm-completion-in-region-fuzzy-match t
- 	helm-candidate-number-list 50)
-  :config
-  (helm-mode 1))
+;; (use-package helm-config) ;; https://github.com/emacs-helm/helm/blob/master/helm-config.el
+;; (use-package helm
+;;   :ensure t
+;;   :bind (("C-x r b" . helm-filtered-bookmarks)
+;;  	 ("C-x C-f" . helm-find-files))
+;;   :init
+;;   (setq helm-mode-fuzzy-match t
+;;  	helm-completion-in-region-fuzzy-match t
+;;  	helm-candidate-number-list 50)
+;;   :config
+;;   (helm-mode 1))
 
 (use-package helm-descbinds
   :ensure t)
