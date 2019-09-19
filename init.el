@@ -29,13 +29,11 @@
   (global-display-line-numbers-mode 1))
 
 ;; Override help-like buffers that split the frame
-;; (*info* buffers controlled by customized variable
-;; info-lookup-other-window-flag)
 (add-to-list 'display-buffer-alist
 	     '("*Help*" display-buffer-same-window))
 (add-to-list 'display-buffer-alist
 	     '("*Apropos*" display-buffer-same-window))
-
+(setq info-lookup-other-window-flag t)
 
 ;; Package config
 (require 'package)
@@ -59,9 +57,6 @@
 (quelpa
  '(help-fns+ :fetcher wiki))
 (require 'help-fns+)
-
-(use-package evil-tutor
-  :ensure t)
 
 (use-package page-break-lines
   :ensure t
@@ -103,12 +98,17 @@
 ;;https://github.com/emacs-evil/evil/blob/3766a521a60e6fb0073220199425de478de759ad/evil-maps.el
 (use-package evil
   :ensure t
+  :init
+  (setq evil-want-keybinding nil) ;; evil-keybindings.el mangles some mode maps (e.g., Info-mode-map) and
+  ;; even motion state keymaps listed in evil-mode-map-alist
+  ;; See also evil-want-minibuffer and evil-want-integration to disable other loaded files
   :config
   (evil-mode 1)
-  ;; Set finder-mode (and subsequent package-menu-mode) in emacs state,
-  ;; TODO pending better bindings for it (see evil-collection)
-  (evil-set-initial-state 'Info-mode 'emacs)
-  (evil-set-initial-state 'finder-mode 'emacs)) ;; TODO
+  ;; List of states to start in emacs mode
+  (dolist (el
+	   '(Info-mode finder-mode))
+    (evil-set-initial-state el 'emacs))
+  )
 
 
 ;; https://oremacs.com/swiper/
@@ -145,10 +145,13 @@
 	which-key-side-window-max-height .5)
   (which-key-mode))
 
+(use-package evil-tutor
+  :ensure t)
+
 ;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
 ;; https://github.com/noctuid/general.el
-;; (use-package general
-;;   :ensure t)
+(use-package general
+  :ensure t)
 
 (use-package command-log-mode
   :ensure t
@@ -182,6 +185,11 @@
   (interactive)
   (switch-to-buffer "*scratch*"))
 
+(defun load-init ()
+  "Load user-init-file"
+  (interactive)
+  (load-file user-init-file))
+
 ;;undo-tree-visualize
 ;; https://github.com/abo-abo/swiper/wiki/ivy-display-function
 (general-define-key
@@ -196,7 +204,10 @@
  "!" 'shell-command
  "'" 'ivy-resume
  "." 'repeat
+ "e" 'eval-last-sexp
+ "l" 'load-init ;; Useful for testing simple configuration tweaks (a full emacs restart may be required for some changes)
  "o" 'clm/toggle-command-log-buffer
+ "p" 'pp-eval-expression
 
  "b" '(:ignore t :wk "buffers")
  "bb" 'switch-to-buffer
@@ -208,6 +219,10 @@
  "br" '(read-only-mode :wk "toggle read-only")
  "bs" 'switch-to-scratch
  "bv" 'view-buffer ;; Investigate view-mode more sometime
+
+ "d" '(:ignore t :wk "debug")
+ "dc" 'check-parens ;; Debugging "End of file during parsing"
+ ;; Read https://www.gnu.org/software/emacs/manual/html_node/elisp/Debugging.html#Debugging
  
  "f" '(:ignore t :wk "files")
  "ff" 'find-file
@@ -285,20 +300,3 @@
  ;; "ww" 'evil-window-next
  ;; "wW" 'evil-window-prev
 )
- 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(evil-want-integration nil)
- '(evil-want-keybinding nil)
- '(evil-want-minibuffer nil)
- '(info-lookup-other-window-flag nil)
- '(package-selected-packages (quote (evil use-package))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
