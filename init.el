@@ -54,6 +54,12 @@
 (use-package dracula-theme
   :ensure t)
 
+(use-package quelpa
+  :ensure t)
+(quelpa
+ '(help-fns+ :fetcher wiki))
+(require 'help-fns+)
+
 (use-package evil-tutor
   :ensure t)
 
@@ -101,7 +107,8 @@
   (evil-mode 1)
   ;; Set finder-mode (and subsequent package-menu-mode) in emacs state,
   ;; TODO pending better bindings for it (see evil-collection)
-  (evil-set-initial-state 'finder-mode 'emacs)) ;; TODO 
+  (evil-set-initial-state 'Info-mode 'emacs)
+  (evil-set-initial-state 'finder-mode 'emacs)) ;; TODO
 
 
 ;; https://oremacs.com/swiper/
@@ -140,8 +147,8 @@
 
 ;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
 ;; https://github.com/noctuid/general.el
-(use-package general
-  :ensure t)
+;; (use-package general
+;;   :ensure t)
 
 (use-package command-log-mode
   :ensure t
@@ -215,6 +222,7 @@
  "ha" 'apropos-command
  "hi" 'info ;; open info directory; see top (`d') for keybindings
  "hk" 'which-key-show-keymap
+ "hK" 'describe-keymap
  "hp" 'finder-by-keyword ;; display docs for packages grouped by category
  "hS" 'info-lookup-symbol
 
@@ -242,7 +250,6 @@
  ;; Modified from https://www.youtube.com/watch?v=_qZliI1BKzI
  ;; NOTE: Had trouble binding non-interactive functions like aw-flip-window
  ;; Check out functions listed in link (e.g. hydra-window-scroll)
- ;; Also see winnder for undoing layout changes: https://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html#Window-Convenience
  "w" (list
       (defhydra hydra-window
 	(:color amaranth) ;; Prevent bindings outside this hydra (doesn't override SPC--investigate)
@@ -284,6 +291,9 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(evil-want-integration nil)
+ '(evil-want-keybinding nil)
+ '(evil-want-minibuffer nil)
  '(info-lookup-other-window-flag nil)
  '(package-selected-packages (quote (evil use-package))))
 (custom-set-faces
