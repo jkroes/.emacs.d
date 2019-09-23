@@ -5,6 +5,8 @@
 ;; https://emacs.sexy/#resources
 ;; https://www.reddit.com/r/emacs/comments/6s5470/useful_packages/
 ;; https://github.com/emacs-tw/awesome-emacs
+;; https://github.com/MilesMcBain/esscss
+;; https://www.masteringemacs.org/about
 
 ;; Hack to open URLs from within WSL using browse-url-* commands
 (cond
@@ -207,7 +209,7 @@
  "e" 'eval-last-sexp
  "l" 'load-init ;; Useful for testing simple configuration tweaks (a full emacs restart may be required for some changes)
  "o" 'clm/toggle-command-log-buffer
- "p" 'pp-eval-expression
+;;  "p" 'pp-eval-expression
 
  "b" '(:ignore t :wk "buffers")
  "bb" 'switch-to-buffer
@@ -252,6 +254,10 @@
  "hds" 'describe-symbol
  "hdv" 'describe-variable
 
+ "p" '(:ignore t :which-key "prog")
+ "pr" '(:ignore t :which-key "R")
+ "prr" 'run-ess-r  
+ 
  "v" '(:ignore t :which-key "view")
  "vd" 'view-emacs-debugging
  "ve" 'view-echo-area-messages ;; view *Messages* buffer
@@ -299,4 +305,28 @@
  ;; "wR" 'evil-window-rotate-upwards
  ;; "ww" 'evil-window-next
  ;; "wW" 'evil-window-prev
-)
+ )
+
+(use-package ess
+  :ensure t)
+
+;; TODO: Insert outside  of outermost expression
+(defun insert-eval-last-sexp-result ()
+  (interactive)
+  (setq current-prefix-arg '(4)) ; C-u
+  (call-interactively 'eval-last-sexp))
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
