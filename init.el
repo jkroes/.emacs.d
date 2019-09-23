@@ -8,16 +8,19 @@
 ;; https://github.com/MilesMcBain/esscss
 ;; https://www.masteringemacs.org/about
 
-;; Hack to open URLs from within WSL using browse-url-* commands
 (cond
+ ;; Use WSL shell within runemacs.exe on Windows 10
+ ;; ((eq system-type 'windows-nt)
+ ;;  (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
+ ;; 	shell-file-name explicit-shell-file-name))
+ ;; Hack to open URLs from within WSL using browse-url-* commands
  ((eq system-type 'gnu/linux)
   (when (string-match "Linux.*Microsoft.*Linux"
 		      (shell-command-to-string "uname -a"))
     (setq
      browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
      browse-url-generic-args '("/c" "start" "")
-     browse-url-browser-function 'browse-url-generic)
-)))
+     browse-url-browser-function 'browse-url-generic))))
 
 ;; Miminal UI for text-based emacs
 (menu-bar-mode -1)
@@ -56,8 +59,10 @@
 
 (use-package quelpa
   :ensure t)
-(quelpa
- '(help-fns+ :fetcher wiki))
+
+(unless (package-installed-p 'help-fns+)
+  (quelpa
+   '(help-fns+ :fetcher wiki)))
 (require 'help-fns+)
 
 (use-package page-break-lines
@@ -336,6 +341,7 @@
 	 (slot . 1)
 	 (window-width . 0.33)
 	 (reusable-frames . nil))))
+
 
 ;; TODO: Insert outside  of outermost expression
 (defun insert-eval-last-sexp-result ()
