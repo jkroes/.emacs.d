@@ -192,6 +192,11 @@
   (interactive)
   (load-file user-init-file))
 
+(defun start-r ()
+  (interactive)
+  (run-ess-r)
+  (ess-rdired))  
+
 ;;undo-tree-visualize
 ;; https://github.com/abo-abo/swiper/wiki/ivy-display-function
 (general-define-key
@@ -256,7 +261,7 @@
 
  "p" '(:ignore t :which-key "prog")
  "pr" '(:ignore t :which-key "R")
- "prr" 'run-ess-r  
+ "prr" 'start-r  
  
  "v" '(:ignore t :which-key "view")
  "vd" 'view-emacs-debugging
@@ -307,8 +312,30 @@
  ;; "wW" 'evil-window-prev
  )
 
+
+
 (use-package ess
-  :ensure t)
+  :ensure t
+  :config
+  (setq ess-ask-for-ess-directory nil))
+
+(setq display-buffer-alist
+      `(("*R Dired"
+	 (display-buffer-reuse-window display-buffer-in-side-window)
+	 (side . right)
+	 (slot . -1)
+	 (window-width . 0.33)
+	 (reusable-frames . nil))
+	("*R"
+	 (display-buffer-reuse-window display-buffer-at-bottom)
+	 (window-height . 0.3)
+	 (reusable-frames . nil))
+	("*Help"
+	 (display-buffer-reuse-window display-buffer-in-side-window)
+	 (side . right)
+	 (slot . 1)
+	 (window-width . 0.33)
+	 (reusable-frames . nil))))
 
 ;; TODO: Insert outside  of outermost expression
 (defun insert-eval-last-sexp-result ()
