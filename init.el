@@ -199,16 +199,17 @@
 
 (defun start-r ()
   (interactive)
-  (run-ess-r)
-  (ess-rdired))  
+  (save-selected-window
+    (run-ess-r)
+    (ess-rdired)))
 
 ;;undo-tree-visualize
 ;; https://github.com/abo-abo/swiper/wiki/ivy-display-function
 (general-define-key
  :states '(motion insert) ;; Several other states inherit motion bindings
- :prefix "SPC"
+ :prefix "M-SPC"
  :non-normal-prefix "M-SPC"
- "" nil ;; unbind SPC in evil-motion-state-map to allow its use as a prefix above
+ ;; "" nil ;; unbind SPC in evil-motion-state-map to allow its use as a prefix above
  
  "SPC" 'execute-extended-command
  "TAB" '(evil-switch-to-windows-last-buffer :wk "last buffer")
@@ -317,12 +318,14 @@
  ;; "wW" 'evil-window-prev
  )
 
-
-
 (use-package ess
   :ensure t
   :config
   (setq ess-ask-for-ess-directory nil))
+
+;; Compare to ess-view
+(use-package ess-R-data-view
+  :ensure t) ;; see  ess-R-dv-pprint
 
 (setq display-buffer-alist
       `(("*R Dired"
@@ -334,7 +337,7 @@
 	("*R"
 	 (display-buffer-reuse-window display-buffer-at-bottom)
 	 (window-height . 0.3)
-	 (reusable-frames . nil))
+  	 (reusable-frames . nil))
 	("*Help"
 	 (display-buffer-reuse-window display-buffer-in-side-window)
 	 (side . right)
@@ -356,7 +359,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
