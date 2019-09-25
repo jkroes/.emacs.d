@@ -106,8 +106,7 @@
 (use-package evil
   :ensure t
   :init
-  (setq evil-want-C-w-delete nil ;; Keep C-w for windows in insert state
-	evil-want-keybinding nil) ;; evil-keybindings.el mangles some mode maps (e.g., Info-mode-map) and
+  (setq evil-want-keybinding nil) ;; evil-keybindings.el mangles some mode maps (e.g., Info-mode-map) and
   ;; even motion state keymaps listed in evil-mode-map-alist
   ;; See also evil-want-minibuffer and evil-want-integration to disable other loaded files
   :config
@@ -205,12 +204,12 @@
     (ess-rdired)))
 
 ;; https://github.com/abo-abo/swiper/wiki/ivy-display-function
+
 (general-define-key
  :states '(motion insert emacs) ;; Several other states inherit motion bindings
  :prefix "C-@" ;; C-SPC and C-2 (https://www.gnu.org/software/emacs/manual/html_node/emacs/Setting-Mark.html)
  :non-normal-prefix: "C-@"
- "C-@" nil
- ;; "" nil ;; unbind SPC in evil-motion-state-map to allow its use as a prefix above
+ "" nil ;; if prefix was already bound, unbind it for use as prefix
  
  "SPC" 'execute-extended-command
  "TAB" '(evil-switch-to-windows-last-buffer :wk "last buffer")
@@ -267,9 +266,9 @@
  "hdv" 'describe-variable
 
  "p" '(:ignore t :which-key "prog")
- "pr" '(:ignore t :which-key "R")
- "prr" 'start-r  
- 
+ "pr" '(start-r :wk "R")
+
+
  "v" '(:ignore t :which-key "view")
  "vd" 'view-emacs-debugging
  "ve" 'view-echo-area-messages ;; view *Messages* buffer
@@ -293,17 +292,36 @@
     (other-window arg)
     (scroll-down)))
 
-;; Modified from https://www.youtube.com/watch?v=_qZliI1BKzI
-;; NOTE: Had trouble binding non-interactive functions like aw-flip-window
-;; Check out functions listed in link (e.g. hydra-window-scroll)
-(evil-define-key 'motion 'global (kbd "C-w") nil) ;; Alternatively, make an intercept map
-(defhydra hydra-window (:color amaranth) "window"
-  ("1" (my-scroll-up 1) "..5 scroll-up win <#>")
+(defun kill-other-windows-and-buffers ()
+  (interactive)
+  (defun select-kill-window-and-buffer (window)
+    (select-window window)
+    (kill-buffer-and-window))
+  (let ((other-windows
+	 (delq (selected-window)
+	       (window-list (window-frame (selected-window)))))
+	(kill-buffer-query-functions ;; Disable prompt to end process buffers
+	 (delq 'process-kill-buffer-query-function kill-buffer-query-functions)))
+    (mapc 'select-kill-window-and-buffer other-windows)))
+
+;;   "
+;; Movement: _a_ce _h_: left _j_: down _k_: up _l_: right
+;; Scroll-other: _1_.._5_: <#> up _6_.._0_: <#> down
+;; Resize: _-_: dh _+_: ih _<_: dw _>_:iw
+;; Split: _v_ert _x_: horz _z_: undo _Z_: reset
+;; Switch: _r_otate up _R_otate down _s_wap _b_uffer
+;; Delete: _c_urrent _o_thers _a_ce
+;; _q_uit
+;; "
+(evil-define-key 'motion 'global (kbd "C-w") nil)
+(evil-define-key 'insert 'global (kbd "C-w") nil)
+(defhydra hydra-window (:color amaranth)
+  ("1" (my-scroll-up 1) nil)
   ("2" (my-scroll-up 2) nil)
   ("3" (my-scroll-up 3) nil)
   ("4" (my-scroll-up 4) nil)
   ("5" (my-scroll-up 5) nil)
-  ("6" (my-scroll-down 1) "..0 scroll-down win <#>")
+  ("6" (my-scroll-down 1) nil)
   ("7" (my-scroll-down 2) nil)
   ("8" (my-scroll-down 3) nil)
   ("9" (my-scroll-down 4) nil)
@@ -312,10 +330,10 @@
   ("+" evil-window-increase-height)
   ("<" evil-window-decrease-width)
   (">" evil-window-increase-width)
-  ("h" windmove-left)
-  ("j" windmove-down)
-  ("k" windmove-up)
-  ("l" windmove-right)
+  ("h" windmove-left nil)
+  ("j" windmove-down nil)
+  ("k" windmove-up nil)
+  ("l" windmove-right nil)
   ("b" switch-to-buffer)
   ("v" (lambda ()
 	 (interactive)
@@ -327,50 +345,46 @@
 	 (split-window-below)
 	 (windmove-down))
    "horz")
-  ("o" delete-other-windows "one" :color blue)
   ("a" ace-window "ace")
   ("s" ace-swap-window "swap")
-  ("c" evil-window-delete)
-  ("d" ace-delete-window "del")
-  ("q" nil "cancel")
-  ("r" evil-window-rotate-downwards)
+  ("c" evil-window-delete "del")
+  ("o" kill-other-windows-and-buffers "one-del-buffers" :color blue)
+  ("O" delete-other-windows "one" :color blue)
+  ("d" ace-delete-window "ace-del")
+  ("r" evil-window-rotate-downwards "rotate")
   ("R" evil-window-rotate-upwards)
   ("z" (progn
 	 (winner-undo)
-	 (setq this-command 'winner-undo))) ;; Needed for winner-redo, it appears
-  ("Z" winner-redo))
-;; "wn" 'evil-window-new ;; horizontal split, blank window
-;; "wW" 'evil-window-prev
+	 (setq this-command 'winner-undo)) "undo") ;; Needed for winner-redo, it appears
+  ("Z" winner-redo "reset")
+  ("q" nil))
 (global-set-key (kbd "C-w") 'hydra-window/body) ;; Take over C-w
-;; https://github.com/abo-abo/hydra/wiki/Binding-Styles
-(cdr hydra-window/hint)
 
 (use-package ess
   :ensure t
   :config
-  (setq ess-ask-for-ess-directory nil))
+  (setq ess-ask-for-ess-directory nil
+	display-buffer-alist
+	`(("\\*R Dired"
+	   (display-buffer-reuse-window display-buffer-in-side-window)
+	   (side . right)
+	   (slot . -1)
+	   (window-width . 0.33)
+	   (reusable-frames . nil))
+	  ("\\*R:"
+	   (display-buffer-reuse-window display-buffer-at-bottom)
+	   (window-height . 0.3)
+	   (reusable-frames . nil))
+	  ("\\*Help\\[R"
+	   (display-buffer-reuse-window display-buffer-in-side-window)
+	   (side . right)
+	   (slot . 1)
+	   (window-width . 0.33)
+	   (reusable-frames . nil)))))
 
 (use-package ess-R-data-view
+  :after ess
   :ensure t) ;; see  ess-R-dv-pprint
-
-(setq display-buffer-alist
-      `(("*R Dired"
-	 (display-buffer-reuse-window display-buffer-in-side-window)
-	 (side . right)
-	 (slot . -1)
-	 (window-width . 0.33)
-	 (reusable-frames . nil))
-	("*R"
-	 (display-buffer-reuse-window display-buffer-at-bottom)
-	 (window-height . 0.3)
-  	 (reusable-frames . nil))
-	("*Help"
-	 (display-buffer-reuse-window display-buffer-in-side-window)
-	 (side . right)
-	 (slot . 1)
-	 (window-width . 0.33)
-	 (reusable-frames . nil))))
-
 
 ;; TODO: Insert outside  of outermost expression
 (defun insert-eval-last-sexp-result ()
