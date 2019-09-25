@@ -8,37 +8,24 @@
 ;; https://github.com/MilesMcBain/esscss
 ;; https://www.masteringemacs.org/about
 
-(cond
- ;; Use WSL shell within runemacs.exe on Windows 10
- ;; ((eq system-type 'windows-nt)
- ;;  (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
- ;; 	shell-file-name explicit-shell-file-name))
- ;; Hack to open URLs from within WSL using browse-url-* commands
- ((eq system-type 'gnu/linux)
-  (when (string-match "Linux.*Microsoft.*Linux"
-		      (shell-command-to-string "uname -a"))
-    (setq
-     browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
-     browse-url-generic-args '("/c" "start" "")
-     browse-url-browser-function 'browse-url-generic))))
+;; OS-specific configuration
+(cond ((eq system-type 'gnu/linux)
+       ;; Hack to open URLs from within WSL using browse-url-* commands
+       (when (string-match "Linux.*Microsoft.*Linux"
+			   (shell-command-to-string "uname -a"))
+	 (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
+	       browse-url-generic-args '("/c" "start" "")
+	       browse-url-browser-function 'browse-url-generic)))
+      ;; Use WSL shell within runemacs.exe on Windows 10
+      ;; ((eq system-type 'windows-nt)
+      ;;  (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
+      ;; 	     shell-file-name explicit-shell-file-name))
+      )
 
-;; Miminal UI for text-based emacs
-(menu-bar-mode -1)
-
-;; Provide winner-* commands
-(when (fboundp 'winner-mode)
-  (winner-mode 1))
-
-;; Provide line numbers globally
-(when (fboundp 'global-display-line-numbers-mode)
-  (global-display-line-numbers-mode 1))
-
-;; Override help-like buffers that split the frame
-(add-to-list 'display-buffer-alist
-	     '("*Help*" display-buffer-same-window))
-(add-to-list 'display-buffer-alist
-	     '("*Apropos*" display-buffer-same-window))
-(setq info-lookup-other-window-flag t)
+;; Basic configuration
+(menu-bar-mode -1)                    ;; Miminal UI for text-based emacs
+(winner-mode 1)                      ;; Provide winner-* commands
+(global-display-line-numbers-mode 1) ;; Provide line numbers globally
 
 ;; Package config
 (require 'package)
@@ -53,40 +40,30 @@
   (package-install 'use-package))
 (require 'use-package)
 
-;; Packages
-(use-package dracula-theme
-  :ensure t)
+;; Packages with zero configuration
+(dolist (pkg '(dracula-theme quelpa helm help-fns+ hydra))
+  (unless (package-installed-p pkg)
+    (cond ((string= pkg "help-fns+") (quelpa '(help-fns+ :fetcher wiki)))
+	  (t (package-refresh-contents)
+	     (package-install pkg))))
+  (require pkg))
 
-(use-package quelpa
-  :ensure t)
-
-(unless (package-installed-p 'help-fns+)
-  (quelpa
-   '(help-fns+ :fetcher wiki)))
-(require 'help-fns+)
+;; Configured packages
+(use-package aggressive-indent
+  :ensure t
+  :config
+  ;; (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode) ;; Messing with inferior R process
+  ;; (global-aggressive-indent-mode 1)
+  ;; (add-to-list 'aggressive-indent-excluded-modes 'html-mode) ;; example exclusion
+  )
 
 (use-package page-break-lines
   :ensure t
   :config
   (global-page-break-lines-mode))
 
-;; http://tuhdo.github.io/helm-intro.html
-;; https://github.com/emacs-helm
-;; https://github.com/emacs-helm/helm/wiki
-;; http://tuhdo.github.io/helm-projectile.html
-;; (use-package helm-config) ;; https://github.com/emacs-helm/helm/blob/master/helm-config.el
-;; (use-package helm
-;;   :ensure t
-;;   :bind (("C-x r b" . helm-filtered-bookmarks)
-;;  	 ("C-x C-f" . helm-find-files))
-;;   :init
-;;   (setq helm-mode-fuzzy-match t
-;;  	helm-completion-in-region-fuzzy-match t
-;;  	helm-candidate-number-list 50)
-;;   :config
-;;   (helm-mode 1))
-
 (use-package helm-descbinds
+  :after helm
   :ensure t)
 
 (use-package org
@@ -112,11 +89,9 @@
   :config
   (evil-mode 1)
   ;; List of states to start in emacs mode
-  (dolist (el
-	   '(Info-mode finder-mode))
+  (dolist (el '(Info-mode finder-mode))
     (evil-set-initial-state el 'emacs))
   )
-
 
 ;; https://oremacs.com/swiper/
 ;; https://github.com/abo-abo/swiper/wiki
@@ -135,14 +110,14 @@
 
 (use-package which-key
   :ensure t
+  :after evil ;; equiv. to (setq which-key-allow-evil-operators t)
   :init
   (setq which-key-separator " "
 	which-key-prefix-prefix "+")
   :config
-  (setq which-key-allow-evil-operators t ;; Show evil inner and outer text objects?
-	which-key-show-operator-state-maps t ;; Show evil motions?
+  (setq which-key-show-operator-state-maps t ;; Show evil motions?
 	which-key-sort-order 'which-key-key-order-alpha
-        which-key-sort-uppercase-first nil
+	which-key-sort-uppercase-first nil
 	which-key-compute-remaps t ;; e.g. w/ counsel-mode: (C-h a) apropos-command -> counsel-apropos
 	which-key-show-docstrings t
 	which-key-max-description-length nil
@@ -153,6 +128,7 @@
   (which-key-mode))
 
 (use-package evil-tutor
+  :after evil
   :ensure t)
 
 ;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
@@ -171,29 +147,24 @@
 		      'evil-backward-char 'left-char 'right-char
 		      'evil-force-normal-state 'evil-ex))))
 
+
 ;; https://github.com/abo-abo/ace-window/wiki
 (use-package ace-window
   :ensure t
   :config
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
 
-;; https://github.com/abo-abo/hydra
-;; https://github.com/abo-abo/hydra/wiki
-(use-package hydra
-  :ensure t)
-
 (defun kill-other-buffers ()
-  "Kill all other buffers."
   (interactive)
-  (mapc 'kill-buffer (delq (current-buffer) (buffer-list))))
+  (mapc 'kill-buffer
+	(delq (current-buffer)
+	      (buffer-list))))
 
 (defun switch-to-scratch ()
-  "Switch to *scratch* buffer."
   (interactive)
   (switch-to-buffer "*scratch*"))
 
 (defun load-init ()
-  "Load user-init-file"
   (interactive)
   (load-file user-init-file))
 
@@ -203,8 +174,6 @@
     (run-ess-r)
     (ess-rdired)))
 
-;; https://github.com/abo-abo/swiper/wiki/ivy-display-function
-
 (general-define-key
  :states '(motion insert emacs) ;; Several other states inherit motion bindings
  :prefix "C-@" ;; C-SPC and C-2 (https://www.gnu.org/software/emacs/manual/html_node/emacs/Setting-Mark.html)
@@ -212,7 +181,6 @@
  "" nil ;; if prefix was already bound, unbind it for use as prefix
  
  "SPC" 'execute-extended-command
- "TAB" '(evil-switch-to-windows-last-buffer :wk "last buffer")
  "?" 'helm-descbinds
  "!" 'shell-command
  "'" 'ivy-resume
@@ -220,7 +188,7 @@
  "e" 'eval-last-sexp
  "l" 'load-init ;; Useful for testing simple configuration tweaks (a full emacs restart may be required for some changes)
  "o" 'clm/toggle-command-log-buffer
-;;  "p" 'pp-eval-expression
+ ;;  "p" 'pp-eval-expression
 
  "b" '(:ignore t :wk "buffers")
  "bb" 'switch-to-buffer
@@ -304,19 +272,18 @@
 	 (delq 'process-kill-buffer-query-function kill-buffer-query-functions)))
     (mapc 'select-kill-window-and-buffer other-windows)))
 
-;;   "
-;; Movement: _a_ce _h_: left _j_: down _k_: up _l_: right
-;; Scroll-other: _1_.._5_: <#> up _6_.._0_: <#> down
-;; Resize: _-_: dh _+_: ih _<_: dw _>_:iw
-;; Split: _v_ert _x_: horz _z_: undo _Z_: reset
-;; Switch: _r_otate up _R_otate down _s_wap _b_uffer
-;; Delete: _c_urrent _o_thers _a_ce
-;; _q_uit
-;; "
 (evil-define-key 'motion 'global (kbd "C-w") nil)
 (evil-define-key 'insert 'global (kbd "C-w") nil)
 (defhydra hydra-window (:color amaranth)
-  ("1" (my-scroll-up 1) nil)
+  ("-" evil-window-decrease-height)
+  ("+" evil-window-increase-height)
+  ("<" evil-window-decrease-width)
+  (">" evil-window-increase-width)
+  ("h" windmove-left)
+  ("j" windmove-down)
+  ("k" windmove-up)
+  ("l" windmove-right)
+  ("1" (my-scroll-up 1) "scroll-up-other-1")
   ("2" (my-scroll-up 2) nil)
   ("3" (my-scroll-up 3) nil)
   ("4" (my-scroll-up 4) nil)
@@ -326,15 +293,8 @@
   ("8" (my-scroll-down 3) nil)
   ("9" (my-scroll-down 4) nil)
   ("0" (my-scroll-down 5) nil)
-  ("-" evil-window-decrease-height)
-  ("+" evil-window-increase-height)
-  ("<" evil-window-decrease-width)
-  (">" evil-window-increase-width)
-  ("h" windmove-left nil)
-  ("j" windmove-down nil)
-  ("k" windmove-up nil)
-  ("l" windmove-right nil)
-  ("b" switch-to-buffer)
+  ("b" switch-to-buffer "buffer")
+  ("C-l" evil-switch-to-windows-last-buffer "last buffer")
   ("v" (lambda ()
 	 (interactive)
 	 (split-window-right)
@@ -363,34 +323,61 @@
 (use-package ess
   :ensure t
   :config
+  (require 'info-look) ;; needed for info-lookup-other-window-flag to exist
   (setq ess-ask-for-ess-directory nil
-	display-buffer-alist
-	`(("\\*R Dired"
-	   (display-buffer-reuse-window display-buffer-in-side-window)
-	   (side . right)
-	   (slot . -1)
-	   (window-width . 0.33)
-	   (reusable-frames . nil))
-	  ("\\*R:"
-	   (display-buffer-reuse-window display-buffer-at-bottom)
-	   (window-height . 0.3)
-	   (reusable-frames . nil))
-	  ("\\*Help\\[R"
-	   (display-buffer-reuse-window display-buffer-in-side-window)
-	   (side . right)
-	   (slot . 1)
-	   (window-width . 0.33)
-	   (reusable-frames . nil)))))
-
+	display-buffer-alist `(("\\*R Dired"
+				(display-buffer-reuse-window display-buffer-in-side-window)
+				(side . right)
+				(slot . -1)
+				(window-width . 0.33)
+				(reusable-frames . nil))
+			       ("\\*R:"
+				(display-buffer-reuse-window display-buffer-at-bottom)
+				(window-height . 0.3)
+				(reusable-frames . nil))
+			        ("\\*Help\\[R"
+				(display-buffer-reuse-window display-buffer-in-side-window)
+				(side . right)
+				(slot . 1)
+				(window-width . 0.33)
+				(reusable-frames . nil))
+			       ("\\*Help\\*" display-buffer-same-window)
+			       ("\\*Apropos\\*" display-buffer-same-window))
+	info-lookup-other-window-flag t)
+  (add-hook 'inferior-ess-r-mode-hook
+	    (lambda ()
+	      (setq-local comint-prompt-read-only t) ;; prompt's ">" is read-only
+	      (setq-local comint-scroll-to-bottom-on-input t) ;; Does not prevent DEL, backspace on prior prompts 
+	      (setq-local comint-scroll-to-bottom-on-output t)
+	      (setq-local comint-scroll-show-maximum-output t)
+	      (setq-local comint-move-point-for-output t))))
+;;(setq inferior-ess-r-program "/mnt/c/Program Files/R/R-3.6.1/bin/R.exe")
 (use-package ess-R-data-view
   :after ess
-  :ensure t) ;; see  ess-R-dv-pprint
+  :ensure t) ;; see ess-R-dv-pprint
 
 ;; TODO: Insert outside  of outermost expression
-(defun insert-eval-last-sexp-result ()
-  (interactive)
-  (setq current-prefix-arg '(4)) ; C-u
-  (call-interactively 'eval-last-sexp))
+;; (defun insert-eval-last-sexp-result ()
+;;   (interactive)
+;;   (setq current-prefix-arg '(4)) ; C-u
+;;   (call-interactively 'eval-last-sexp))
+
+;; http://tuhdo.github.io/helm-intro.html
+;; https://github.com/emacs-helm
+;; https://github.com/emacs-helm/helm/wiki
+;; http://tuhdo.github.io/helm-projectile.html
+;; (use-package helm-config) ;; https://github.com/emacs-helm/helm/blob/master/helm-config.el
+;; (use-package helm
+;;   :ensure t
+;;   :bind (("C-x r b" . helm-filtered-bookmarks)
+;;  	 ("C-x C-f" . helm-find-files))
+;;   :init
+;;   (setq helm-mode-fuzzy-match t
+;;  	helm-completion-in-region-fuzzy-match t
+;;  	helm-candidate-number-list 50)
+;;   :config
+;;   (helm-mode 1))
+
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -399,7 +386,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
