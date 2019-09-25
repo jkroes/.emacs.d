@@ -106,7 +106,8 @@
 (use-package evil
   :ensure t
   :init
-  (setq evil-want-keybinding nil) ;; evil-keybindings.el mangles some mode maps (e.g., Info-mode-map) and
+  (setq evil-want-C-w-delete nil ;; Keep C-w for windows in insert state
+	evil-want-keybinding nil) ;; evil-keybindings.el mangles some mode maps (e.g., Info-mode-map) and
   ;; even motion state keymaps listed in evil-mode-map-alist
   ;; See also evil-want-minibuffer and evil-want-integration to disable other loaded files
   :config
@@ -203,12 +204,12 @@
     (run-ess-r)
     (ess-rdired)))
 
-;;undo-tree-visualize
 ;; https://github.com/abo-abo/swiper/wiki/ivy-display-function
 (general-define-key
- :states '(motion insert) ;; Several other states inherit motion bindings
- :prefix "M-SPC"
- :non-normal-prefix "M-SPC"
+ :states '(motion insert emacs) ;; Several other states inherit motion bindings
+ :prefix "C-@" ;; C-SPC and C-2 (https://www.gnu.org/software/emacs/manual/html_node/emacs/Setting-Mark.html)
+ :non-normal-prefix: "C-@"
+ "C-@" nil
  ;; "" nil ;; unbind SPC in evil-motion-state-map to allow its use as a prefix above
  
  "SPC" 'execute-extended-command
@@ -278,52 +279,77 @@
  "vr" 'info-emacs-manual
  "vt" 'help-with-tutorial ;; emacs tutorial
  "vT" 'evil-tutor-start
-
- ;; Modified from https://www.youtube.com/watch?v=_qZliI1BKzI
- ;; NOTE: Had trouble binding non-interactive functions like aw-flip-window
- ;; Check out functions listed in link (e.g. hydra-window-scroll)
- "w" (list
-      (defhydra hydra-window
-	(:color amaranth) ;; Prevent bindings outside this hydra (doesn't override SPC--investigate)
-	"window"
-	("h" windmove-left)
-	("j" windmove-down)
-	("k" windmove-up)
-	("l" windmove-right)
-	("b" ivy-switch-buffer)
-	("v" (lambda ()
-	       (interactive)
-	       (split-window-right)
-	       (windmove-right))
-	 "vert")
-	("x" (lambda ()
-	       (interactive)
-	       (split-window-below)
-	       (windmove-down))
-	 "horz")
-	("o" delete-other-windows "one" :color blue)
-	("a" ace-window "ace")
-	("s" ace-swap-window "swap")
-	("d" ace-delete-window "del")
-	("q" nil "cancel")
-	("z" (progn
-	       (winner-undo)
-	       (setq this-command 'winner-undo))) ;; Needed for winner-redo, it appears
-	("Z" winner-redo))
-      :which-key "window")
- ;; "wn" 'evil-window-new ;; horizontal split, blank window
- ;; "wr" 'evil-window-rotate-downwards
- ;; "wR" 'evil-window-rotate-upwards
- ;; "ww" 'evil-window-next
- ;; "wW" 'evil-window-prev
  )
+
+(defun my-scroll-up (&optional arg)
+  (interactive)
+  (save-selected-window
+    (other-window arg)
+    (scroll-up)))
+
+(defun my-scroll-down (&optional arg)
+  (interactive)
+  (save-selected-window
+    (other-window arg)
+    (scroll-down)))
+
+;; Modified from https://www.youtube.com/watch?v=_qZliI1BKzI
+;; NOTE: Had trouble binding non-interactive functions like aw-flip-window
+;; Check out functions listed in link (e.g. hydra-window-scroll)
+(evil-define-key 'motion 'global (kbd "C-w") nil) ;; Alternatively, make an intercept map
+(defhydra hydra-window (:color amaranth) "window"
+  ("1" (my-scroll-up 1) "..5 scroll-up win <#>")
+  ("2" (my-scroll-up 2) nil)
+  ("3" (my-scroll-up 3) nil)
+  ("4" (my-scroll-up 4) nil)
+  ("5" (my-scroll-up 5) nil)
+  ("6" (my-scroll-down 1) "..0 scroll-down win <#>")
+  ("7" (my-scroll-down 2) nil)
+  ("8" (my-scroll-down 3) nil)
+  ("9" (my-scroll-down 4) nil)
+  ("0" (my-scroll-down 5) nil)
+  ("-" evil-window-decrease-height)
+  ("+" evil-window-increase-height)
+  ("<" evil-window-decrease-width)
+  (">" evil-window-increase-width)
+  ("h" windmove-left)
+  ("j" windmove-down)
+  ("k" windmove-up)
+  ("l" windmove-right)
+  ("b" switch-to-buffer)
+  ("v" (lambda ()
+	 (interactive)
+	 (split-window-right)
+	 (windmove-right))
+   "vert")
+  ("x" (lambda ()
+	 (interactive)
+	 (split-window-below)
+	 (windmove-down))
+   "horz")
+  ("o" delete-other-windows "one" :color blue)
+  ("a" ace-window "ace")
+  ("s" ace-swap-window "swap")
+  ("c" evil-window-delete)
+  ("d" ace-delete-window "del")
+  ("q" nil "cancel")
+  ("r" evil-window-rotate-downwards)
+  ("R" evil-window-rotate-upwards)
+  ("z" (progn
+	 (winner-undo)
+	 (setq this-command 'winner-undo))) ;; Needed for winner-redo, it appears
+  ("Z" winner-redo))
+;; "wn" 'evil-window-new ;; horizontal split, blank window
+;; "wW" 'evil-window-prev
+(global-set-key (kbd "C-w") 'hydra-window/body) ;; Take over C-w
+;; https://github.com/abo-abo/hydra/wiki/Binding-Styles
+(cdr hydra-window/hint)
 
 (use-package ess
   :ensure t
   :config
   (setq ess-ask-for-ess-directory nil))
 
-;; Compare to ess-view
 (use-package ess-R-data-view
   :ensure t) ;; see  ess-R-dv-pprint
 
@@ -359,7 +385,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
