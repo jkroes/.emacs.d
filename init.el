@@ -26,6 +26,7 @@
 (menu-bar-mode -1)                    ;; Miminal UI for text-based emacs
 (winner-mode 1)                      ;; Provide winner-* commands
 (global-display-line-numbers-mode 1) ;; Provide line numbers globally
+(setq scroll-conservatively 1000000) ;; Seems to prevent auto-centering of point when scrolling
 
 ;; Package config
 (require 'package)
@@ -320,6 +321,13 @@
   ("q" nil))
 (global-set-key (kbd "C-w") 'hydra-window/body) ;; Take over C-w
 
+;; Leads for making past i/o read-only:
+;; https://emacs.stackexchange.com/questions/19163/how-do-i-protect-command-output-in-eshell-and-repl-buffers
+;; http://emacshorrors.com/posts/comint-process-echoes.html
+;; https://snarfed.org/why_i_run_shells_inside_emacs
+;; https://github.com/michalrus/dotfiles/blob/c4421e361400c4184ea90a021254766372a1f301/.emacs.d/init.d/040-terminal.el.symlink#L26-L48
+;; (Source for prior link): https://emacs.stackexchange.com/questions/2883/any-way-to-make-prompts-and-previous-output-uneditable-in-shell-term-mode
+;; https://snarfed.org/why_i_run_shells_inside_emacs
 (use-package ess
   :ensure t
   :config
@@ -346,12 +354,23 @@
 	info-lookup-other-window-flag t)
   (add-hook 'inferior-ess-r-mode-hook
 	    (lambda ()
-	      (setq-local comint-prompt-read-only t) ;; prompt's ">" is read-only
-	      (setq-local comint-scroll-to-bottom-on-input t) ;; Does not prevent DEL, backspace on prior prompts 
-	      (setq-local comint-scroll-to-bottom-on-output t)
-	      (setq-local comint-scroll-show-maximum-output t)
-	      (setq-local comint-move-point-for-output t))))
+              (setq-local comint-prompt-read-only t) ;; read-only current prompt (">" for ess-R)
+	      (setq-local comint-scroll-to-bottom-on-input t) ;; scroll to bottom before insertion and yank commands
+	      (setq-local comint-scroll-to-bottom-on-output nil)  ;; alias for comint-move-point-for-output.
+	      ;; Scroll to bottom when output arrives, no matter where point is (set to nil to disable)
+	      (setq-local comint-scroll-show-maximum-output t)  ;; scroll to bottom when output arrives, if point is at bottom
+	      (setq-local comint-use-prompt-regexp nil) ;; value of nil enables evil motions
+	      (setq-local inhibit-field-text-motion nil) ;; value of nil means  motions respect fields, meaning
+	      ;; the (current) prompt acts as beginning of line (if prompt is read-only)
+	      )))
+
+;; (defun my-comint-preoutput-turn-buffer-read-only (text)
+;;   (propertize text 'read-only t))
+
+;; (add-hook 'comint-preoutput-filter-functions 'my-comint-preoutput-turn-buffer-read-only)
+
 ;;(setq inferior-ess-r-program "/mnt/c/Program Files/R/R-3.6.1/bin/R.exe")
+
 (use-package ess-R-data-view
   :after ess
   :ensure t) ;; see ess-R-dv-pprint
