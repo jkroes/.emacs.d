@@ -107,7 +107,9 @@
   (counsel-mode 1)
   (setq ivy-use-virtual-buffers t ;; include recent files and bookmarks in buffer list
 	ivy-count-format "%d/%d " ;; show index/total results in minibuffer 
-	ivy-initial-inputs-alist nil) ;; disable starting regexp in search
+	ivy-initial-inputs-alist nil ;; disable starting regexp in search
+	ivy-height 25
+	)
   )
 
 (use-package which-key
@@ -170,12 +172,6 @@
   (interactive)
   (load-file user-init-file))
 
-(defun start-r ()
-  (interactive)
-  (save-selected-window
-    (run-ess-r)
-    ;;(ess-rdired)
-    ))
 
 ;; (define-key global-map [remap set-mark-command] 'my-prefix-cmd) ;; C-@ on MacOS, C-SPC on Windows 10
 (general-define-key
@@ -234,8 +230,6 @@
  "hdv" 'describe-variable
 
  "p" '(:ignore t :which-key "prog")
- "pr" '(start-r :wk "R")
-
 
  "v" '(:ignore t :which-key "view")
  "vd" 'view-emacs-debugging
@@ -356,6 +350,18 @@
 			       ("\\*Apropos\\*" display-buffer-same-window))
 	info-lookup-other-window-flag t
 	inferior-ess-r-program "/usr/local/bin/r")
+  (defun start-r ()
+    (interactive)
+    (save-selected-window
+      (run-ess-r)
+      ;;(ess-rdired)
+      ))
+  (general-define-key
+   :prefix-command 'my-map
+   "pr" '(start-r :wk "R"))
+
+   
+  
   ;; (add-hook 'inferior-ess-r-mode-hook
   ;; 	    (lambda ()
   ;;             (setq-local comint-prompt-read-only t) ;; read-only current prompt (">" for ess-R)
