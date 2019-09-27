@@ -175,12 +175,9 @@
     (run-ess-r)
     (ess-rdired)))
 
+
 (general-define-key
- :states '(motion insert emacs) ;; Several other states inherit motion bindings
- :prefix "C-@" ;; C-SPC and C-2 (https://www.gnu.org/software/emacs/manual/html_node/emacs/Setting-Mark.html)
- :non-normal-prefix: "C-@"
- "" nil ;; if prefix was already bound, unbind it for use as prefix
- 
+ :prefix-command 'my-prefix-cmd
  "SPC" 'execute-extended-command
  "?" 'helm-descbinds
  "!" 'shell-command
@@ -248,6 +245,7 @@
  "vt" 'help-with-tutorial ;; emacs tutorial
  "vT" 'evil-tutor-start
  )
+(define-key global-map [remap set-mark-command] 'my-prefix-cmd) ;; C-@ on MacOS, C-SPC on Windows 10
 
 (defun my-scroll-up (&optional arg)
   (interactive)
