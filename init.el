@@ -173,11 +173,12 @@
   (interactive)
   (save-selected-window
     (run-ess-r)
-    (ess-rdired)))
+    ;;(ess-rdired)
+    ))
 
-
+;; (define-key global-map [remap set-mark-command] 'my-prefix-cmd) ;; C-@ on MacOS, C-SPC on Windows 10
 (general-define-key
- :prefix-command 'my-prefix-cmd
+ :prefix-command 'my-map
  "SPC" 'execute-extended-command
  "?" 'helm-descbinds
  "!" 'shell-command
@@ -245,7 +246,10 @@
  "vt" 'help-with-tutorial ;; emacs tutorial
  "vT" 'evil-tutor-start
  )
-(define-key global-map [remap set-mark-command] 'my-prefix-cmd) ;; C-@ on MacOS, C-SPC on Windows 10
+(global-set-key (kbd "C-@") 'my-map) ;; MacOs
+(global-set-key (kbd "C-SPC") 'my-map) ;; Windows 10
+;; The following fails with a commandp error:
+;; (global-set-key [remap set-mark-command] 'my-map)
 
 (defun my-scroll-up (&optional arg)
   (interactive)
@@ -350,17 +354,19 @@
 			       ("\\*Help\\*" display-buffer-same-window)
 			       ("\\*Apropos\\*" display-buffer-same-window))
 	info-lookup-other-window-flag t)
-  (add-hook 'inferior-ess-r-mode-hook
-	    (lambda ()
-              (setq-local comint-prompt-read-only t) ;; read-only current prompt (">" for ess-R)
-	      (setq-local comint-scroll-to-bottom-on-input t) ;; scroll to bottom before insertion and yank commands
-	      (setq-local comint-scroll-to-bottom-on-output nil)  ;; alias for comint-move-point-for-output.
-	      ;; Scroll to bottom when output arrives, no matter where point is (set to nil to disable)
-	      (setq-local comint-scroll-show-maximum-output t)  ;; scroll to bottom when output arrives, if point is at bottom
-	      (setq-local comint-use-prompt-regexp nil) ;; value of nil enables evil motions
-	      (setq-local inhibit-field-text-motion nil) ;; value of nil means  motions respect fields, meaning
-	      ;; the (current) prompt acts as beginning of line (if prompt is read-only)
-	      )))
+  ;; (add-hook 'inferior-ess-r-mode-hook
+  ;; 	    (lambda ()
+  ;;             (setq-local comint-prompt-read-only t) ;; read-only current prompt (">" for ess-R)
+  ;; 	      (setq-local comint-scroll-to-bottom-on-input t) ;; scroll to bottom before insertion and yank commands
+  ;; 	      (setq-local comint-scroll-to-bottom-on-output nil)  ;; alias for comint-move-point-for-output.
+  ;; 	      ;; Scroll to bottom when output arrives, no matter where point is (set to nil to disable)
+  ;; 	      (setq-local comint-scroll-show-maximum-output t)  ;; scroll to bottom when output arrives, if point is at bottom
+  ;; 	      (setq-local comint-use-prompt-regexp nil) ;; value of nil enables evil motions
+  ;; 	      (setq-local inhibit-field-text-motion nil) ;; value of nil means  motions respect fields, meaning
+  ;; 	      ;; the (current) prompt acts as beginning of line (if prompt is read-only)
+  ;; 	      )
+  ;; 	    )
+  )
 
 ;; (defun my-comint-preoutput-turn-buffer-read-only (text)
 ;;   (propertize text 'read-only t))
