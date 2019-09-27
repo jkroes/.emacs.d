@@ -23,7 +23,8 @@
       )
 
 ;; Basic configuration
-(menu-bar-mode -1)                    ;; Miminal UI for text-based emacs
+(menu-bar-mode -1)                   ;; Disable menu bar
+(tool-bar-mode -1)                   ;; Disable tool bar
 (winner-mode 1)                      ;; Provide winner-* commands
 (global-display-line-numbers-mode 1) ;; Provide line numbers globally
 (setq scroll-conservatively 1000000) ;; Seems to prevent auto-centering of point when scrolling
@@ -33,7 +34,7 @@
 (setq package-archives '(("gnu"   . "http://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")))
 (setq package-enable-at-startup nil)
-(package-initialize) ;; https://www.emacswiki.org/emacs/ELPA#toc5
+(package-initialize)                 ;; https://www.emacswiki.org/emacs/ELPA#toc5
 
 ;; Bootstrap `use-package`
 (unless (package-installed-p 'use-package)
@@ -353,7 +354,8 @@
 				(reusable-frames . nil))
 			       ("\\*Help\\*" display-buffer-same-window)
 			       ("\\*Apropos\\*" display-buffer-same-window))
-	info-lookup-other-window-flag t)
+	info-lookup-other-window-flag t
+	inferior-ess-r-program "/usr/local/bin/r")
   ;; (add-hook 'inferior-ess-r-mode-hook
   ;; 	    (lambda ()
   ;;             (setq-local comint-prompt-read-only t) ;; read-only current prompt (">" for ess-R)
@@ -368,6 +370,12 @@
   ;; 	    )
   )
 
+(use-package ranger
+  :ensure t
+  :config
+  (evil-define-key 'motion 'global (kbd "C-f") 'ranger)
+  (evil-define-key 'insert 'global (kbd "C-f") 'ranger))
+
 ;; (defun my-comint-preoutput-turn-buffer-read-only (text)
 ;;   (propertize text 'read-only t))
 
@@ -377,7 +385,8 @@
 
 (use-package ess-R-data-view
   :after ess
-  :ensure t) ;; see ess-R-dv-pprint
+  :ensure t
+  ) ;; see ess-R-dv-pprint
 
 ;; TODO: Insert outside  of outermost expression
 ;; (defun insert-eval-last-sexp-result ()
@@ -409,7 +418,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
