@@ -71,7 +71,6 @@
   ;; See also evil-want-minibuffer and evil-want-integration to disable other loaded files
   :config
   (evil-mode 1)
-  ;; List of base emacs states to start in emacs mode
   (dolist (el '(Info-mode finder-mode))
     (evil-set-initial-state el 'emacs))
   )
@@ -82,12 +81,12 @@
 
 (use-package which-key
   :ensure t
-  :after evil ;; equiv. to (setq which-key-allow-evil-operators t)
   :init
   (setq which-key-separator " "
 	which-key-prefix-prefix "+")
   :config
   (setq which-key-show-operator-state-maps t ;; Show evil motions?
+	which-key-allow-evil-operators t
 	which-key-sort-order 'which-key-key-order-alpha
 	which-key-sort-uppercase-first nil
 	which-key-compute-remaps t ;; e.g. w/ counsel-mode: (C-h a) apropos-command -> counsel-apropos
@@ -96,7 +95,7 @@
 	which-key-idle-delay 0.5
 	which-key-popup-type 'side-window
 	which-key-side-window-location 'bottom
-	which-key-side-window-max-height .5)
+	which-key-side-window-max-height .3)
   (which-key-mode)
   (global-set-key (kbd "C-h M-K") 'which-key-show-keymap) ;; Parallels binding for describe-keymap
   (global-unset-key (kbd "C-h C-h")) ;; enable which-key navigation
@@ -139,21 +138,24 @@
   (global-command-log-mode)
   (setq clm/log-command-exceptions* ;; Exclude commands from command-log buffer
 	(append clm/log-command-exceptions*
-		(list 'evil-next-line 'evil-previous-line 'evil-insert 'evil-append-line
-		      'evil-append 'evil-normal-state 'evil-forward-char
-		      'evil-backward-char 'left-char 'right-char
-		      'evil-force-normal-state 'evil-ex))))
-
+		'(evil-next-line evil-previous-line evil-insert evil-append-line
+				 evil-append evil-normal-state evil-forward-char
+				 evil-backward-char 'left-char right-char
+				 evil-force-normal-state evil-ex))))
 
 ;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
 ;; https://github.com/noctuid/general.el
 (use-package general
-  :ensure t)
+  :after evil
+  :ensure t
+  :config )
 
 (general-define-key
- :states '(motion normal visual)
+ :states '(motion normal visual insert emacs)
  :prefix-command 'my-map
  :prefix "SPC"
+ :non-normal-prefix (cond ((string= system-type "windows-nt") "C-SPC")
+			  ((string= system-type "darwin") "C-@"))
  "SPC" 'execute-extended-command
  "!" 'shell-command
  "'" 'ivy-resume
@@ -185,8 +187,8 @@
  "vt" 'help-with-tutorial ;; emacs tutorial
  "vT" 'evil-tutor-start
  )
-(define-key evil-insert-state-map (kbd "C-@") 'my-map) ;; MacOS
-(define-key evil-insert-state-map (kbd "C-SPC") 'my-map) ;; Windows 10
+;; (define-key evil-insert-state-map (kbd "C-@") 'my-map) ;; MacOS
+;; (define-key evil-insert-state-map (kbd "C-SPC") 'my-map) ;; Windows 10
 ;; The following fails with a commandp error:
 ;; (global-set-key [remap set-mark-command] 'my-map)
 
@@ -409,7 +411,6 @@
 	      (local-set-key (kbd "\"") 'skeleton-pair-insert-maybe)
 	      (local-set-key (kbd "\'") 'skeleton-pair-insert-maybe)
 	      (local-set-key (kbd "\`") 'skeleton-pair-insert-maybe)
-	      (local-set-key "<backtab>" 'ess-complete-object-name)
 	      (local-set-key (kbd "C-l") 'hydra-r/body)))
   (setq ess-ask-for-ess-directory nil
 	ess-S-quit-kill-buffers-p 'ask 
