@@ -1,7 +1,6 @@
 ;; https://dev.to/huytd/emacs-from-scratch-1cg6
 ;; https://www.reddit.com/r/emacs/comments/2edbau/what_are_some_great_emacsd_examples/ 
 ;; https://github.com/caisah/emacs.dz
-;; https://github.com/syl20bnr/spacemacs/blob/master/doc/DOCUMENTATION.org#helm
 ;; https://emacs.sexy/#resources
 ;; https://www.reddit.com/r/emacs/comments/6s5470/useful_packages/
 ;; https://github.com/emacs-tw/awesome-emacs
@@ -27,7 +26,12 @@
 (tool-bar-mode -1)                   ;; Disable tool bar
 (winner-mode 1)                      ;; Provide winner-* commands
 (global-display-line-numbers-mode 1) ;; Provide line numbers globally
-(setq scroll-conservatively 1000000) ;; Seems to prevent auto-centering of point when scrolling
+(setq scroll-conservatively 1000000  ;; Seems to prevent auto-centering of point when scrolling
+      inhibit-startup-screen t)
+
+;; Global bindings
+(global-set-key (kbd "C-h M") 'describe-minor-mode)
+(global-set-key (kbd "C-h s") 'describe-symbol)
 
 ;; Package config
 (require 'package)
@@ -43,35 +47,12 @@
 (require 'use-package)
 
 ;; Packages with zero configuration
-(dolist (pkg '(dracula-theme quelpa helm help-fns+ hydra))
+(dolist (pkg '(dracula-theme quelpa help-fns+ hydra ranger))
   (unless (package-installed-p pkg)
     (cond ((string= pkg "help-fns+") (quelpa '(help-fns+ :fetcher wiki)))
 	  (t (package-refresh-contents)
 	     (package-install pkg))))
   (require pkg))
-
-;; Configured packages
-(use-package aggressive-indent
-  :ensure t
-  :config
-  ;; (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode) ;; Messing with inferior R process
-  ;; (global-aggressive-indent-mode 1)
-  ;; (add-to-list 'aggressive-indent-excluded-modes 'html-mode) ;; example exclusion
-  )
-
-(use-package page-break-lines
-  :ensure t
-  :config
-  (global-page-break-lines-mode))
-
-(use-package helm-descbinds
-  :after helm
-  :ensure t)
-
-(use-package org
-  :ensure t
-  :config
-  (setq org-log-done t))
 
 ;;https://github.com/noctuid/evil-guide
 ;;https://raw.githubusercontent.com/emacs-evil/evil/master/doc/evil.pdf
@@ -90,27 +71,14 @@
   ;; See also evil-want-minibuffer and evil-want-integration to disable other loaded files
   :config
   (evil-mode 1)
-  ;; List of states to start in emacs mode
+  ;; List of base emacs states to start in emacs mode
   (dolist (el '(Info-mode finder-mode))
     (evil-set-initial-state el 'emacs))
   )
 
-;; https://oremacs.com/swiper/
-;; https://github.com/abo-abo/swiper/wiki
-;; https://github.com/abo-abo/swiper/blob/master/ivy-hydra.el
-;; https://github.com/abo-abo/hydra/wiki/hydra-ivy-replacement
-;; https://writequit.org/denver-emacs/presentations/2017-04-11-ivy.html#fn.1
-(use-package counsel ;; Installs and loads ivy and swiper as dependencies
-  :ensure t
-  :config
-  (ivy-mode 1)
-  (counsel-mode 1)
-  (setq ivy-use-virtual-buffers t ;; include recent files and bookmarks in buffer list
-	ivy-count-format "%d/%d " ;; show index/total results in minibuffer 
-	ivy-initial-inputs-alist nil ;; disable starting regexp in search
-	ivy-height 25
-	)
-  )
+(use-package evil-tutor
+  :after evil
+  :ensure t)
 
 (use-package which-key
   :ensure t
@@ -129,16 +97,41 @@
 	which-key-popup-type 'side-window
 	which-key-side-window-location 'bottom
 	which-key-side-window-max-height .5)
-  (which-key-mode))
+  (which-key-mode)
+  (global-set-key (kbd "C-h M-K") 'which-key-show-keymap) ;; Parallels binding for describe-keymap
+  (global-unset-key (kbd "C-h C-h")) ;; enable which-key navigation
+  )
 
-(use-package evil-tutor
-  :after evil
-  :ensure t)
+(use-package page-break-lines
+  :ensure t
+  :config
+  (global-page-break-lines-mode))
 
-;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
-;; https://github.com/noctuid/general.el
-(use-package general
-  :ensure t)
+(use-package org
+  :ensure t
+  :config
+  (setq org-log-done t))
+
+;; https://github.com/abo-abo/ace-window/wiki
+(use-package ace-window
+  :ensure t
+  :config
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+
+;; https://oremacs.com/swiper/
+;; https://github.com/abo-abo/swiper/wiki
+;; https://github.com/abo-abo/swiper/blob/master/ivy-hydra.el
+;; https://github.com/abo-abo/hydra/wiki/hydra-ivy-replacement
+;; https://writequit.org/denver-emacs/presentations/2017-04-11-ivy.html#fn.1
+(use-package counsel ;; Installs and loads ivy and swiper as dependencies
+  :ensure t
+  :config
+  (ivy-mode 1)
+  (counsel-mode 1)
+  (setq ivy-use-virtual-buffers t ;; include recent files and bookmarks in buffer list
+	ivy-count-format "%d/%d " ;; show index/total results in minibuffer 
+	ivy-initial-inputs-alist nil ;; disable starting regexp in search
+	ivy-height 25))
 
 (use-package command-log-mode
   :ensure t
@@ -152,50 +145,22 @@
 		      'evil-force-normal-state 'evil-ex))))
 
 
-;; https://github.com/abo-abo/ace-window/wiki
-(use-package ace-window
-  :ensure t
-  :config
-  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l)))
+;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
+;; https://github.com/noctuid/general.el
+(use-package general
+  :ensure t)
 
-(defun kill-other-buffers ()
-  (interactive)
-  (mapc 'kill-buffer
-	(delq (current-buffer)
-	      (buffer-list))))
-
-(defun switch-to-scratch ()
-  (interactive)
-  (switch-to-buffer "*scratch*"))
-
-(defun load-init ()
-  (interactive)
-  (load-file user-init-file))
-
-
-;; (define-key global-map [remap set-mark-command] 'my-prefix-cmd) ;; C-@ on MacOS, C-SPC on Windows 10
 (general-define-key
+ :states '(motion normal visual)
  :prefix-command 'my-map
+ :prefix "SPC"
  "SPC" 'execute-extended-command
- "?" 'helm-descbinds
  "!" 'shell-command
  "'" 'ivy-resume
  "." 'repeat
  "e" 'eval-last-sexp
- "l" 'load-init ;; Useful for testing simple configuration tweaks (a full emacs restart may be required for some changes)
  "o" 'clm/toggle-command-log-buffer
  ;;  "p" 'pp-eval-expression
-
- "b" '(:ignore t :wk "buffers")
- "bb" 'switch-to-buffer
- "bk" 'kill-buffer ;; nil arg means kill current buffer (ivy auto-selects current buffer also)
- "bK" 'kill-other-buffers
- "bl" 'list-buffers ;; Used only to view which buffers are files
- "bn" 'next-buffer
- "bp" 'previous-buffer
- "br" '(read-only-mode :wk "toggle read-only")
- "bs" 'switch-to-scratch
- "bv" 'view-buffer ;; Investigate view-mode more sometime
 
  "d" '(:ignore t :wk "debug")
  "dc" 'check-parens ;; Debugging "End of file during parsing"
@@ -205,32 +170,11 @@
  "ff" 'find-file
  "fi" 'insert-file 
  "fl" 'counsel-locate
+ "fr" 'ranger
  
  "fe" '(:ignore t :wk "emacs")
  "fel" 'find-library
  
- "h" '(:ignore t :which-key "help")
- "h?" 'help-for-help
- "ha" 'apropos-command
- "hi" 'info ;; open info directory; see top (`d') for keybindings
- "hk" 'which-key-show-keymap
- "hK" 'describe-keymap
- "hp" 'finder-by-keyword ;; display docs for packages grouped by category
- "hS" 'info-lookup-symbol
-
- "hd" '(:ignore t :which-key "help-describe")
- "hdb" 'describe-bindings
- "hdc" 'describe-key-briefly
- "hdf" 'describe-function
- "hdk" 'describe-key
- "hdm" 'describe-mode
- "hdM" 'describe-minor-mode
- "hdp" 'describe-package ;; with evil, need to enter insert mode and press RET to select an item
- "hds" 'describe-symbol
- "hdv" 'describe-variable
-
- "p" '(:ignore t :which-key "prog")
-
  "v" '(:ignore t :which-key "view")
  "vd" 'view-emacs-debugging
  "ve" 'view-echo-area-messages ;; view *Messages* buffer
@@ -241,38 +185,47 @@
  "vt" 'help-with-tutorial ;; emacs tutorial
  "vT" 'evil-tutor-start
  )
-(global-set-key (kbd "C-@") 'my-map) ;; MacOs
-(global-set-key (kbd "C-SPC") 'my-map) ;; Windows 10
+(define-key evil-insert-state-map (kbd "C-@") 'my-map) ;; MacOS
+(define-key evil-insert-state-map (kbd "C-SPC") 'my-map) ;; Windows 10
 ;; The following fails with a commandp error:
 ;; (global-set-key [remap set-mark-command] 'my-map)
+
+(defhydra hydra-buffer (:color amaranth)
+  "Buffer"
+  ("b" switch-to-buffer "switch")
+  ("l" evil-switch-to-windows-last-buffer "prev")
+  ("k" kill-buffer "kill") ;; nil arg means kill current buffer (ivy auto-selects current buffer also)
+  ("K" (lambda ()
+	 (interactive)
+	 (mapc 'kill-buffer
+	       (delq (current-buffer)
+		     (buffer-list))))
+   "kill-others" :color blue)
+  ("r" read-only-mode "read-only")
+  ("s" (lambda ()
+	 (interactive)
+	 (switch-to-buffer "*scratch*"))
+   "scratch")
+  ("v" view-buffer "view")
+  ("w" hydra-window/body "Window" :color blue)
+  ("q" nil)) ;; Investigate view-mode more sometime
+(evil-define-key 'motion 'global (kbd "C-b") nil)
+(evil-define-key 'insert 'global (kbd "C-b") nil)
+(global-set-key (kbd "C-b") 'hydra-buffer/body)
+
 
 (defun my-scroll-up (&optional arg)
   (interactive)
   (save-selected-window
     (other-window arg)
     (scroll-up)))
-
 (defun my-scroll-down (&optional arg)
   (interactive)
   (save-selected-window
     (other-window arg)
     (scroll-down)))
-
-(defun kill-other-windows-and-buffers ()
-  (interactive)
-  (defun select-kill-window-and-buffer (window)
-    (select-window window)
-    (kill-buffer-and-window))
-  (let ((other-windows
-	 (delq (selected-window)
-	       (window-list (window-frame (selected-window)))))
-	(kill-buffer-query-functions ;; Disable prompt to end process buffers
-	 (delq 'process-kill-buffer-query-function kill-buffer-query-functions)))
-    (mapc 'select-kill-window-and-buffer other-windows)))
-
-(evil-define-key 'motion 'global (kbd "C-w") nil)
-(evil-define-key 'insert 'global (kbd "C-w") nil)
 (defhydra hydra-window (:color amaranth)
+  "Window"
   ("-" evil-window-decrease-height)
   ("+" evil-window-increase-height)
   ("<" evil-window-decrease-width)
@@ -291,8 +244,7 @@
   ("8" (my-scroll-down 3) nil)
   ("9" (my-scroll-down 4) nil)
   ("0" (my-scroll-down 5) nil)
-  ("b" switch-to-buffer "buffer")
-  ("C-l" evil-switch-to-windows-last-buffer "last buffer")
+  ("b" hydra-buffer/body "Buffer" :color blue)
   ("v" (lambda ()
 	 (interactive)
 	 (split-window-right)
@@ -306,7 +258,18 @@
   ("a" ace-window "ace")
   ("s" ace-swap-window "swap")
   ("c" evil-window-delete "del")
-  ("o" kill-other-windows-and-buffers "one-del-buffers" :color blue)
+  ("o" (lambda ()
+	 (interactive)
+	 (defun select-kill-window-and-buffer (window)
+	   (select-window window)
+	   (kill-buffer-and-window))
+	 (let ((other-windows
+		(delq (selected-window)
+		      (window-list (window-frame (selected-window)))))
+	       (kill-buffer-query-functions ;; Disable prompt to end process buffers
+		(delq 'process-kill-buffer-query-function kill-buffer-query-functions)))
+	   (mapc 'select-kill-window-and-buffer other-windows)))
+   "one-del-buffers" :color blue)
   ("O" delete-other-windows "one" :color blue)
   ("d" ace-delete-window "ace-del")
   ("r" evil-window-rotate-downwards "rotate")
@@ -316,52 +279,167 @@
 	 (setq this-command 'winner-undo)) "undo") ;; Needed for winner-redo, it appears
   ("Z" winner-redo "reset")
   ("q" nil))
+(evil-define-key 'motion 'global (kbd "C-w") nil)
+(evil-define-key 'insert 'global (kbd "C-w") nil)
 (global-set-key (kbd "C-w") 'hydra-window/body) ;; Take over C-w
 
-;; Leads for making past i/o read-only:
-;; https://emacs.stackexchange.com/questions/19163/how-do-i-protect-command-output-in-eshell-and-repl-buffers
-;; http://emacshorrors.com/posts/comint-process-echoes.html
-;; https://snarfed.org/why_i_run_shells_inside_emacs
-;; https://github.com/michalrus/dotfiles/blob/c4421e361400c4184ea90a021254766372a1f301/.emacs.d/init.d/040-terminal.el.symlink#L26-L48
-;; (Source for prior link): https://emacs.stackexchange.com/questions/2883/any-way-to-make-prompts-and-previous-output-uneditable-in-shell-term-mode
-;; https://snarfed.org/why_i_run_shells_inside_emacs
+(defhydra hydra-r (:color pink)
+  "R"
+  ("SPC" ess-mark-function-or-para "mark")
+  ("a" ess-cycle-assign "assign-cycle") ;; See how electric functions work as hydras...
+  ("d" hydra-r-debug/body "R-debug" :color blue)
+  ("e" hydra-r-eval/body "R-eval" :color blue)
+  ("h" hydra-r-help/body "R-help" :color blue)
+  ("j" ess-goto-end-of-function-or-para "func-end")
+  ("k" ess-goto-beginning-of-function-or-para "func-beg")
+  ("r" (lambda()
+	 (interactive)
+	 (save-selected-window
+	   (run-ess-r-newest)
+	   ;;(ess-rdired)
+	   ))
+   "R-init")
+  ("s" ess-switch-to-inferior-or-script-buffer "switch" :color blue)
+  ("z" ess-submit-bug-report "report-bug" :color blue)
+  ("q" nil :color blue)
+  ;; prog-indent-sexp
+  ;; ess-indent-exp
+  ;; ess-indent-new-comment-line
+  ;; ess-complete-object-name 
+  )
+
+(defhydra hydra-r-help (:color blue) ;; ess-doc-map
+  "R-help"
+  ("a" ess-display-help-apropos "apropos")
+  ("e" hydra-r-eval/body "R-eval")
+  ("i" ess-display-package-index "package-index")
+  ("m" ess-manual-lookup "manual")
+  ("o" ess-display-help-on-object "help-on-object")
+  ("p" ess-describe-object-at-point "object-at-point")
+  ("r" hydra-r/body "R" :color blue)
+  ("t" ess-display-demos "demos")
+  ("v" ess-display-vignettes "vignettes")
+  ("w" ess-help-web-search "web")
+  ("q" nil)
+  )
+
+(defhydra hydra-r-eval (:color pink) ;; ess-rutils-map and ess-extra-map
+  "R-eval"
+  ("<C-return>" ess-eval-region-or-function-or-paragraph-and-step "reg-func-para")
+  ("RET" ess-eval-region-or-line-and-step "reg-line")
+  ("b" ess-eval-buffer-from-beg-to-here "to-here")
+  ("e" ess-eval-buffer-from-here-to-end "to-end")
+  ("E" ess-dirs "emacs-dir")
+  ("f" ess-load-file "source")
+  ("F" ess-force-buffer-current) ;; Only needed when a detached process is created (e.g. via request-a-process)
+  ("i" inferior-ess-reload "reload-proc")
+  ("p" ess-request-a-process "proc") ;; Switch process and display its buffer
+  ;; ("P" ess-switch-process) ;; Switch process
+  ("Q" ess-quit "ess-quit")
+  ("s" ess-switch-to-inferior-or-script-buffer "switch")
+  ("r" hydra-r/body "R" :color blue)
+  ("R" ess-rdired "rdired")
+  ("u" ess-use-this-dir "setwd-this")
+  ("w" ess-change-directory "setwd")
+  ("q" nil :color blue)
+  ;; ess-force-buffer-current ;; Currently repeated C-g seems to work
+  ;; comint-interrupt-subjob
+  ;; ess-interrupt
+  )
+
+;; Note that several commands available in the inferior ess R
+;; process while debugging are absent:
+;; f (finish)
+;; s (step)
+;; help
+;; where
+;; <expr>
+;; As such, it is best to debug from the inferior process where
+;; the additional, built-in functionality is needed
+;; TODO: Add commands here to ess-debug-minor-mode-map
+(defhydra hydra-r-debug (:color amaranth) ;; ess-debug-minor-mode-map and ess-dev-map
+  "R-debug"
+  ("c" ess-debug-command-continue "continue")
+  ("C" ess-debug-command-quit "quit-debug" :color blue) ;; Investigate diff b/w this and ess-debug-stop
+  ("f" ess-debug-flag-for-debugging "flag-func") ;; base:::debug()
+  ("g" ess-debug-goto-debug-point)
+  ("n" ess-debug-command-next "next")
+  ("N" next-error)
+  ("p" previous-error)
+  ("Q" ess-debug-stop "quit-debug-buffer" :color blue)
+  ("s" ess-switch-to-ess "console" :color blue)
+  ("t" ess-debug-toggle-error-action) ;; Sets value of error option (e.g. options(error=recover)) for active process
+  ("u" ess-debug-command-up "frame-up") ;; TODO: Does this work without recover()?
+  ("U" ess-debug-unflag-for-debugging "unflag-func") ;; base:::undebug()
+  ("q" nil :color blue)
+  ;; ess-debug-goto-input-event-marker
+  ;; ess-debug-insert-in-forward-ring
+  )
+
+;; ess-show-traceback, ess-show-call-stack, ess-parse-errors (for syntax errors)
+;; ESS maps:
+;; ess-help-mode-map
+;; inferior-ess-mode-map
+;; ess-r-help-mode-map
+;; ess-watch-mode-mape
+;; ess-rdired-mode-map
+;; ess-electric-selection-map
+;; inferior-ess-mode-map
+;; ess-mode-map
+;; inferior-ess-r-mode-map
+;; electric-indent-mode
+
 (use-package ess
+  :after evil
   :ensure t
   :config
-  (require 'info-look) ;; needed for info-lookup-other-window-flag to exist
+  (require 'info-look)                ;; needed for info-lookup-other-window-flag to exist
+  (dolist (el '(ess-debug-minor-mode ess-r-help-mode inferior-ess-r-mode))
+    (evil-set-initial-state el 'emacs))
+  (evil-define-key 'motion 'global (kbd "C-l") nil)
+  (evil-define-key 'normal 'global (kbd "C-l") nil)
+  (evil-define-key 'insert 'global (kbd "C-l") nil)
+  (evil-define-key 'insert 'motion (kbd "C-l") nil)
+  (add-hook 'ess-r-mode-hook
+	    (lambda ()
+	      (setq-local skeleton-pair t) ;; TODO: https://www.emacswiki.org/emacs/AutoPairs
+	      (local-set-key (kbd "(") 'skeleton-pair-insert-maybe)
+	      (local-set-key (kbd "[") 'skeleton-pair-insert-maybe)
+	      ;; "{" already set to skeleton-pair-insert-maybe
+	      (local-set-key (kbd "\"") 'skeleton-pair-insert-maybe)
+	      (local-set-key (kbd "\'") 'skeleton-pair-insert-maybe)
+	      (local-set-key (kbd "\`") 'skeleton-pair-insert-maybe)
+	      (local-set-key "<backtab>" 'ess-complete-object-name)
+	      (local-set-key (kbd "C-l") 'hydra-r/body)))
   (setq ess-ask-for-ess-directory nil
+	ess-S-quit-kill-buffers-p 'ask 
+        tab-always-indent 'complete
+	ess-eval-visibly nil          ;; Do not display input to iESS buffer; do not stall Emacs
 	display-buffer-alist `(("\\*R Dired"
-				(display-buffer-reuse-window display-buffer-in-side-window)
+				(display-buffer-reuse-mode-window display-buffer-in-side-window)
 				(side . right)
 				(slot . -1)
 				(window-width . 0.33)
 				(reusable-frames . nil))
 			       ("\\*R:"
-				(display-buffer-reuse-window display-buffer-at-bottom)
-				(window-height . 0.3)
+				;; (display-buffer-reuse-window display-buffer-at-bottom)
+				(display-buffer-reuse-mode-window display-buffer-below-selected)
+				(window-height . 0.5)
 				(reusable-frames . nil))
-			        ("\\*Help\\[R"
-				(display-buffer-reuse-window display-buffer-in-side-window)
+			       ("\\*Help\\[R"
+				(display-buffer-reuse-mode-window display-buffer-in-side-window)
 				(side . right)
 				(slot . 1)
 				(window-width . 0.33)
 				(reusable-frames . nil))
+			       ;; TODO: Convert display-buffer-alist to an add statement to separate out non-ess buffers below
 			       ("\\*Help\\*" display-buffer-same-window)
 			       ("\\*Apropos\\*" display-buffer-same-window))
-	info-lookup-other-window-flag t
-	inferior-ess-r-program "/usr/local/bin/r")
-  (defun start-r ()
-    (interactive)
-    (save-selected-window
-      (run-ess-r)
-      ;;(ess-rdired)
-      ))
-  (general-define-key
-   :prefix-command 'my-map
-   "pr" '(start-r :wk "R"))
-
-   
-  
+	info-lookup-other-window-flag t ;; TODO: move
+	;; TODO: Specify paths to Windows binary and make this OS-conditional
+	;; inferior-ess-r-program "/usr/local/bin/r"
+	)
+	  ;; ess-local-process-name 'my-r-map))
   ;; (add-hook 'inferior-ess-r-mode-hook
   ;; 	    (lambda ()
   ;;             (setq-local comint-prompt-read-only t) ;; read-only current prompt (">" for ess-R)
@@ -374,25 +452,19 @@
   ;; 	      ;; the (current) prompt acts as beginning of line (if prompt is read-only)
   ;; 	      )
   ;; 	    )
+
   )
 
-(use-package ranger
-  :ensure t
-  :config
-  (evil-define-key 'motion 'global (kbd "C-f") 'ranger)
-  (evil-define-key 'insert 'global (kbd "C-f") 'ranger))
-
-;; (defun my-comint-preoutput-turn-buffer-read-only (text)
-;;   (propertize text 'read-only t))
-
-;; (add-hook 'comint-preoutput-filter-functions 'my-comint-preoutput-turn-buffer-read-only)
-
-;;(setq inferior-ess-r-program "/mnt/c/Program Files/R/R-3.6.1/bin/R.exe")
-
-(use-package ess-R-data-view
-  :after ess
-  :ensure t
-  ) ;; see ess-R-dv-pprint
+;; electric-layout-mode w/ ess-r-mode-hook. Lower down in manual, it says braces are uto-indented,
+;;  and user variables are provided to control amount of indentation/style
+;; company mode instead of autocompletion
+;; tab-always-indent instead of ess-tab-always-indent or ess-tab-complete-in-script
+;; TODO: Make ess-load-file default to current buffer if buffer is an R script
+;; TODO: set-initial-state for ess buffers
+;; See section 7.4 of ess manual for comments, indents, style
+;; https://www.gnu.org/software/emacs/manual/html_node/elisp/List-Motion.html#List-Motion -- recommended by manual
+;; See sections 8 onward
+;; Investigate whether C-w o is currently enough, or if ess-quit does something additional that is missing 
 
 ;; TODO: Insert outside  of outermost expression
 ;; (defun insert-eval-last-sexp-result ()
@@ -417,6 +489,15 @@
 ;;   (helm-mode 1))
 
 
+;; Configured packages
+;; (use-package aggressive-indent
+;;   :ensure t
+;;   :config
+;;   ;; (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode) ;; Messing with inferior R process
+;;   ;; (global-aggressive-indent-mode 1)
+;;   ;; (add-to-list 'aggressive-indent-excluded-modes 'html-mode) ;; example exclusion
+;;   )
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -424,7 +505,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
