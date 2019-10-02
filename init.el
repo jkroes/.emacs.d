@@ -100,7 +100,7 @@
   (global-set-key (kbd "C-h M-K") 'which-key-show-keymap) ;; Parallels binding for describe-keymap
   (global-unset-key (kbd "C-h C-h")) ;; enable which-key navigation
   )
-
+       
 (use-package page-break-lines
   :ensure t
   :config
@@ -154,8 +154,7 @@
  :states '(motion normal visual insert emacs)
  :prefix-command 'my-map
  :prefix "SPC"
- :non-normal-prefix (cond ((string= system-type "windows-nt") "C-SPC")
-			  ((string= system-type "darwin") "C-@"))
+ :non-normal-prefix "C-SPC"
  "SPC" 'execute-extended-command
  "!" 'shell-command
  "'" 'ivy-resume
