@@ -1,0 +1,120 @@
+* Elisp
+** 18. Debugging
+
+Use the built-in debugger or edebug (not yet summarized in this document) for runtime errors.
+Sometimes syntax errors prevent debugging, in which case there are tools to fix that.
+
+*** Edebug
+
+TBD after testing the built-in debugger
+
+*** Syntax errors
+Too many opening parentheses: "End of file during parsing"
+Too many closing parentheses or too few opening: "Invalid read syntax: ')'"
+
+NOTE: This section of the manual is hard to follow. Below is my best (untested) interpretation of it.
+
+**** Excess Open Parentheses
+Go to end of file. 
+`backward-up-list' moves you to beginning of first defun that is unbalanced.
+
+At the beginning of defun, run indent-pp-sexp. 
+Too few closing parens for the defun AS A WHOLE are indicated via `indent-pp-sexp' by an error or indentation to the
+end of the file. 
+Once there are enough for the whole defun--even if they are not properly placed, the same process will usually indent all the
+lines from a certain point to the end of the function. There is probably a a missing closing parenthesis or superfluous open
+parenthesis near the aforementioned point (though not necessarily). 
+
+Once you know where the issue is, undo the indentation. Fix the issue, then try indenting again from the top of the defun 
+again. If the old indentation was correct for the intended nesting of parentheses, no indentation should occur.
+
+**** Excess Close Parentheses
+Go to beginning of file.
+`backward-up-list' with a prefix arg of -1 (C-u -1 C-M-u) finds the end of the first unbalanced defun.
+Go to beginning of defun.
+`forward-sexp' may lead you close to the excess closing parens.
+
+If you don't see an issue, try indent-pp-sexp at the beginning of defun. Lines will probably shift left, the missing
+opening or extra closing paren is probably near the first of those lines. 
+
+Once you find the issue, undo the indent. Fix the issue, then try indenting again (from anywhere?). If the old indentation
+was correct for the intended nesting of parentheses, nothing should happen.
+
+*** Debugger
+**** Options
+Auto-debugging: 
+debug-on-error
+
+Set to nil to debug all untrapped errors:
+debug-ignored-errors
+
+eval-expression-debug-on-error
+
+Debug trapped errors (condition-case): 
+debug-on-signal
+Setting this option non-nil may lead debugging down unexpected parts of emacs code base.
+
+debug-on-message
+
+Debug when quitting (C-g), e.g. for infinite loops: 
+debug-on-quit
+
+
+**** Commands
+Debug a function call: 
+debug-on-entry function-name
+
+cancel-debug-on-entry &optional function-name.
+If function-name is nil, cancel for all functions.
+
+debug-on-variable-change variable
+Watches all aliases of variable,
+
+cancel-debug-on-variable-change &optional variable
+
+Enter debugger explicitly:
+Insert `(debug)'
+!!!Note that plaecment must be where an additional form can be evaluatedand its value ignored
+(e.g., in an (implicit) progn), or risk altering program behavior!!!
+Run `eval-defun'
+
+**** Usage
+Backtrace buffer is read-only buffer in Debugger mode. Letters correspond to commands. 
+Exit the debugger `q' to exit recursive editing and either kill or bury backtrace buffer.
+
+debugger-bury-or-kill
+
+When the debugger has been entered, the debug-on-error variable is temporarily set according
+ to eval-expression-debug-on-error. If the latter variable is non-nil, debug-on-error will 
+temporarily be set to t. This means that any further errors that occur while doing a debugging 
+session will (by default) trigger another backtrace. If this is not what you want, you can either 
+set eval-expression-debug-on-error to nil, or set debug-on-error to nil in debugger-mode-hook.
+
+Backtrace shows function calls and values. !!!Specify a stack frame by moving point in the buffer to the 
+corresponding line.!!! If a line starts with a star, that means that exiting that frame will call the 
+debugger again. This is useful for examining the return value of a function.
+
+Underlined function names indicate a link to source code. <RET> visits the source code.
+
+!!!Note that the debugger can step through function source code, but only if the function is
+interpreted and not compiled. To replace a byte-compiled function with an interpreted function,
+visit the source code and `eval-defun' its code.!!!
+
+***** Commands
+c: exit debugger and continue execution
+d: Step. Like `c', but enters debugger when any Lisp function is next called. Useful for seeing values of subexpressions. Also
+flags the frame of the next function such that the debugger is entered if the frame is exited (see `b').
+b: Next. Flag current frame to enter debugger when the stack frame is exited. Marks frame with a star in backtrace buffer.
+Theory: executes subexpressions and enters debugger when moving to a non-subexpression. Compare to `d'
+u: cancels `b' and removes star
+j: like `b', but temporarily disable break-on-entry for all functions marked by debug-on-entry (see cancel-debug-on-entry)
+e: eval and print Lisp expression in minibuffer. Temporarily restores values of special vairables and buffers altered by
+debugger, so you can inspect and change those values. In contrast, M-: shows you the values within the debugger. 
+R: like e, but save result to Debugger-record buffer
+q: Quit debugged program and return to top-level Emacs command execution. Compare to `c'.
+r: return a value from debugger by specifying an evaluation an expressoin from the minibuffer. 
+WARNING/Pro-Tip: If the debugger was invoked due to exit from a Lisp call frame (`b' or 'd`), the value returned is used
+as the value of the (exited?) frame. Also used if debugger was invoked explicilty via `debug'. Otherwise, same effect as
+`c'. Can't be used if debugger was entered due to an error. 
+l: Display a list of functions marked via debug-on-entry.
+v: Show variables local to current stack frame. 

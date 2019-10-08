@@ -1,3 +1,4 @@
+;;; Further reading:
 ;; https://dev.to/huytd/emacs-from-scratch-1cg6
 ;; https://www.reddit.com/r/emacs/comments/2edbau/what_are_some_great_emacsd_examples/ 
 ;; https://github.com/caisah/emacs.dz
@@ -7,7 +8,8 @@
 ;; https://github.com/MilesMcBain/esscss
 ;; https://www.masteringemacs.org/about
 
-;; OS-specific configuration
+;;; OS-specific configuration
+
 (cond ((eq system-type 'gnu/linux)
        ;; Hack to open URLs from within WSL using browse-url-* commands
        (when (string-match "Linux.*Microsoft.*Linux"
@@ -21,38 +23,129 @@
       ;; 	     shell-file-name explicit-shell-file-name))
       )
 
-;; Basic configuration
+;;; Basic configuration
+
 (menu-bar-mode -1)                   ;; Disable menu bar
 (tool-bar-mode -1)                   ;; Disable tool bar
 (winner-mode 1)                      ;; Provide winner-* commands
 (global-display-line-numbers-mode 1) ;; Provide line numbers globally
 (setq scroll-conservatively 1000000  ;; Seems to prevent auto-centering of point when scrolling
-      inhibit-startup-screen t)
+      inhibit-startup-screen t
+      current-fill-column 79)
 
-;; Global bindings
-(global-set-key (kbd "C-h M") 'describe-minor-mode)
-(global-set-key (kbd "C-h s") 'describe-symbol)
+;; Auto Fill Mode (seems to need hooks for at least some modes)
+(add-hook 'emacs-lisp-mode-hook 'auto-fill-mode)
 
-;; Package config
+;;; Package config
+
 (require 'package)
 (setq package-archives '(("gnu"   . "http://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")))
 (setq package-enable-at-startup nil)
 (package-initialize)                 ;; https://www.emacswiki.org/emacs/ELPA#toc5
 
-;; Bootstrap `use-package`
+;;; Bootstrap `use-package`
+
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
 (require 'use-package)
 
-;; Packages with zero configuration
-(dolist (pkg '(dracula-theme quelpa help-fns+ hydra ranger))
+;;; Packages with zero configuration
+
+(dolist (pkg '(dracula-theme quelpa help-fns+ hydra smex))
   (unless (package-installed-p pkg)
     (cond ((string= pkg "help-fns+") (quelpa '(help-fns+ :fetcher wiki)))
 	  (t (package-refresh-contents)
 	     (package-install pkg))))
   (require pkg))
+
+;;; Configured packages
+
+;; Projectile
+
+
+
+(use-package which-key
+  :ensure t
+  :init
+  (setq which-key-separator " "
+	which-key-prefix-prefix "+")
+  :config
+  (setq which-key-show-operator-state-maps t               ;; Show evil motions
+	which-key-allow-evil-operators t                   ;; More evil integration
+	which-key-sort-order 'which-key-key-order-alpha
+	which-key-sort-uppercase-first nil
+	which-key-compute-remaps t                         ;; e.g. w/ counsel-mode: (C-h a) apropos-command -> counsel-apropos
+	which-key-show-docstrings t
+	which-key-max-description-length nil
+	which-key-idle-delay 0.5
+	which-key-popup-type 'side-window
+	which-key-side-window-location 'bottom
+	which-key-side-window-max-height .2)
+
+  (which-key-mode))
+
+;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
+;; https://github.com/noctuid/general.el
+(use-package general
+  :after which-key
+  :ensure t
+  :config
+  (general-create-definer my-definer
+    :states '(motion insert emacs)
+    :keymaps 'override)
+  
+  (general-create-definer my-prefix-definer
+    :states '(motion insert emacs)
+    :keymaps 'override
+    :prefix "SPC"
+    :non-normal-prefix "C-SPC")
+
+  (my-prefix-definer
+    "SPC" 'execute-extended-command
+    "'" 'ivy-resume
+    ;;  "p" 'pp-eval-expression
+    
+    "f" '(:ignore t :wk "files")
+    "fb" '(:ignore t :wk "bookmarks")
+    "fbd" 'bookmark-delete
+    "fbe" 'edit-bookmarks
+    "fbj" 'bookmark-jump ;; TODO: Customize counsel-bookmark action
+    ;; list to include delete, rename, and set
+    "fbr" 'bookmark-rename
+    "fbs" 'bookmark-set
+    "ff" 'find-file
+    "fi" 'insert-file 
+    "fl" 'counsel-locate
+    
+    "o" 'clm/toggle-command-log-buffer
+    )
+  
+  ;; Emacs lisp bindings.
+  ;; TODO: Override in each language mode's hook with bindings for that language
+  (my-definer
+    :prefix "C-j"
+    "c" 'check-parens            ;; Debugging "End of file during parsing"
+    "d" 'eval-defun              ;; evals outermost expression containing or following point
+    ;; ...and forces reset to initial value within a defvar, defcustom, and defface expressions
+    "m" 'pp-eval-expression      ;; "m" for minibuffer, where exp is evaluated
+    "s" 'pp-eval-last-sexp       ;; evals expression preceding point
+    "i" 'eval-print-last-sexp    ;; "i" for insert(ing result)
+    "r" 'eval-region
+    )
+
+  ;; Modify help-map ("C-h")
+  (general-unbind help-map
+    "C-h" ;; Enable which-key navigation of help-map bindings
+    "C-d" ;; Help for C-level debugging
+    "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-w" "C-\\")
+
+  (my-definer
+    :prefix "C-h"
+    "M" 'describe-minor-mode
+    "s" 'describe-symbol
+    "C-w" 'which-key-show-keymap))
 
 ;;https://github.com/noctuid/evil-guide
 ;;https://raw.githubusercontent.com/emacs-evil/evil/master/doc/evil.pdf
@@ -66,40 +159,53 @@
 (use-package evil
   :ensure t
   :init
-  (setq evil-want-keybinding nil) ;; evil-keybindings.el mangles some mode maps (e.g., Info-mode-map) and
-  ;; even motion state keymaps listed in evil-mode-map-alist
-  ;; See also evil-want-minibuffer and evil-want-integration to disable other loaded files
+  ;; evil-toggle-key
+  (setq evil-want-keybinding nil       ;; disable evil-keybinding.el
+	;; Note that disabling evil integration will disable undo-tree
+	;; evil-want-integration nil      ;; disable evil-integration.el
+	evil-default-state 'emacs
+	)
+  
+  (when (eq evil-default-state 'emacs)
+    (setq evil-overriding-maps nil       ;; As long as modes remain in emacs state, their bindings will be available
+	  evil-intercept-maps nil        ;; See above
+	  evil-motion-state-modes nil    ;; read-only modes start in (default) emacs mode
+	  evil-emacs-state-modes nil     ;; no longer necessary
+	  evil-insert-state-modes nil    ;; for consistency, start all non-emacs modes in either insert or normal
+	  ;; ...state. Note that evil-normal-state-modes is nil by default
+    ))
+  ;; (custom-set-variables
+  ;;  ;; '(evil-toggle-key "C-z") ;; Or manually bind evil-emacs-state and evil-exit-emacs state
+  ;;  '(evil-disable-insert-state-bindings t))
   :config
-  (evil-mode 1)
-  (dolist (el '(Info-mode finder-mode))
-    (evil-set-initial-state el 'emacs))
-  )
+  ;; (defalias 'evil-insert-state 'evil-emacs-state)    ;; Alternative to disabling insert-state bindings
+  
+  ;; Base-emacs modes to start in normal state:
+  (setq evil-normal-state-modes
+	'(lisp-interaction-mode                         ;; *scratch*
+	  emacs-lisp-mode                               ;; .el
+	  ess-r-mode)                                   ;; .R
+	evil-insert-state-modes
+	  '(inferior-ess-r-mode)                           ;; ess R console
+	  )
+
+  (evil-mode 1))
+
+;; Uses "fd" as escape from insert, visual, and more 
+(use-package evil-escape
+  :after evil
+  :ensure t
+  :config
+  (evil-escape-mode))
 
 (use-package evil-tutor
   :after evil
-  :ensure t)
-
-(use-package which-key
   :ensure t
-  :init
-  (setq which-key-separator " "
-	which-key-prefix-prefix "+")
   :config
-  (setq which-key-show-operator-state-maps t ;; Show evil motions?
-	which-key-allow-evil-operators t
-	which-key-sort-order 'which-key-key-order-alpha
-	which-key-sort-uppercase-first nil
-	which-key-compute-remaps t ;; e.g. w/ counsel-mode: (C-h a) apropos-command -> counsel-apropos
-	which-key-show-docstrings t
-	which-key-max-description-length nil
-	which-key-idle-delay 0.5
-	which-key-popup-type 'side-window
-	which-key-side-window-location 'bottom
-	which-key-side-window-max-height .3)
-  (which-key-mode)
-  (global-set-key (kbd "C-h M-K") 'which-key-show-keymap) ;; Parallels binding for describe-keymap
-  (global-unset-key (kbd "C-h C-h")) ;; enable which-key navigation
-  )
+  (my-definer
+    :prefix "C-h"
+    "T" 'evil-tutor-start))
+
        
 (use-package page-break-lines
   :ensure t
@@ -130,7 +236,23 @@
   (setq ivy-use-virtual-buffers t ;; include recent files and bookmarks in buffer list
 	ivy-count-format "%d/%d " ;; show index/total results in minibuffer 
 	ivy-initial-inputs-alist nil ;; disable starting regexp in search
-	ivy-height 25))
+	ivy-height 10
+	ivy-re-builders-alist '((t . ivy--regex-fuzzy))
+	))
+
+;; dired config
+;; provide actions (M-o in ivy) to operate on files and dirs:
+;;  ivy-set-actions 'counsel-find-file '(("key" command "desc") (...))
+;; actions:
+;; preview file
+;; counsel-file-jump (recursive find file)
+;; open internally
+;; copy dir
+;; run shell command on file/dir
+;; set root (counsel-find-file-as-root)
+;; history and history navigation (or root history)
+;; to home: gh
+;; cd ('`' or M-o b, within counsel-find-file)
 
 (use-package command-log-mode
   :ensure t
@@ -143,53 +265,6 @@
 				 evil-backward-char 'left-char right-char
 				 evil-force-normal-state evil-ex))))
 
-;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
-;; https://github.com/noctuid/general.el
-(use-package general
-  :after evil
-  :ensure t
-  :config )
-
-(general-define-key
- :states '(motion normal visual insert emacs)
- :prefix-command 'my-map
- :prefix "SPC"
- :non-normal-prefix "C-SPC"
- "SPC" 'execute-extended-command
- "!" 'shell-command
- "'" 'ivy-resume
- "." 'repeat
- "e" 'eval-last-sexp
- "o" 'clm/toggle-command-log-buffer
- ;;  "p" 'pp-eval-expression
-
- "d" '(:ignore t :wk "debug")
- "dc" 'check-parens ;; Debugging "End of file during parsing"
- ;; Read https://www.gnu.org/software/emacs/manual/html_node/elisp/Debugging.html#Debugging
- 
- "f" '(:ignore t :wk "files")
- "ff" 'find-file
- "fi" 'insert-file 
- "fl" 'counsel-locate
- "fr" 'ranger
- 
- "fe" '(:ignore t :wk "emacs")
- "fel" 'find-library
- 
- "v" '(:ignore t :which-key "view")
- "vd" 'view-emacs-debugging
- "ve" 'view-echo-area-messages ;; view *Messages* buffer
- "vf" 'view-emacs-FAQ
- "vl" 'view-lossage ;; view last 300 keystrokes
- "vp" 'view-emacs-problems  
- "vr" 'info-emacs-manual
- "vt" 'help-with-tutorial ;; emacs tutorial
- "vT" 'evil-tutor-start
- )
-;; (define-key evil-insert-state-map (kbd "C-@") 'my-map) ;; MacOS
-;; (define-key evil-insert-state-map (kbd "C-SPC") 'my-map) ;; Windows 10
-;; The following fails with a commandp error:
-;; (global-set-key [remap set-mark-command] 'my-map)
 
 (defhydra hydra-buffer (:color amaranth)
   "Buffer"
@@ -210,10 +285,7 @@
   ("v" view-buffer "view")
   ("w" hydra-window/body "Window" :color blue)
   ("q" nil)) ;; Investigate view-mode more sometime
-(evil-define-key 'motion 'global (kbd "C-b") nil)
-(evil-define-key 'insert 'global (kbd "C-b") nil)
-(global-set-key (kbd "C-b") 'hydra-buffer/body)
-
+(my-definer "C-b" 'hydra-buffer/body)
 
 (defun my-scroll-up (&optional arg)
   (interactive)
@@ -280,9 +352,7 @@
 	 (setq this-command 'winner-undo)) "undo") ;; Needed for winner-redo, it appears
   ("Z" winner-redo "reset")
   ("q" nil))
-(evil-define-key 'motion 'global (kbd "C-w") nil)
-(evil-define-key 'insert 'global (kbd "C-w") nil)
-(global-set-key (kbd "C-w") 'hydra-window/body) ;; Take over C-w
+(my-definer "C-w" 'hydra-window/body)
 
 (defhydra hydra-r (:color pink)
   "R"
@@ -336,7 +406,6 @@
   ("i" inferior-ess-reload "reload-proc")
   ("p" ess-request-a-process "proc") ;; Switch process and display its buffer
   ;; ("P" ess-switch-process) ;; Switch process
-  ("Q" ess-quit "ess-quit")
   ("s" ess-switch-to-inferior-or-script-buffer "switch")
   ("r" hydra-r/body "R" :color blue)
   ("R" ess-rdired "rdired")
@@ -395,12 +464,9 @@
   :ensure t
   :config
   (require 'info-look)                ;; needed for info-lookup-other-window-flag to exist
-  (dolist (el '(ess-debug-minor-mode ess-r-help-mode inferior-ess-r-mode))
-    (evil-set-initial-state el 'emacs))
-  (evil-define-key 'motion 'global (kbd "C-l") nil)
-  (evil-define-key 'normal 'global (kbd "C-l") nil)
-  (evil-define-key 'insert 'global (kbd "C-l") nil)
-  (evil-define-key 'insert 'motion (kbd "C-l") nil)
+  ;; (dolist (el '(ess-debug-minor-mode ess-r-help-mode inferior-ess-r-mode))
+  ;;   (evil-set-initial-state el 'emacs))
+		
   (add-hook 'ess-r-mode-hook
 	    (lambda ()
 	      (setq-local skeleton-pair t) ;; TODO: https://www.emacswiki.org/emacs/AutoPairs
@@ -410,11 +476,20 @@
 	      (local-set-key (kbd "\"") 'skeleton-pair-insert-maybe)
 	      (local-set-key (kbd "\'") 'skeleton-pair-insert-maybe)
 	      (local-set-key (kbd "\`") 'skeleton-pair-insert-maybe)
-	      (local-set-key (kbd "C-l") 'hydra-r/body)))
+	      (my-definer
+		"C-j" 'hydra-r/body)))
   (setq ess-ask-for-ess-directory nil
 	ess-S-quit-kill-buffers-p 'ask 
         tab-always-indent 'complete
 	ess-eval-visibly nil          ;; Do not display input to iESS buffer; do not stall Emacs
+	comint-prompt-read-only t ;; read-only current prompt (">" for ess-R)
+	comint-scroll-to-bottom-on-input t ;; scroll to bottom before insertion and yank commands
+	comint-scroll-to-bottom-on-output nil  ;; alias for comint-move-point-for-output.
+	;; Scroll to bottom when output arrives, no matter where point is (set to nil to disable)
+	comint-scroll-show-maximum-output t  ;; scroll to bottom when output arrives, if point is at bottom
+	comint-use-prompt-regexp nil ;; value of nil enables evil motions
+	inhibit-field-text-motion nil ;; value of nil means  motions respect fields, meaning
+	;; the (current) prompt acts as beginning of line (if prompt is read-only)
 	display-buffer-alist `(("\\*R Dired"
 				(display-buffer-reuse-mode-window display-buffer-in-side-window)
 				(side . right)
@@ -439,21 +514,29 @@
 	;; TODO: Specify paths to Windows binary and make this OS-conditional
 	;; inferior-ess-r-program "/usr/local/bin/r"
 	)
-	  ;; ess-local-process-name 'my-r-map))
   ;; (add-hook 'inferior-ess-r-mode-hook
   ;; 	    (lambda ()
-  ;;             (setq-local comint-prompt-read-only t) ;; read-only current prompt (">" for ess-R)
-  ;; 	      (setq-local comint-scroll-to-bottom-on-input t) ;; scroll to bottom before insertion and yank commands
-  ;; 	      (setq-local comint-scroll-to-bottom-on-output nil)  ;; alias for comint-move-point-for-output.
-  ;; 	      ;; Scroll to bottom when output arrives, no matter where point is (set to nil to disable)
-  ;; 	      (setq-local comint-scroll-show-maximum-output t)  ;; scroll to bottom when output arrives, if point is at bottom
-  ;; 	      (setq-local comint-use-prompt-regexp nil) ;; value of nil enables evil motions
-  ;; 	      (setq-local inhibit-field-text-motion nil) ;; value of nil means  motions respect fields, meaning
-  ;; 	      ;; the (current) prompt acts as beginning of line (if prompt is read-only)
   ;; 	      )
   ;; 	    )
-
   )
+;; (defun switch-to-debug (old-func &rest args)
+;;   (when (ess-debug-active-p)
+;;     (mapcar (lambda (buffer)
+;; 	      (when (string= "inferior-ess-r-mode" (buffer-local-value 'major-mode buffer))
+;; 		(select-window (get-buffer-window buffer))))
+;; 	    (buffer-list)))
+;;   (apply old-func args))
+
+;; (advice-add 'ess-debug-start :around 'switch-to-debug)
+;; (advice-add 'ess-load-file :around 'switch-to-debug)
+	      
+  ;; (add-hook 'ess-debug-minor-mode-hook
+  ;; 	    (lambda ()
+  ;; 	      (with-temp-message "This worked?"
+  ;; 		(mapcar (lambda (buffer)
+  ;; 			(when (string= "inferior-ess-r-mode" (buffer-local-value 'major-mode buffer))
+  ;; 			  (select-window (get-buffer-window buffer))))
+  ;; 			(buffer-list)))))
 
 ;; electric-layout-mode w/ ess-r-mode-hook. Lower down in manual, it says braces are uto-indented,
 ;;  and user variables are provided to control amount of indentation/style
@@ -466,11 +549,6 @@
 ;; See sections 8 onward
 ;; Investigate whether C-w o is currently enough, or if ess-quit does something additional that is missing 
 
-;; TODO: Insert outside  of outermost expression
-;; (defun insert-eval-last-sexp-result ()
-;;   (interactive)
-;;   (setq current-prefix-arg '(4)) ; C-u
-;;   (call-interactively 'eval-last-sexp))
 
 ;; http://tuhdo.github.io/helm-intro.html
 ;; https://github.com/emacs-helm
@@ -498,6 +576,11 @@
 ;;   ;; (add-to-list 'aggressive-indent-excluded-modes 'html-mode) ;; example exclusion
 ;;   )
 
+
+
+;; Customization
+;; Ratonale for usng
+;; https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -505,10 +588,11 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (evil-escape evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
