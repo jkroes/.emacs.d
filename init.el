@@ -53,7 +53,7 @@
 
 ;;; Packages with zero configuration
 
-(dolist (pkg '(dracula-theme quelpa help-fns+ hydra smex))
+(dolist (pkg '(dracula-theme quelpa help-fns+ hydra smex flx))
   (unless (package-installed-p pkg)
     (cond ((string= pkg "help-fns+") (quelpa '(help-fns+ :fetcher wiki)))
 	  (t (package-refresh-contents)
@@ -61,10 +61,6 @@
   (require pkg))
 
 ;;; Configured packages
-
-;; Projectile
-
-
 
 (use-package which-key
   :ensure t
@@ -105,18 +101,19 @@
   (my-prefix-definer
     "SPC" 'execute-extended-command
     "'" 'ivy-resume
-    ;;  "p" 'pp-eval-expression
+
+    "b" '(:ignore t :wk "bookmarks")
+    "bd" 'bookmark-delete
+    "be" 'edit-bookmarks
+    "bj" 'bookmark-jump ;; TODO: Customize counsel-bookmark action
+    ;; list to include delete, rename, and set
+    "br" 'bookmark-rename
+    "bs" 'bookmark-set
     
     "f" '(:ignore t :wk "files")
-    "fb" '(:ignore t :wk "bookmarks")
-    "fbd" 'bookmark-delete
-    "fbe" 'edit-bookmarks
-    "fbj" 'bookmark-jump ;; TODO: Customize counsel-bookmark action
-    ;; list to include delete, rename, and set
-    "fbr" 'bookmark-rename
-    "fbs" 'bookmark-set
     "ff" 'find-file
-    "fi" 'insert-file 
+    "fi" 'insert-file
+    "fj" 'counsel-file-jump
     "fl" 'counsel-locate
     
     "o" 'clm/toggle-command-log-buffer
@@ -228,6 +225,7 @@
 ;; https://github.com/abo-abo/swiper/blob/master/ivy-hydra.el
 ;; https://github.com/abo-abo/hydra/wiki/hydra-ivy-replacement
 ;; https://writequit.org/denver-emacs/presentations/2017-04-11-ivy.html#fn.1
+;; ivy info node
 (use-package counsel ;; Installs and loads ivy and swiper as dependencies
   :ensure t
   :config
@@ -238,15 +236,33 @@
 	ivy-initial-inputs-alist nil ;; disable starting regexp in search
 	ivy-height 10
 	ivy-re-builders-alist '((t . ivy--regex-fuzzy))
-	))
+	counsel-bookmark-avoid-dired t
+	) 
+  ;; Make C-j call the default action (dired) on dirnames and RET
+  ;; enter the dirname at the input line for counsel commands like
+  ;; counsel-find-file.
+  (define-key ivy-minibuffer-map [remap ivy-done] 'ivy-alt-done)
+  (define-key ivy-minibuffer-map [remap ivy-alt-done] 'ivy-done)
+  ;; Add filename commands from manual to ivy-help, and update
+  ;; bindings to reflect any changes to the ivy keymaps
+  (let ((old-ivy-help-file
+	 (car (directory-files-recursively "~/.emacs.d" "ivy-help.org")))
+	(new-ivy-help-file "~/.emacs.d/ivy-help.org"))
+    (unless (file-exists-p new-ivy-help-file)
+      (copy-file old-ivy-help-file new-ivy-help-file))
+    (setq ivy-help-file new-ivy-help-file))
+  );; Usage within minibuffer: C-h m
+
+(use-package projectile
+  :ensure t
+  :config
+  (setq projectile-completion-system 'ivy))
 
 ;; dired config
 ;; provide actions (M-o in ivy) to operate on files and dirs:
 ;;  ivy-set-actions 'counsel-find-file '(("key" command "desc") (...))
 ;; actions:
-;; preview file
 ;; counsel-file-jump (recursive find file)
-;; open internally
 ;; copy dir
 ;; run shell command on file/dir
 ;; set root (counsel-find-file-as-root)
@@ -264,7 +280,6 @@
 				 evil-append evil-normal-state evil-forward-char
 				 evil-backward-char 'left-char right-char
 				 evil-force-normal-state evil-ex))))
-
 
 (defhydra hydra-buffer (:color amaranth)
   "Buffer"
@@ -588,7 +603,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (evil-escape evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (flx evil-escape evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
