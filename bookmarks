@@ -1,0 +1,25 @@
+;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*- 
+;;; This format is meant to be slightly human-readable;
+;;; nevertheless, you probably don't want to edit it.
+;;; -*- End Of Bookmark File Format Version Stamp -*-
+(("org-summary.org"
+ (filename . "~/.emacs.d/org-summary.org")
+ (front-context-string . "* Org Manual Sum")
+ (rear-context-string)
+ (position . 1))
+("elisp.org"
+ (filename . "~/.emacs.d/elisp.org")
+ (front-context-string . "* Elisp\n** 18. D")
+ (rear-context-string)
+ (position . 1))
+("mynotes.org"
+ (filename . "~/.emacs.d/mynotes.org")
+ (front-context-string . "* Reading List\n*")
+ (rear-context-string)
+ (position . 1))
+("init.el"
+ (filename . "~/.emacs.d/init.el")
+ (front-context-string . "	  (t (package-r")
+ (rear-context-string . "fetcher wiki)))\n")
+ (position . 2282))
+)

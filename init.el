@@ -31,7 +31,10 @@
 (global-display-line-numbers-mode 1) ;; Provide line numbers globally
 (setq scroll-conservatively 1000000  ;; Seems to prevent auto-centering of point when scrolling
       inhibit-startup-screen t
-      current-fill-column 79)
+      current-fill-column 79
+      delete-by-moving-to-trash t    ;; Does this affect evil and
+      ;; counsel commands?
+      )
 
 ;; Auto Fill Mode (seems to need hooks for at least some modes)
 (add-hook 'emacs-lisp-mode-hook 'auto-fill-mode)
@@ -53,7 +56,7 @@
 
 ;;; Packages with zero configuration
 
-(dolist (pkg '(dracula-theme quelpa help-fns+ hydra smex flx))
+(dolist (pkg '(dracula-theme quelpa help-fns+ smex flx hydra))
   (unless (package-installed-p pkg)
     (cond ((string= pkg "help-fns+") (quelpa '(help-fns+ :fetcher wiki)))
 	  (t (package-refresh-contents)
@@ -237,38 +240,69 @@
 	ivy-height 10
 	ivy-re-builders-alist '((t . ivy--regex-fuzzy))
 	counsel-bookmark-avoid-dired t
-	) 
+	ivy-help-file "~/.emacs.d/ivy-help.org" ;; Custom help file
+	)
   ;; Make C-j call the default action (dired) on dirnames and RET
   ;; enter the dirname at the input line for counsel commands like
   ;; counsel-find-file.
   (define-key ivy-minibuffer-map [remap ivy-done] 'ivy-alt-done)
   (define-key ivy-minibuffer-map [remap ivy-alt-done] 'ivy-done)
-  ;; Add filename commands from manual to ivy-help, and update
-  ;; bindings to reflect any changes to the ivy keymaps
-  (let ((old-ivy-help-file
-	 (car (directory-files-recursively "~/.emacs.d" "ivy-help.org")))
-	(new-ivy-help-file "~/.emacs.d/ivy-help.org"))
-    (unless (file-exists-p new-ivy-help-file)
-      (copy-file old-ivy-help-file new-ivy-help-file))
-    (setq ivy-help-file new-ivy-help-file))
-  );; Usage within minibuffer: C-h m
+  ) ;; Usage within minibuffer: C-h m
+
+;; Add counsel support for hydra to all hydras
+(with-eval-after-load "counsel"
+  (with-eval-after-load "hydra"
+    (defun counsel-hydra-integrate (old-func &rest args)
+      (hydra-keyboard-quit)
+      (apply old-func args)
+      (funcall-interactively hydra-curr-body-fn))
+    (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
+    (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads)))
+;; For some reason this made emacs hang forever on MacOS, and only
+;; awhile on Windows 10:
+;; (let ((old-ivy-help-file
+;;        (car (directory-files-recursively "~/.emacs.d" "ivy-help.org")))
+;;       (new-ivy-help-file "~/.emacs.d/ivy-help.org"))
+;;   (unless (file-exists-p new-ivy-help-file)
+;;     (copy-file old-ivy-help-file new-ivy-help-file))
+;;   (setq ivy-help-file new-ivy-help-file))
 
 (use-package projectile
   :ensure t
   :config
   (setq projectile-completion-system 'ivy))
 
-;; dired config
-;; provide actions (M-o in ivy) to operate on files and dirs:
-;;  ivy-set-actions 'counsel-find-file '(("key" command "desc") (...))
-;; actions:
-;; counsel-file-jump (recursive find file)
-;; copy dir
-;; run shell command on file/dir
-;; set root (counsel-find-file-as-root)
-;; history and history navigation (or root history)
-;; to home: gh
-;; cd ('`' or M-o b, within counsel-find-file)
+;; ivy-minibuffer-map (C-h m shows help)
+
+;; ivy-mode-map
+
+;; ivy-rotate-sort (see ivy-sort-functions-alist)
+;; ivy-make-magic-action (seems to make minibuffer commands for existing actions)
+;; ivy-toggle-fuzzy
+;; ivy-unmark
+;; ivy-help
+
+;; ivy-push-view
+;; ivy-push-pop
+
+;; counsel-el
+;; counsel-pedi
+;; counsel-company
+;; counsel-find-symbol
+;; counsel-set-variable (defcustom completion)
+;; counsel-command-history
+;; counsel-ff
+;; counsel-minibuffer-history
+;; counsel-shell-history
+;; counsel-hydra-heads
+
+;; counsel-buffer-or-recentf
+;; counsel-bookmarked-directory
+;; ivy-mark
+;; complete-symbol / indent-for-symbol
+;; ivy-push-view (https://oremacs.com/2016/06/27/ivy-push-view/)
+;; ivy-pop-view
+;; counsel-hydra-head (adds ivy to current/last hydra)
 
 (use-package command-log-mode
   :ensure t
@@ -283,7 +317,8 @@
 
 (defhydra hydra-buffer (:color amaranth)
   "Buffer"
-  ("b" switch-to-buffer "switch")
+  ("b" counsel-switch-buffer "switch") ;; switch-to-buffer not
+  ;; remapped via counsel-mode
   ("l" evil-switch-to-windows-last-buffer "prev")
   ("k" kill-buffer "kill") ;; nil arg means kill current buffer (ivy auto-selects current buffer also)
   ("K" (lambda ()
