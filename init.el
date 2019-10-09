@@ -107,6 +107,7 @@
 
     "b" '(:ignore t :wk "bookmarks")
     "bd" 'bookmark-delete
+    "bD" 'counsel-bookmarked-directory
     "be" 'edit-bookmarks
     "bj" 'bookmark-jump ;; TODO: Customize counsel-bookmark action
     ;; list to include delete, rename, and set
@@ -119,6 +120,7 @@
     "fj" 'counsel-file-jump
     "fl" 'counsel-locate
     "fr" 'counsel-recentf
+    "fz" 'counssel-fzf
     
     "o" 'clm/toggle-command-log-buffer
     )
@@ -129,7 +131,9 @@
     :prefix "C-j"
     "c" 'check-parens            ;; Debugging "End of file during parsing"
     "d" 'eval-defun              ;; evals outermost expression containing or following point
-    ;; ...and forces reset to initial value within a defvar, defcustom, and defface expressions
+    ;; ...and forces reset to initial value within a defvar,
+    ;; defcustom, and defface expressions
+    "j" 'counsel-el
     "m" 'pp-eval-expression      ;; "m" for minibuffer, where exp is evaluated
     "s" 'pp-eval-last-sexp       ;; evals expression preceding point
     "i" 'eval-print-last-sexp    ;; "i" for insert(ing result)
@@ -160,13 +164,11 @@
 (use-package evil
   :ensure t
   :init
-  ;; evil-toggle-key
   (setq evil-want-keybinding nil       ;; disable evil-keybinding.el
 	;; Note that disabling evil integration will disable undo-tree
 	;; evil-want-integration nil      ;; disable evil-integration.el
 	evil-default-state 'emacs
 	)
-  
   (when (eq evil-default-state 'emacs)
     (setq evil-overriding-maps nil       ;; As long as modes remain in emacs state, their bindings will be available
 	  evil-intercept-maps nil        ;; See above
@@ -180,7 +182,6 @@
   ;;  '(evil-disable-insert-state-bindings t))
   :config
   ;; (defalias 'evil-insert-state 'evil-emacs-state)    ;; Alternative to disabling insert-state bindings
-  
   ;; Base-emacs modes to start in normal state:
   (setq evil-normal-state-modes
 	'(lisp-interaction-mode                         ;; *scratch*
@@ -189,7 +190,6 @@
 	evil-insert-state-modes
 	  '(inferior-ess-r-mode)                           ;; ess R console
 	  )
-
   (evil-mode 1))
 
 ;; Uses "fd" as escape from insert, visual, and more 
@@ -233,81 +233,64 @@
 (use-package counsel ;; Installs and loads ivy and swiper as dependencies
   :ensure t
   :config
-  (ivy-mode 1)
-  (counsel-mode 1)
+  (ivy-mode 1) ;; enable ivy completion
+  (counsel-mode 1) ;; remap command commands with counsel commands
   (setq ivy-use-virtual-buffers t ;; include recent files and bookmarks in buffer list
 	ivy-count-format "%d/%d " ;; show index/total results in minibuffer 
 	ivy-initial-inputs-alist nil ;; disable starting regexp in search
 	ivy-height 10
 	ivy-re-builders-alist '((t . ivy--regex-fuzzy))
 	counsel-bookmark-avoid-dired t
+	;; Make C-j call the default action (dired) on dirnames and RET
+	;; enter the dirname at the input line for counsel commands like
+	;; counsel-find-file.
 	ivy-help-file "~/.emacs.d/ivy-help.org" ;; Custom help file
+	ivy-extra-directories nil ;; Don't show parent dirs in ivy
 	)
-  ;; Make C-j call the default action (dired) on dirnames and RET
-  ;; enter the dirname at the input line for counsel commands like
-  ;; counsel-find-file.
+  (define-key ivy-minibuffer-map (kbd "M-m") 'ivy-mark)
+  (define-key ivy-minibuffer-map (kbd "M-u") 'ivy-unmark)
   (define-key ivy-minibuffer-map [remap ivy-done] 'ivy-alt-done)
   (define-key ivy-minibuffer-map [remap ivy-alt-done] 'ivy-done)
-  ) ;; Usage within minibuffer: C-h m
-
-;; Add counsel support for hydra to all hydras
-(with-eval-after-load "counsel"
   (with-eval-after-load "hydra"
     (defun counsel-hydra-integrate (old-func &rest args)
+      "Function used to advise counsel-hydra-heads to work with blue
+and amranath hydras."
       (hydra-keyboard-quit)
       (apply old-func args)
       (funcall-interactively hydra-curr-body-fn))
     (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
-    (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads)))
-;; For some reason this made emacs hang forever on MacOS, and only
-;; awhile on Windows 10:
-;; (let ((old-ivy-help-file
-;;        (car (directory-files-recursively "~/.emacs.d" "ivy-help.org")))
-;;       (new-ivy-help-file "~/.emacs.d/ivy-help.org"))
-;;   (unless (file-exists-p new-ivy-help-file)
-;;     (copy-file old-ivy-help-file new-ivy-help-file))
-;;   (setq ivy-help-file new-ivy-help-file))
+    ;; Add counsel support to all of my hydras
+    (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads))
+  ) ;; Usage within minibuffer: C-h m
+;; Relevant maps:
+;; minibuffer maps
+;; ivy-minibuffer-map
+;; counsel command maps (e.g. counsel-find-file-map)
+;;  NOTE: '`' shows ?? as the binding. See counsel.el,
+;;  counsel-find-file-map, where '`' is bound to a call
+;;  to ivy-make-magic-action with arg "b", equiv. to
+;;  M-o b
+;; What do these symbols do? 
+;;  counsel-find-symbol
+;;  counsel-semantic
+;; Navigation:
+;;  counsel-outline (navigates comments)
+;; Completion:
+;;  complete-symbol / indent-for-symbol
+;;  counsel-company  
+;;  counsel-jedi
 
 (use-package projectile
   :ensure t
   :config
   (setq projectile-completion-system 'ivy))
 
-;; ivy-minibuffer-map (C-h m shows help)
-
-;; ivy-mode-map
-
-;; ivy-rotate-sort (see ivy-sort-functions-alist)
-;; ivy-make-magic-action (seems to make minibuffer commands for existing actions)
-;; ivy-toggle-fuzzy
-;; ivy-unmark
-;; ivy-help
-
-;; ivy-push-view
-;; ivy-push-pop
-
-;; counsel-el
-;; counsel-pedi
-;; counsel-company
-;; counsel-find-symbol
 ;; counsel-set-variable (defcustom completion)
-;; counsel-command-history
-;; counsel-ff
-;; counsel-minibuffer-history
-;; counsel-shell-history
-;; counsel-hydra-heads
 
-;; counsel-buffer-or-recentf
-;; counsel-bookmarked-directory
 ;; ivy-mark
-;; complete-symbol / indent-for-symbol
+;; ivy-unmark
 ;; ivy-push-view (https://oremacs.com/2016/06/27/ivy-push-view/)
 ;; ivy-pop-view
-;; counsel-outline
-;; counsel-semantic
-;; counsel-package
-;; counsel-company
-;; counsel-command-history
 
 (use-package command-log-mode
   :ensure t
@@ -323,6 +306,7 @@
 (defhydra hydra-buffer (:color amaranth)
   "Buffer"
   ("b" counsel-switch-buffer "switch") ;; ivy-mode remaps
+  ("B" counsel-buffer-or-recentf) ;; faster than counsel-switch-buffer
   ;; switch-to-buffer, but counsel cmd offers previews 
   ("l" evil-switch-to-windows-last-buffer "prev")
   ("k" kill-buffer "kill") ;; nil arg means kill current buffer (ivy auto-selects current buffer also)
@@ -605,24 +589,6 @@
 ;; Investigate whether C-w o is currently enough, or if ess-quit does something additional that is missing 
 
 
-;; http://tuhdo.github.io/helm-intro.html
-;; https://github.com/emacs-helm
-;; https://github.com/emacs-helm/helm/wiki
-;; http://tuhdo.github.io/helm-projectile.html
-;; (use-package helm-config) ;; https://github.com/emacs-helm/helm/blob/master/helm-config.el
-;; (use-package helm
-;;   :ensure t
-;;   :bind (("C-x r b" . helm-filtered-bookmarks)
-;;  	 ("C-x C-f" . helm-find-files))
-;;   :init
-;;   (setq helm-mode-fuzzy-match t
-;;  	helm-completion-in-region-fuzzy-match t
-;;  	helm-candidate-number-list 50)
-;;   :config
-;;   (helm-mode 1))
-
-
-;; Configured packages
 ;; (use-package aggressive-indent
 ;;   :ensure t
 ;;   :config
@@ -632,6 +598,14 @@
 ;;   )
 
 
+;; For some reason this made emacs hang forever on MacOS, and only
+;; awhile on Windows 10:
+;; (let ((old-ivy-help-file
+;;        (car (directory-files-recursively "~/.emacs.d" "ivy-help.org")))
+;;       (new-ivy-help-file "~/.emacs.d/ivy-help.org"))
+;;   (unless (file-exists-p new-ivy-help-file)
+;;     (copy-file old-ivy-help-file new-ivy-help-file))
+;;   (setq ivy-help-file new-ivy-help-file))
 
 ;; Customization
 ;; Ratonale for usng
@@ -643,7 +617,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (flx evil-escape evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (0x0 flx evil-escape evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

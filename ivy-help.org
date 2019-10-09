@@ -19,7 +19,8 @@
 - ~M-v~ (=ivy-scroll-down-command=) :: previous page.
 - ~M-<~ (=ivy-beginning-of-buffer=) :: first candidate.
 - ~M->~ (=ivy-end-of-buffer=) :: last candidate.
-
+- ~C-'~ (=ivy-avy=) :: jump to a candidate using avy.
+ 
 *** Key bindings for file name completion
 
 ~DEL~ (=ivy-backward-delete-char=) - restart the completion in the
@@ -86,6 +87,10 @@ actions.
 
 ~C-M-o~ (=ivy-dispatching-call=) is a non-exiting version of ~M-o~
 (=ivy-dispatching-done=).
+
+~M-m~ (=ivy-mark=) mark candidates for action.
+
+~M-u~ (=ivy-unmark=) unmark candidates for action.
 
 *** Key bindings that alter the minibuffer input
 
