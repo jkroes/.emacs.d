@@ -118,6 +118,7 @@
     "fi" 'insert-file
     "fj" 'counsel-file-jump
     "fl" 'counsel-locate
+    "fr" 'counsel-recentf
     
     "o" 'clm/toggle-command-log-buffer
     )
@@ -302,7 +303,11 @@
 ;; complete-symbol / indent-for-symbol
 ;; ivy-push-view (https://oremacs.com/2016/06/27/ivy-push-view/)
 ;; ivy-pop-view
-;; counsel-hydra-head (adds ivy to current/last hydra)
+;; counsel-outline
+;; counsel-semantic
+;; counsel-package
+;; counsel-company
+;; counsel-command-history
 
 (use-package command-log-mode
   :ensure t
@@ -317,8 +322,8 @@
 
 (defhydra hydra-buffer (:color amaranth)
   "Buffer"
-  ("b" counsel-switch-buffer "switch") ;; switch-to-buffer not
-  ;; remapped via counsel-mode
+  ("b" counsel-switch-buffer "switch") ;; ivy-mode remaps
+  ;; switch-to-buffer, but counsel cmd offers previews 
   ("l" evil-switch-to-windows-last-buffer "prev")
   ("k" kill-buffer "kill") ;; nil arg means kill current buffer (ivy auto-selects current buffer also)
   ("K" (lambda ()
