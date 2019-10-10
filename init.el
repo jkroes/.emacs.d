@@ -56,7 +56,7 @@
 
 ;;; Packages with zero configuration
 
-(dolist (pkg '(dracula-theme quelpa help-fns+ smex flx hydra))
+(dolist (pkg '(dracula-theme quelpa help-fns+ smex flx hydra company))
   (unless (package-installed-p pkg)
     (cond ((string= pkg "help-fns+") (quelpa '(help-fns+ :fetcher wiki)))
 	  (t (package-refresh-contents)
@@ -64,6 +64,11 @@
   (require pkg))
 
 ;;; Configured packages
+
+(use-package company
+  :ensure t
+  :config
+  (add-hook 'after-init-hook 'global-company-mode))
 
 (use-package which-key
   :ensure t
@@ -229,7 +234,15 @@
 ;; https://github.com/abo-abo/swiper/blob/master/ivy-hydra.el
 ;; https://github.com/abo-abo/hydra/wiki/hydra-ivy-replacement
 ;; https://writequit.org/denver-emacs/presentations/2017-04-11-ivy.html#fn.1
-;; ivy info node
+;; See ivy info node
+;; Relevant maps:
+;; minibuffer maps
+;; ivy-minibuffer-map
+;; counsel command maps (e.g. counsel-find-file-map)
+;;  NOTE: '`' shows ?? as the binding. See counsel.el,
+;;  counsel-find-file-map, where '`' is bound to a call
+;;  to ivy-make-magic-action with arg "b", equiv. to
+;;  M-o b
 (use-package counsel ;; Installs and loads ivy and swiper as dependencies
   :ensure t
   :config
@@ -241,9 +254,6 @@
 	ivy-height 10
 	ivy-re-builders-alist '((t . ivy--regex-fuzzy))
 	counsel-bookmark-avoid-dired t
-	;; Make C-j call the default action (dired) on dirnames and RET
-	;; enter the dirname at the input line for counsel commands like
-	;; counsel-find-file.
 	ivy-help-file "~/.emacs.d/ivy-help.org" ;; Custom help file
 	ivy-extra-directories nil ;; Don't show parent dirs in ivy
 	)
@@ -253,8 +263,8 @@
   (define-key ivy-minibuffer-map [remap ivy-alt-done] 'ivy-done)
   (with-eval-after-load "hydra"
     (defun counsel-hydra-integrate (old-func &rest args)
-      "Function used to advise counsel-hydra-heads to work with blue
-and amranath hydras."
+      "Function used to advise `counsel-hydra-heads' to work with
+blue and amranath hydras."
       (hydra-keyboard-quit)
       (apply old-func args)
       (funcall-interactively hydra-curr-body-fn))
@@ -262,14 +272,6 @@ and amranath hydras."
     ;; Add counsel support to all of my hydras
     (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads))
   ) ;; Usage within minibuffer: C-h m
-;; Relevant maps:
-;; minibuffer maps
-;; ivy-minibuffer-map
-;; counsel command maps (e.g. counsel-find-file-map)
-;;  NOTE: '`' shows ?? as the binding. See counsel.el,
-;;  counsel-find-file-map, where '`' is bound to a call
-;;  to ivy-make-magic-action with arg "b", equiv. to
-;;  M-o b
 ;; What do these symbols do? 
 ;;  counsel-find-symbol
 ;;  counsel-semantic
@@ -443,8 +445,9 @@ and amranath hydras."
   ("f" ess-load-file "source")
   ("F" ess-force-buffer-current) ;; Only needed when a detached process is created (e.g. via request-a-process)
   ("i" inferior-ess-reload "reload-proc")
-  ("p" ess-request-a-process "proc") ;; Switch process and display its buffer
-  ;; ("P" ess-switch-process) ;; Switch process
+  ("P" ess-request-a-process "iESS proc") ;; Switch iESS process and its buffer
+  ;; in the iESS buffer
+  ("p" ess-switch-process "ESS proc") ;; Switch process attached to script
   ("s" ess-switch-to-inferior-or-script-buffer "switch")
   ("r" hydra-r/body "R" :color blue)
   ("R" ess-rdired "rdired")
@@ -497,7 +500,6 @@ and amranath hydras."
 ;; ess-mode-map
 ;; inferior-ess-r-mode-map
 ;; electric-indent-mode
-
 (use-package ess
   :after evil
   :ensure t
@@ -505,7 +507,6 @@ and amranath hydras."
   (require 'info-look)                ;; needed for info-lookup-other-window-flag to exist
   ;; (dolist (el '(ess-debug-minor-mode ess-r-help-mode inferior-ess-r-mode))
   ;;   (evil-set-initial-state el 'emacs))
-		
   (add-hook 'ess-r-mode-hook
 	    (lambda ()
 	      (setq-local skeleton-pair t) ;; TODO: https://www.emacswiki.org/emacs/AutoPairs
@@ -528,7 +529,9 @@ and amranath hydras."
 	comint-scroll-show-maximum-output t  ;; scroll to bottom when output arrives, if point is at bottom
 	comint-use-prompt-regexp nil ;; value of nil enables evil motions
 	inhibit-field-text-motion nil ;; value of nil means  motions respect fields, meaning
-	;; the (current) prompt acts as beginning of line (if prompt is read-only)
+	;; the (current) prompt acts as beginning of line (if prompt
+	;; is read-only)
+	ess-use-company t
 	display-buffer-alist `(("\\*R Dired"
 				(display-buffer-reuse-mode-window display-buffer-in-side-window)
 				(side . right)
