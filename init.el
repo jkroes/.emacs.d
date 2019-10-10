@@ -25,19 +25,20 @@
 
 ;;; Basic configuration
 
+(scroll-bar-mode -1)                 ;; Disable scroll bars in windows
 (menu-bar-mode -1)                   ;; Disable menu bar
 (tool-bar-mode -1)                   ;; Disable tool bar
 (winner-mode 1)                      ;; Provide winner-* commands
 (global-display-line-numbers-mode 1) ;; Provide line numbers globally
 (setq scroll-conservatively 1000000  ;; Seems to prevent auto-centering of point when scrolling
       inhibit-startup-screen t
-      current-fill-column 79
+      ;; current-fill-column 79
       delete-by-moving-to-trash t    ;; Does this affect evil and
       ;; counsel commands?
       )
 
 ;; Auto Fill Mode (seems to need hooks for at least some modes)
-(add-hook 'emacs-lisp-mode-hook 'auto-fill-mode)
+;; (add-hook 'emacs-lisp-mode-hook 'auto-fill-mode)
 
 ;;; Package config
 
@@ -56,7 +57,7 @@
 
 ;;; Packages with zero configuration
 
-(dolist (pkg '(dracula-theme quelpa help-fns+ smex flx hydra company))
+(dolist (pkg '(dracula-theme quelpa help-fns+ smex flx hydra))
   (unless (package-installed-p pkg)
     (cond ((string= pkg "help-fns+") (quelpa '(help-fns+ :fetcher wiki)))
 	  (t (package-refresh-contents)
@@ -64,11 +65,6 @@
   (require pkg))
 
 ;;; Configured packages
-
-(use-package company
-  :ensure t
-  :config
-  (add-hook 'after-init-hook 'global-company-mode))
 
 (use-package which-key
   :ensure t
@@ -488,6 +484,24 @@ blue and amranath hydras."
   ;; ess-debug-insert-in-forward-ring
   )
 
+
+(use-package company
+  :ensure t
+  ;; For some reason, this enables C-h during completion
+  :hook ((after-init . global-company-mode))
+  :bind (:map company-mode-map
+	 ("<tab>" . company-indent-or-complete-common))
+  :config
+  (setq company-idle-delay 0
+  	company-show-numbers t ;; Use M-1, M-2, etc. to select
+  	company-minimum-prefix-length .2 ;; Min # chars before completion
+  	;; company-require-match nil
+  	;; Remove company-echo-metadata-frontend speedup completion navigation
+  	company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
+  			    company-preview-if-just-one-frontend))
+  (customize-set-variable 'company-global-modes '(ess-r-mode)) 
+  )
+
 ;; ess-show-traceback, ess-show-call-stack, ess-parse-errors (for syntax errors)
 ;; ESS maps:
 ;; ess-help-mode-map
@@ -504,6 +518,13 @@ blue and amranath hydras."
   :after evil
   :ensure t
   :config
+  ;; Override Windows' help_type option of "html"
+  ;; TODO: Set this as part of the r-newest call (C-j r) as well as
+  ;; with force-buffer-current
+  (cond ((eq system-type 'windows-nt)
+	 (setenv "R_PROFILE" "C:\\Users\\jkroes\\.emacs.d"))
+	((eq system-type 'darwin)
+	 (setenv "R_PROFILE" "~/.emacs.d")))
   (require 'info-look)                ;; needed for info-lookup-other-window-flag to exist
   ;; (dolist (el '(ess-debug-minor-mode ess-r-help-mode inferior-ess-r-mode))
   ;;   (evil-set-initial-state el 'emacs))
@@ -582,7 +603,6 @@ blue and amranath hydras."
 
 ;; electric-layout-mode w/ ess-r-mode-hook. Lower down in manual, it says braces are uto-indented,
 ;;  and user variables are provided to control amount of indentation/style
-;; company mode instead of autocompletion
 ;; tab-always-indent instead of ess-tab-always-indent or ess-tab-complete-in-script
 ;; TODO: Make ess-load-file default to current buffer if buffer is an R script
 ;; TODO: set-initial-state for ess buffers
@@ -599,6 +619,21 @@ blue and amranath hydras."
 ;;   ;; (global-aggressive-indent-mode 1)
 ;;   ;; (add-to-list 'aggressive-indent-excluded-modes 'html-mode) ;; example exclusion
 ;;   )
+
+
+;;https://github.com/emacs-ess/ESS/issues/955
+;; (use-package company-tabnine
+;;   :after company
+;;   :ensure t
+;;   :config
+;;   ;; Install tabnine binary the first time with
+;;   ;; company-tabnine-install-binary
+;;   (setq ess-r-company-backends
+;; 	'((company-tabnine company-R-library company-R-args
+;; 			   company-R-objects :separate))
+;; 	)
+;;   )
+
 
 
 ;; For some reason this made emacs hang forever on MacOS, and only
@@ -620,7 +655,7 @@ blue and amranath hydras."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (0x0 flx evil-escape evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
+    (company-tabnine 0x0 flx evil-escape evil-collection key-chord ranger pkg aggressive-indent ess-view ess-R-data-view ess which-key use-package quelpa page-break-lines neotree hydra help-fns+ helm-descbinds general evil-tutor dracula-theme doom-themes counsel command-log-mode ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
