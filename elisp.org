@@ -90,15 +90,17 @@ temporarily be set to t. This means that any further errors that occur while doi
 session will (by default) trigger another backtrace. If this is not what you want, you can either 
 set eval-expression-debug-on-error to nil, or set debug-on-error to nil in debugger-mode-hook.
 
-Backtrace shows function calls and values. !!!Specify a stack frame by moving point in the buffer to the 
+Backtrace shows function calls and values. 
+
+Specify a stack frame by moving point in the buffer to the 
 corresponding line.!!! If a line starts with a star, that means that exiting that frame will call the 
 debugger again. This is useful for examining the return value of a function.
 
 Underlined function names indicate a link to source code. <RET> visits the source code.
 
-!!!Note that the debugger can step through function source code, but only if the function is
+Note that the debugger can step through function source code, but only if the function is
 interpreted and not compiled. To replace a byte-compiled function with an interpreted function,
-visit the source code and `eval-defun' its code.!!!
+visit the source code and `eval-defun' its code.
 
 ***** Commands
 c: exit debugger and continue execution

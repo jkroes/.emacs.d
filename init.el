@@ -303,8 +303,8 @@ blue and amranath hydras."
 
 (defhydra hydra-buffer (:color amaranth)
   "Buffer"
-  ("b" counsel-switch-buffer "switch") ;; ivy-mode remaps
-  ("B" counsel-buffer-or-recentf) ;; faster than counsel-switch-buffer
+  ("b" counsel-switch-buffer "switch" :color blue) ;; ivy-mode remaps
+  ("B" counsel-buffer-or-recentf :color blue) ;; faster than counsel-switch-buffer
   ;; switch-to-buffer, but counsel cmd offers previews 
   ("l" evil-switch-to-windows-last-buffer "prev")
   ("k" kill-buffer "kill") ;; nil arg means kill current buffer (ivy auto-selects current buffer also)
@@ -550,10 +550,16 @@ blue and amranath hydras."
 	comint-scroll-show-maximum-output t  ;; scroll to bottom when output arrives, if point is at bottom
 	comint-use-prompt-regexp nil ;; value of nil enables evil motions
 	inhibit-field-text-motion nil ;; value of nil means  motions respect fields, meaning
-	;; the (current) prompt acts as beginning of line (if prompt
-	;; is read-only)
+	;; the (current) prompt acts as beginning of line (if prompt is read-only)
 	ess-use-company t
-	display-buffer-alist `(("\\*R Dired"
+	display-buffer-alist `(("\\*company-documentation\\*"
+				(display-buffer-reuse-mode-window display-buffer-in-side-window)
+				(mode. ess-r-help-mode)
+				(side . right)
+				(slot . 1)
+				(window-width . 0.33)
+				(reusable-frames . nil))
+			       ("\\*R Dired"
 				(display-buffer-reuse-mode-window display-buffer-in-side-window)
 				(side . right)
 				(slot . -1)
@@ -582,6 +588,24 @@ blue and amranath hydras."
   ;; 	      )
   ;; 	    )
   )
+
+;; Prevent window displaying company documentation buffer from vanishing when
+;; invoking a binding not in company--electric-commands
+(defun forget-saved-window-config ()
+  (setq company--electric-saved-window-configuration nil))
+(advice-add 'company-pre-command :before 'forget-saved-window-config)
+
+
+;; (ess-display-help-on-object (nth company-selection company-candidates))
+;; (ess-display-help-apropos (nth company-selection company-candidates))
+
+;; company-R-objects
+;; company-R-args
+;; company-R-library
+;; ess-eldoc
+;; ess-help-mode-menu
+
+
 ;; (defun switch-to-debug (old-func &rest args)
 ;;   (when (ess-debug-active-p)
 ;;     (mapcar (lambda (buffer)
