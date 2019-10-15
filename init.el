@@ -35,8 +35,9 @@
       ;; current-fill-column 79
       delete-by-moving-to-trash t    ;; Does this affect evil and
       ;; counsel commands?
+      confirm-kill-processes nil
       )
-
+(define-key global-map (kbd "C-x C-c") 'kill-emacs) 
 ;; Auto Fill Mode (seems to need hooks for at least some modes)
 ;; (add-hook 'emacs-lisp-mode-hook 'auto-fill-mode)
 
@@ -303,9 +304,9 @@ blue and amranath hydras."
 
 (defhydra hydra-buffer (:color amaranth)
   "Buffer"
-  ("b" counsel-switch-buffer "switch" :color blue) ;; ivy-mode remaps
-  ("B" counsel-buffer-or-recentf :color blue) ;; faster than counsel-switch-buffer
-  ;; switch-to-buffer, but counsel cmd offers previews 
+  ;;("b" counsel-switch-buffer "switch" :color blue)
+  ("B" counsel-buffer-or-recentf :color blue)
+  ("b" switch-to-buffer) ;; faster than counsel-switch-buffer b/c lack of preview
   ("l" evil-switch-to-windows-last-buffer "prev")
   ("k" kill-buffer "kill") ;; nil arg means kill current buffer (ivy auto-selects current buffer also)
   ("K" (lambda ()
@@ -499,8 +500,8 @@ blue and amranath hydras."
   	;; Remove company-echo-metadata-frontend speedup completion navigation
   	company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
   			    company-preview-if-just-one-frontend))
-  (customize-set-variable 'company-global-modes '(ess-r-mode)) 
-  )
+  (customize-set-variable 'company-global-modes
+			  '(ess-r-mode)))
 
 ;; ess-show-traceback, ess-show-call-stack, ess-parse-errors (for syntax errors)
 ;; ESS maps:
@@ -552,6 +553,10 @@ blue and amranath hydras."
 	inhibit-field-text-motion nil ;; value of nil means  motions respect fields, meaning
 	;; the (current) prompt acts as beginning of line (if prompt is read-only)
 	ess-use-company t
+	ess-eldoc-show-on-symbol t ;; Show function signature in echo area when inside function and on symbol
+	;; NOTE: May not show until first argument is completed
+	ess-eldoc-abbreviation-style nil
+	eldoc-echo-area-use-multiline-p t ;; May not have an effect. Unclear.
 	display-buffer-alist `(("\\*company-documentation\\*"
 				(display-buffer-reuse-mode-window display-buffer-in-side-window)
 				(mode. ess-r-help-mode)
@@ -591,19 +596,30 @@ blue and amranath hydras."
 
 ;; Prevent window displaying company documentation buffer from vanishing when
 ;; invoking a binding not in company--electric-commands
-(defun forget-saved-window-config ()
-  (setq company--electric-saved-window-configuration nil))
-(advice-add 'company-pre-command :before 'forget-saved-window-config)
+;; (defun forget-saved-window-config ()
+;;   (setq company--electric-saved-window-configuration nil))
+;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
 
 
-;; (ess-display-help-on-object (nth company-selection company-candidates))
+(defun show-company-doc-as-ess-help ()
+  (interactive)
+  (let* ((selected (nth company-selection company-candidates))
+	 (obj-help (ess-display-help-on-object selected)))
+    (unless obj-help
+      (company-show-doc-buffer))
+    ))
+;; (define-key company-active-map (kbd "C-h") 'show-company-doc-as-ess-help)
+
+;;(define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
+
+
+(defun strip-properties (str)
+  (set-text-properties 0 (length str) nil str)
+  str)
+
+
+;; other-window-scroll-buffer
 ;; (ess-display-help-apropos (nth company-selection company-candidates))
-
-;; company-R-objects
-;; company-R-args
-;; company-R-library
-;; ess-eldoc
-;; ess-help-mode-menu
 
 
 ;; (defun switch-to-debug (old-func &rest args)
