@@ -501,7 +501,10 @@ blue and amranath hydras."
   	company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
   			    company-preview-if-just-one-frontend))
   (customize-set-variable 'company-global-modes
-			  '(ess-r-mode)))
+			  nil))
+			  ;; '(ess-r-mode)))
+
+
 
 ;; ess-show-traceback, ess-show-call-stack, ess-parse-errors (for syntax errors)
 ;; ESS maps:
@@ -515,6 +518,7 @@ blue and amranath hydras."
 ;; ess-mode-map
 ;; inferior-ess-r-mode-map
 ;; electric-indent-mode
+;; https://github.com/MilesMcBain/esscss
 (use-package ess
   :after evil
   :ensure t
@@ -538,10 +542,19 @@ blue and amranath hydras."
 	      (local-set-key (kbd "\"") 'skeleton-pair-insert-maybe)
 	      (local-set-key (kbd "\'") 'skeleton-pair-insert-maybe)
 	      (local-set-key (kbd "\`") 'skeleton-pair-insert-maybe)
+	      (add-hook 'ess-idle-timer-functions
+			'ess-indent-or-complete
+			nil
+			'local)
 	      (my-definer
 		"C-j" 'hydra-r/body)))
   (setq ess-ask-for-ess-directory nil
-	ess-S-quit-kill-buffers-p 'ask 
+	ess-default-style 'RStudio
+	;; ess-style 'RStudio
+	ess-indent-offset 4 ;; override RStudio default of 2
+	ess-indent-with-fancy-comments nil ;; Investigate. My comments have had crazy indentation.
+	ess-nuke-trailing-whitespace t ;; might want to add to a file-save hook
+	;; ess-S-quit-kill-buffers-p 'ask 
         tab-always-indent 'complete
 	ess-eval-visibly nil          ;; Do not display input to iESS buffer; do not stall Emacs
 	comint-prompt-read-only t ;; read-only current prompt (">" for ess-R)
@@ -552,7 +565,7 @@ blue and amranath hydras."
 	comint-use-prompt-regexp nil ;; value of nil enables evil motions
 	inhibit-field-text-motion nil ;; value of nil means  motions respect fields, meaning
 	;; the (current) prompt acts as beginning of line (if prompt is read-only)
-	ess-use-company t
+	ess-use-company nil
 	ess-eldoc-show-on-symbol t ;; Show function signature in echo area when inside function and on symbol
 	;; NOTE: May not show until first argument is completed
 	ess-eldoc-abbreviation-style nil
@@ -571,7 +584,6 @@ blue and amranath hydras."
 				(window-width . 0.33)
 				(reusable-frames . nil))
 			       ("\\*R:"
-				;; (display-buffer-reuse-window display-buffer-at-bottom)
 				(display-buffer-reuse-mode-window display-buffer-below-selected)
 				(window-height . 0.5)
 				(reusable-frames . nil))
@@ -588,18 +600,19 @@ blue and amranath hydras."
 	;; TODO: Specify paths to Windows binary and make this OS-conditional
 	;; inferior-ess-r-program "/usr/local/bin/r"
 	)
-  ;; (add-hook 'inferior-ess-r-mode-hook
-  ;; 	    (lambda ()
-  ;; 	      )
-  ;; 	    )
-  )
+  ;; Function to add the pipe operator (set in map above)
+  (defun my/add-pipe ()
+    "Adds a pipe operator %>% with one space to the left and then starts a newline with proper indentation"
+    (interactive)
+    (just-one-space 1)
+    (insert "%>%")
+    (ess-newline-and-indent)))
 
 ;; Prevent window displaying company documentation buffer from vanishing when
 ;; invoking a binding not in company--electric-commands
 ;; (defun forget-saved-window-config ()
 ;;   (setq company--electric-saved-window-configuration nil))
 ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
-
 
 (defun show-company-doc-as-ess-help ()
   (interactive)
@@ -611,11 +624,6 @@ blue and amranath hydras."
 ;; (define-key company-active-map (kbd "C-h") 'show-company-doc-as-ess-help)
 
 ;;(define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
-
-
-(defun strip-properties (str)
-  (set-text-properties 0 (length str) nil str)
-  str)
 
 
 ;; other-window-scroll-buffer
