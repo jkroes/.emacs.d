@@ -4,3 +4,4 @@
 !*.org
 !bookmarks
 !.Rprofile
+!emacs-custom.el
