@@ -1,0 +1,43 @@
+company-show-doc-buffer:
+	Calls company--electric-do to save window configuration, gets doc-buffer (does not call company-doc-buffer),
+	sets other-window-scroll-buffer to it, and calls (display-buffer doc-buffer t)
+	* Advise function to get *company-documentation* buffer and call display-buffer to display help for ess in help window
+	* Advice to set company--electric-saved-window-configuration to nil (advice C-h when in ess-mode?)
+::: Press a keybinding :::
+comapny mode: sets up company-pre-command, company-post-command
+company-pre-command (run before each cmd):
+	Calls company--electric-restore-window-configuration, which restores saved window config
+	when calling a command not in company-electric-commands. 
+company-post-command (run after each command):
+	company-install-map
+
+company-doc-buffer: Create/reuse and return *company-documentation* buffer
+
+
+
+company-install-map (investigate maps more later)
+	company-emulation-alist
+	company-my-keymap
+differences
+	company-idle-begin
+	company-auto-begin
+	company-manual-begin
+company-begin-commands
+	add evil/ess paren commands to e.g. trigger selection for function calls
+	or set to t
+
+display-buffer buffer-or-name &optional action frame
+[display] action: (functions . alist)
+	functions can be a single function or a list of functions
+function buffer alist
+Precedence of display actions:
+	display-buffer-overriding-action
+	action argument of display-buffer
+	display-buffer-base-action
+	display-buffer-fallback-action
+Steps:
+1. display-buffer creates a list of action functions and a combined action alist according to precedence.
+1a. Note that this doesn't mention buffer regular expressions used in lieu of functions (see
+    display-buffer-alist)
+2. It calls the actions functions in order, with the buffer and combined action alist as args,
+   until one returns non-nil

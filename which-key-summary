@@ -1,0 +1,61 @@
+Which-key presents the following info:
+Possibly modified key-description
+  (key-description (kbd "C-a"))
+Binding (e.g., a command symbol or "Prefix command" for prefix keymaps)
+Optional docstring
+
+which-key-replacement-alist: See defcustom for example.
+which-key-add-key-based-replacements: Replace "description" (actually the binding description)
+of KEY with REPLACEMENT
+which-key-add-major-mode-key-based-replacements
+which-key-enable-extended-define-key: Allow for desc replacement using define-key
+Alternatively, use general package
+
+describe-*-bindings (functions and commands)
+which-key-setup-side-window-bottom: Instead of setting which-key-popup-type,
+which-key-side-window-location, which-key-show-prefix
+
+which-key-show-transient-maps
+which-key-persistent-popup: prevent which-key--hide-popup
+which-key-inhibit-regexps: Prevent which-key popup based on keypresses e.g., C-s when
+transient maps are shown (use a manual trigger instead when needed to enable and disable to
+			      allow yourself to type properly)
+which-key-inhibit: prevent which-key for the execution of a command via a let statement
+
+
+which-key-custom-show-popup-function
+which-key-custom-hide-popup-function
+
+which-key-define-key-recursively: Recursively define key on every level (i.e. keymap) within keymap
+
+which-key--hide-popup: Runs before every command (see pre-command-hook), unless which-key-persisent-popup is
+non-nil or the current command (real-this-command) is a paging command. When window is a side window, the windows
+focused on which-key--buffer are closed.
+which-key--show-popup: For side windows, ultimately calls display-buffer-side-window to display which-key--buffer
+
+which-key--curent-prefix: seems to be the current key sequence entered so far, but need to dig into the source
+code further to know for sure
+which-key--current-key-list: prefix as a list
+which-key--curent-key-string: prefix as a string 
+
+which-key--get-bindings: Calls either which-key--get-keymap-bindings or which-key--get-current-bindings
+which-key--get-keymap-bindings: Convert keymap into association list w/ elements ("key" . "binding"),
+where key is a friendly key description, more or less
+which-key--get-current-bindings: Like which-key--get-keymap-bindings, but based on the (presumably) active
+map in the specified buffer (default current buffer), rather than based on a keymap. If a key seq is
+specified, only get bindings under that key-seq/prefix. Uses describe-buffer-bindings, then seemingly
+formats the results to work for which-key.
+
+which-key-show-keymap: Show bindings for interactively specified keymap
+which-key-show-full-keymap: Similar to which-key-show-keymap, but flattened
+which-key-show-minor-mode-keymap: Same as above, but for minor modes
+which-key--show-keymap: Called by those above
+
+which-key-show-major-mode
+which-key--update
+which-key-show-top-level
+which-key--create-buffer-and-show: ...Or else this is called
+
+Difference between which-key--show-keymap and which-key--create-buffer-and-show???
+The former seems to be involved with interactive commands the latter without
+
