@@ -1,6 +1,6 @@
 *
 !.gitignore
-!init.el
+!*.el
 !*.org
 !bookmarks
 !.Rprofile

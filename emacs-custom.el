@@ -20,7 +20,7 @@
  '(custom-enabled-themes (quote (dracula)))
  '(custom-safe-themes
    (quote
-    ("35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
+    ("332fcf3c7208aca9fab65d54203f78a242482e7fd65f5725a2482c20b1730732" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
  '(delete-by-moving-to-trash t)
  '(evil-default-state (quote emacs))
  '(evil-emacs-state-modes nil)
@@ -46,7 +46,7 @@
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window)))
+    (company projectile counsel hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window)))
  '(recentf-max-saved-items 100 nil nil "Affects number of candidates with ivy-use-virtual-buffers?")
  '(recentf-mode t)
  '(scroll-bar-mode nil)
@@ -62,6 +62,7 @@
  '(which-key-separator " ")
  '(which-key-show-docstrings t)
  '(which-key-show-operator-state-maps t)
+ '(which-key-show-transient-maps t)
  '(which-key-side-window-location (quote bottom))
  '(which-key-side-window-max-height 0.2)
  '(which-key-sort-order (quote which-key-key-order-alpha))

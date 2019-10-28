@@ -64,11 +64,6 @@ when? can have values of before-init, after-init, or anything else for no profil
 
 (my/init-maybe-profile)
   
-;;; Customization
-
-(setq custom-file "~/.emacs.d/emacs-custom.el")
-(load custom-file)
-
 ;;; Bootstrap `use-package`
 
 (unless (package-installed-p 'use-package)
@@ -78,21 +73,20 @@ when? can have values of before-init, after-init, or anything else for no profil
 (require 'use-package)
 (setq use-package-verbose t)
 
-;;; Packages
+;;; Packages to install
 
 (dolist (pkg '(quelpa help-fns+ smex flx hydra which-key page-break-lines evil-escape ace-window
-		      general evil-tutor org command-log-mode hercules))
+		      general evil-tutor org command-log-mode hercules dracula-theme))
   (unless (package-installed-p pkg)
     (cond ((string= pkg "help-fns+")
 	   (quelpa '(help-fns+ :fetcher wiki)))
 	  (t (package-refresh-contents)
-	     (package-install pkg))))
-  (require pkg))
+	     (package-install pkg)))))
 
-;;; Load hydras
+;;; Customization
 
-(load "~/.emacs.d/my-hydras.el")
-(setq hydra-is-helpful nil)
+(setq custom-file "~/.emacs.d/emacs-custom.el")
+(load custom-file)
 
 ;;; General emacs keybindings
 
@@ -199,6 +193,10 @@ when? can have values of before-init, after-init, or anything else for no profil
   (dummy-windows-hide)
   (dummy-buffers-show))
 
+(defun testing-winner-undo ()
+  (winnder-undo)
+  (setq this-command 'winner-undo))
+
 (general-define-key
  :prefix-command 'my/windows-map
  "-" 'evil-window-decrease-height
@@ -222,9 +220,7 @@ when? can have values of before-init, after-init, or anything else for no profil
  "r" 'evil-window-rotate-downwards
  "R" 'evil-window-rotate-upwards
  ;; TODO: Fix and test this
- "z" '(progn
-	(winner-undo)
-	(setq this-command 'winner-undo))
+ "z" 'testing-winner-undo
  "Z" 'winner-redo
  ;; "q" 'my/windows-mode ;; dummy function for toggling
  "q" 'dummy-windows-hide
@@ -237,7 +233,8 @@ when? can have values of before-init, after-init, or anything else for no profil
  :hide-funs '(dummy-windows-hide
 	      delete-other-windows
 	      my/delete-other-windows-and-buffers))
-	      
+
+
 (general-define-key
   :states '(motion insert emacs)
   :prefix "SPC"
