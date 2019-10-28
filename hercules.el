@@ -37,15 +37,10 @@
 ;;; Code:
 (require 'which-key)
 
-(defvar hercules--popup-showing-p nil
-  "Whether or not hercules.el has been summoned.
-Used in addition to `which-key-persistent-popup' in case other
-packages start relying on it.")
-
-(defvar hercules-show-prefix nil
-  "One of `which-key-show-prefix'.
-Used as value of `which-key-show-prefix' in hercules.el
-pop-ups.")
+;; (defun hercules--before-hide (&optional keymap)
+;;   "Hide before command completion to accommodate ivy completion."
+;;   (when keymap
+;;     (which-key--hide-popup)))
 
 (defun hercules--hide (&optional keymap flatten &rest _)
   "Dismiss hercules.el.
@@ -54,9 +49,8 @@ nil.  If FLATTEN is t, `hercules--show' was called with the same
 argument.  Restore `which-key--update' after such a call."
   (when keymap
     (internal-pop-keymap (symbol-value keymap)
-                         'overriding-terminal-local-map))
-  (when flatten
-    (advice-remove #'which-key--update #'ignore)))
+                         'overriding-terminal-local-map)
+    (which--hide-popup)))
 
 (defun hercules--show (&optional keymap flatten transient &rest _)
   "Summon hercules.el showing KEYMAP.
@@ -85,6 +79,10 @@ Do so when calling FUNS showing KEYMAP.  Pass TRANSIENT to
    (progn
      (unless (symbol-function fun)
        (fset fun (lambda () (interactive))))
+     ;; (pcase hst
+     ;;   ('show (advice-add fun :after (apply-partially #'hercules--show keymap flatten transient)))
+     ;;   ('hide (advice-add fun :after (apply-partially #'hercules--hide keymap flatten))
+     ;; 	      (advice-add fun :before (apply-partially #'hercules--before-hide keymap)))))))
      (advice-add fun :after
                  (pcase hst
                    ('show (apply-partially #'hercules--show keymap flatten transient))
@@ -124,8 +122,7 @@ PACKAGE is nil, simply call `hercules--graylist'."
 
 ;;;###autoload
 (cl-defun hercules-def
-    (&key toggle-funs
-          show-funs
+    (&key show-funs
           hide-funs
           keymap
           flatten
@@ -186,7 +183,6 @@ press a key not on KEYMAP."
        keymap package nil)))
 
   ;; define entry points
-  (hercules--advise toggle-funs 'toggle keymap flatten transient)
   (hercules--advise show-funs 'show keymap flatten transient)
   (hercules--advise hide-funs 'hide keymap flatten))
 

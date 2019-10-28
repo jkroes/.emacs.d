@@ -88,6 +88,22 @@ when? can have values of before-init, after-init, or anything else for no profil
 (setq custom-file "~/.emacs.d/emacs-custom.el")
 (load custom-file)
 
+;;; General, non-customization config
+
+(cond ((eq system-type 'gnu/linux)
+       ;; Hack to open URLs from within WSL using browse-url-* commands
+       (when (string-match "Linux.*Microsoft.*Linux"
+			   (shell-command-to-string "uname -a"))
+	 (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
+	       browse-url-generic-args '("/c" "start" "")
+	       browse-url-browser-function 'browse-url-generic)))
+      ;; Use WSL shell within runemacs.exe on Windows 10
+      ((eq system-type 'windows-nt)
+       ;; (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
+       ;; 	     shell-file-name explicit-shell-file-name))
+       ;; Alternatively, add dir to exec-path
+       (setq find-program "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe")))
+
 ;;; General emacs keybindings
 
 (define-key global-map (kbd "C-x C-c") 'kill-emacs)
@@ -114,6 +130,18 @@ when? can have values of before-init, after-init, or anything else for no profil
   (interactive)
   (dummy-buffers-hide)
   (dummy-windows-show))
+
+(defun my/kill-other-buffers ()
+  "Kill other buffers."
+  (interactive)
+  (mapc 'kill-buffer
+	(delq (current-buffer)
+	      (buffer-list))))
+
+(defun my/switch-to-scratch ()
+  "Switch buffer to *Scratch*."
+  (interactive)
+  (switch-to-buffer "*scratch*"))
 
 (general-define-key
  :prefix-map 'my/buffers-map
@@ -144,6 +172,31 @@ when? can have values of before-init, after-init, or anything else for no profil
 	      my/switch-to-scratch
 	      ;; which-key-undo ;; Currently exits to top-level, not previous level
 	      ))
+
+(defhydra hydra-buffer ()
+  "Buffer"
+  ;;("b" counsel-switch-buffer "switch" :color blue)
+  ("B" counsel-buffer-or-recentf :color blue)
+  ("b" ivy-switch-buffer :color blue) ;; faster than counsel-switch-buffer b/c lack of preview
+  ("l" evil-switch-to-windows-last-buffer)
+  ("k" kill-buffer) ;; nil arg means kill current buffer (ivy auto-selects current buffer)
+  ("K" my/kill-other-buffers :color blue)
+  ("r" read-only-mode)
+  ("s" my/switch-to-scratch)
+  ("v" view-buffer)
+  ;; ("w" hydra-window/body :color blue)
+  ("q" nil)) 
+(general-create-definer my-definer
+  :states '(motion insert emacs)
+  :keymaps 'override)
+(my-definer "C-b" 'hydra-buffer/body)
+;; Hide implicit hydra commands from which-key
+(push '((nil . "hydra--digit-argument") . t) which-key-replacement-alist)
+(push '((nil . "hydra--negative-argument") . t) which-key-replacement-alist)
+(push '((nil . "hydra--universal-argument") . t) which-key-replacement-alist)
+(push '((nil . "hydra-.*/") . (nil . "")) which-key-replacement-alist)
+
+
 
 (general-define-key
  :prefix-command 'my/bookmarks-map
@@ -234,7 +287,6 @@ when? can have values of before-init, after-init, or anything else for no profil
 	      delete-other-windows
 	      my/delete-other-windows-and-buffers))
 
-
 (general-define-key
   :states '(motion insert emacs)
   :prefix "SPC"
@@ -249,30 +301,6 @@ when? can have values of before-init, after-init, or anything else for no profil
   ;; "w" 'my/windows-mode
   "w" 'dummy-windows-show
   )
-
-;;; Hydra bindings
-
-;; (general-create-definer my-definer
-;;   :states '(motion insert emacs)
-;;   :keymaps 'override)
-
-;; (load "~/.emacs.d/my-hydras.el")
-;; (my-definer "C-b" 'hydra-buffer/body)
-;; (my-definer "C-w" 'hydra-window/body)
-
-
-(defun my/kill-other-buffers ()
-  "Kill other buffers."
-  (interactive)
-  (mapc 'kill-buffer
-	(delq (current-buffer)
-	      (buffer-list))))
-
-(defun my/switch-to-scratch ()
-  "Switch buffer to *Scratch*."
-  (interactive)
-  (switch-to-buffer "*scratch*"))
-
 
 ;;; Mode-specific keybindings
 
@@ -536,20 +564,6 @@ blue and amranath hydras."
 ;; Investigate whether C-w o is currently enough, or if ess-quit does something additional that is missing 
 
 
-;;; OS-specific configuration
-
-(cond ((eq system-type 'gnu/linux)
-       ;; Hack to open URLs from within WSL using browse-url-* commands
-       (when (string-match "Linux.*Microsoft.*Linux"
-			   (shell-command-to-string "uname -a"))
-	 (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
-	       browse-url-generic-args '("/c" "start" "")
-	       browse-url-browser-function 'browse-url-generic)))
-      ;; Use WSL shell within runemacs.exe on Windows 10
-      ;; ((eq system-type 'windows-nt)
-      ;;  (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
-      ;; 	     shell-file-name explicit-shell-file-name))
-      )
 
 ;;; Further reading:
 

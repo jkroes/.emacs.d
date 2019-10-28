@@ -35,7 +35,7 @@
  '(global-display-line-numbers-mode t)
  '(global-page-break-lines-mode t nil (page-break-lines))
  '(hydra-hint-display-type (quote lv))
- '(hydra-is-helpful t)
+ '(hydra-is-helpful nil)
  '(inhibit-startup-screen t)
  '(ivy-count-format "%d/%d " nil nil "display index #/total for ivy completion")
  '(ivy-extra-directories (quote ("../")))
