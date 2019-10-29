@@ -104,6 +104,62 @@ when? can have values of before-init, after-init, or anything else for no profil
        ;; Alternatively, add dir to exec-path
        (setq find-program "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe")))
 
+;;; Modified package code
+
+(defun which-key--update ()
+  "Modified which-key--update that allows hydras to display."
+  (let ((prefix-keys (which-key--this-command-keys))
+        delay-time)
+    (cond ((and (> (length prefix-keys) 0)
+                (or (keymapp (key-binding prefix-keys))
+                    ;; Some keymaps are stored here like iso-transl-ctl-x-8-map
+                    (keymapp (which-key--safe-lookup-key
+                              key-translation-map prefix-keys))
+                    ;; just in case someone uses one of these
+                    (keymapp (which-key--safe-lookup-key
+                              function-key-map prefix-keys)))
+                (not which-key-inhibit)
+                (or (null which-key-allow-regexps)
+                    (which-key--any-match-p
+                     which-key-allow-regexps (key-description prefix-keys)))
+                (or (null which-key-inhibit-regexps)
+                    (not
+                     (which-key--any-match-p
+                      which-key-inhibit-regexps (key-description prefix-keys))))
+                ;; Do not display the popup if a command is currently being
+                ;; executed
+                (or (and which-key-allow-evil-operators
+                         (bound-and-true-p evil-this-operator))
+                    (and which-key--god-mode-support-enabled
+                         (bound-and-true-p god-local-mode)
+                         (eq this-command 'god-mode-self-insert))
+                    (null this-command)))
+           (when (and (not (equal prefix-keys (which-key--current-prefix)))
+                      (or (null which-key-delay-functions)
+                          (null (setq delay-time
+                                      (run-hook-with-args-until-success
+                                       'which-key-delay-functions
+                                       (key-description prefix-keys)
+                                       (length prefix-keys))))
+                          (sit-for delay-time)))
+             (setq which-key--automatic-display t)
+             (which-key--create-buffer-and-show prefix-keys)
+             (when (and which-key-idle-secondary-delay
+                        (not which-key--secondary-timer-active))
+               (which-key--start-timer which-key-idle-secondary-delay t))))
+          ((and which-key-show-transient-maps
+                (keymapp overriding-terminal-local-map))
+           (which-key--create-buffer-and-show
+            nil overriding-terminal-local-map))
+          ((and which-key-show-operator-state-maps
+                (bound-and-true-p evil-state)
+                (eq evil-state 'operator)
+                (not (which-key--popup-showing-p)))
+           (which-key--show-evil-operator-keymap))
+          (which-key--automatic-display
+           (which-key--hide-popup)))))
+
+
 ;;; General emacs keybindings
 
 (define-key global-map (kbd "C-x C-c") 'kill-emacs)
@@ -190,13 +246,44 @@ when? can have values of before-init, after-init, or anything else for no profil
   :states '(motion insert emacs)
   :keymaps 'override)
 (my-definer "C-b" 'hydra-buffer/body)
+
 ;; Hide implicit hydra commands from which-key
 (push '((nil . "hydra--digit-argument") . t) which-key-replacement-alist)
 (push '((nil . "hydra--negative-argument") . t) which-key-replacement-alist)
 (push '((nil . "hydra--universal-argument") . t) which-key-replacement-alist)
-(push '((nil . "hydra-.*/") . (nil . "")) which-key-replacement-alist)
+;; (push '((nil . "hydra-.*/") . (nil . "")) which-key-replacement-alist)
+;; https://nullprogram.com/blog/2012/08/02/
+;; TODO: Body shouldn't be optional. Move over eventually!!!!!!!
 
+(defun my/defhydra (name)
+  "Replace the docstring of each head with that of the function used to 
+build the head of hydra NAME."
+  (let* ((prefix (concat (symbol-name name) "/"))
+	 (heads-sym (intern (concat prefix "heads")))
+	 (heads (symbol-value heads-sym)))
+    (dolist (h heads)
+      (let ((h-cmd (nth 1 h)))
+	(put (intern (concat prefix (symbol-name h-cmd)))
+	     'function-documentation
+	     (if h-cmd
+		 (documentation h-cmd)
+	       ;; nil is only useful for blye hydras, which don't work with which-key
+	       ;; paging commands, but nil will still be handled
+	       (concat "Exit " (symbol-name name))))))))
+(my/defhydra 'hydra-buffer)
+;; TODO: Advise defhydra; handle *-and-exit heads	     
 
+(defun counsel-hydra-integrate (old-func &rest args)
+  "Function used to advise `counsel-hydra-heads' to work with
+blue and amranath hydras."
+  (hydra-keyboard-quit)
+  (apply old-func args)
+  (funcall-interactively hydra-curr-body-fn))
+(advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
+
+;; TODO: Replace docstrings of all hydra functions except for bodies, by stripping hydra prefix/ 
+;; TODO: recover lost hydras from init.el in commit 9-something
+;; TODO: Set which-key-max-description-length to less than 1/2 window; otherwise buffer can't show
 
 (general-define-key
  :prefix-command 'my/bookmarks-map
