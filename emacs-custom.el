@@ -55,7 +55,7 @@
  '(which-key-allow-evil-operators t)
  '(which-key-compute-remaps t nil nil "e.g. w/ counsel-mode: apropos-command -> counsel-apropos")
  '(which-key-idle-delay 0.2)
- '(which-key-max-description-length nil)
+ '(which-key-max-description-length 100)
  '(which-key-mode t)
  '(which-key-popup-type (quote side-window))
  '(which-key-prefix-prefix "+")
