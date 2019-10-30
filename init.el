@@ -73,20 +73,23 @@ when? can have values of before-init, after-init, or anything else for no profil
 (require 'use-package)
 (setq use-package-verbose t)
 
-;;; Packages to install
-
-(dolist (pkg '(quelpa help-fns+ smex flx hydra which-key page-break-lines evil-escape ace-window
-		      general evil-tutor org command-log-mode hercules dracula-theme))
-  (unless (package-installed-p pkg)
-    (cond ((string= pkg "help-fns+")
-	   (quelpa '(help-fns+ :fetcher wiki)))
-	  (t (package-refresh-contents)
-	     (package-install pkg)))))
+;;; Install missing packages, load customizations, then load packages
+(let ((packages '(quelpa help-fns+ smex flx hydra which-key page-break-lines evil-escape ace-window
+			 general evil-tutor org command-log-mode hercules dracula-theme)))
+  (dolist (pkg packages)
+    (unless (package-installed-p pkg)
+      (cond ((string= pkg "help-fns+")
+	     (quelpa '(help-fns+ :fetcher wiki)))
+	    (t (package-refresh-contents)
+	       (package-install pkg)))))
+    ;; Not sure if customizations need loading prior to requiring packages...
+  (setq custom-file "~/.emacs.d/emacs-custom.el")
+  (load custom-file)
+  (dolist (pkg packages)
+    (require pkg)))
 
 ;;; Customization
 
-(setq custom-file "~/.emacs.d/emacs-custom.el")
-(load custom-file)
 
 ;;; General, non-customization config
 
@@ -104,7 +107,9 @@ when? can have values of before-init, after-init, or anything else for no profil
        ;; Alternatively, add dir to exec-path
        (setq find-program "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe")))
 
-;;; Modified package code
+;;; Which-key/hydra integration hacks
+
+;; TODO: Modify which-key-undo-key to undo transient maps
 
 (defun which-key--update ()
   "Modified which-key--update that allows hydras to display."
@@ -160,6 +165,42 @@ when? can have values of before-init, after-init, or anything else for no profil
            (which-key--hide-popup)))))
 
 
+;; Hide implicit hydra commands from which-key
+(push '((nil . "hydra--digit-argument") . t) which-key-replacement-alist)
+(push '((nil . "hydra--negative-argument") . t) which-key-replacement-alist)
+(push '((nil . "hydra--universal-argument") . t) which-key-replacement-alist)
+
+(defun my/defhydra (name)
+  "Replace the docstring of each head with that of the function used to create it, and modify
+the binding description to reflect the original function name, rather than hydra's derived 
+name for the head.
+
+Calls to my/defhydra should follow calls to defhydra."  
+  (let* ((prefix (concat (symbol-name name) "/"))
+	 (heads-sym (intern (concat prefix "heads")))
+	 (heads (symbol-value heads-sym)))
+    ;; Replacements for which-key descriptions of hydra heads. wk does at most a single
+    ;; replacement, unless which-key-allow-multiple-replacements is non-nil. In lieu of setting
+    ;; that, you can place more targeted regexps at the start of which-key-replacement-alist (by
+    ;; push-ing the less comprehensive ones on earlier), as is this done here
+    (push `((nil . ,prefix) . (nil . "")) which-key-replacement-alist)
+    (push `((nil . ,(concat prefix "\\(.*\\)-and-exit")) . (nil . "\\1")) which-key-replacement-alist) 
+    (dolist (h heads)
+      (let* ((h-cmd (nth 1 h)) ;; The original command in the hydradef
+	     ;; hydra renames commands in several possible ways, depending on :color
+	     (visible-cmd1 (intern (concat prefix (symbol-name h-cmd))))
+	     (visible-cmd2 (intern (concat (symbol-name visible-cmd1) "-and-exit"))))
+	;; NOTE: To retrieve the original docstring defined in the function, you must
+	;; remove the function-documentation property, which shadows it
+	(put (cond ((fboundp visible-cmd1) visible-cmd1)
+		   ((fboundp visible-cmd2) visible-cmd2))
+	     'function-documentation
+	     (if h-cmd
+		 (documentation h-cmd)
+	       ;; Note: nil is only useful for blue/amaranth hydras, which don't work
+	       ;; with which-key paging commands currently
+	       (concat "Exit " (symbol-name name))))))))
+
 ;;; General emacs keybindings
 
 (define-key global-map (kbd "C-x C-c") 'kill-emacs)
@@ -182,11 +223,6 @@ when? can have values of before-init, after-init, or anything else for no profil
 
 ;;; My leader map
 
-(defun hide-buffers-show-windows ()
-  (interactive)
-  (dummy-buffers-hide)
-  (dummy-windows-show))
-
 (defun my/kill-other-buffers ()
   "Kill other buffers."
   (interactive)
@@ -198,36 +234,6 @@ when? can have values of before-init, after-init, or anything else for no profil
   "Switch buffer to *Scratch*."
   (interactive)
   (switch-to-buffer "*scratch*"))
-
-(general-define-key
- :prefix-map 'my/buffers-map
- "B" 'counsel-buffer-or-recentf
- "b" 'ivy-switch-buffer ;; faster than counsel-switch-buffer b/c lack of preview
- "l" 'evil-switch-to-windows-last-buffer
- "k" 'kill-buffer ;; nil arg means kill current buffer (ivy auto-selects current buffer also)
- "K" 'my/kill-other-buffers
- "r" 'read-only-mode
- "s" 'my/switch-to-scratch
- ;; "u" 'which-key-undo ;; Currently exits to top-level, not previous level
- ;; "w" 'my/windows-map
- "w" 'hide-buffers-show-windows
- "v" 'view-buffer
- ;; "q" 'my/buffers-mode ;; dummy function for toggling
- "q" 'dummy-buffers-hide
- )
-
-(hercules-def
- :keymap 'my/buffers-map
- :show-funs 'dummy-buffers-show
- ;; :toggle-funs 'my/buffers-mode ;; dummy function for toggling
- :hide-funs '(dummy-buffers-hide
-	      counsel-buffer-or-recentf
-	      ivy-switch-buffer
-	      view-buffer
-	      my/kill-other-buffers
-	      my/switch-to-scratch
-	      ;; which-key-undo ;; Currently exits to top-level, not previous level
-	      ))
 
 (defhydra hydra-buffer ()
   "Buffer"
@@ -242,48 +248,17 @@ when? can have values of before-init, after-init, or anything else for no profil
   ("v" view-buffer)
   ;; ("w" hydra-window/body :color blue)
   ("q" nil)) 
-(general-create-definer my-definer
-  :states '(motion insert emacs)
-  :keymaps 'override)
-(my-definer "C-b" 'hydra-buffer/body)
-
-;; Hide implicit hydra commands from which-key
-(push '((nil . "hydra--digit-argument") . t) which-key-replacement-alist)
-(push '((nil . "hydra--negative-argument") . t) which-key-replacement-alist)
-(push '((nil . "hydra--universal-argument") . t) which-key-replacement-alist)
-;; (push '((nil . "hydra-.*/") . (nil . "")) which-key-replacement-alist)
-;; https://nullprogram.com/blog/2012/08/02/
-;; TODO: Body shouldn't be optional. Move over eventually!!!!!!!
-
-(defun my/defhydra (name)
-  "Replace the docstring of each head with that of the function used to 
-build the head of hydra NAME."
-  (let* ((prefix (concat (symbol-name name) "/"))
-	 (heads-sym (intern (concat prefix "heads")))
-	 (heads (symbol-value heads-sym)))
-    (dolist (h heads)
-      (let ((h-cmd (nth 1 h)))
-	(put (intern (concat prefix (symbol-name h-cmd)))
-	     'function-documentation
-	     (if h-cmd
-		 (documentation h-cmd)
-	       ;; nil is only useful for blye hydras, which don't work with which-key
-	       ;; paging commands, but nil will still be handled
-	       (concat "Exit " (symbol-name name))))))))
 (my/defhydra 'hydra-buffer)
-;; TODO: Advise defhydra; handle *-and-exit heads	     
 
-(defun counsel-hydra-integrate (old-func &rest args)
-  "Function used to advise `counsel-hydra-heads' to work with
-blue and amranath hydras."
-  (hydra-keyboard-quit)
-  (apply old-func args)
-  (funcall-interactively hydra-curr-body-fn))
-(advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
+;; (general-create-definer my-definer
+;;   :states '(motion insert emacs)
+;;   :keymaps 'override)
+;; (my-definer "C-b" 'hydra-buffer/body)
 
-;; TODO: Replace docstrings of all hydra functions except for bodies, by stripping hydra prefix/ 
+;; TODO: Advise defhydra; handle *-and-exit heads
 ;; TODO: recover lost hydras from init.el in commit 9-something
 ;; TODO: Set which-key-max-description-length to less than 1/2 window; otherwise buffer can't show
+;; TODO: See counsel-hydra-integrate below. Need to set before you define other hydras?
 
 (general-define-key
  :prefix-command 'my/bookmarks-map
@@ -382,7 +357,7 @@ blue and amranath hydras."
   "SPC" 'counsel-M-x
   "'" 'ivy-resume
   ;; "b" 'my/buffers-mode
-  "b" 'dummy-buffers-show
+  "b" 'hydra-buffer/body
   "f" 'my/files-map
   "o" 'clm/toggle-command-log-buffer
   ;; "w" 'my/windows-mode
