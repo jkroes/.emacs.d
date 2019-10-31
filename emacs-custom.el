@@ -1,8 +1,3 @@
-;; See:
-;; Customize section of emacs
-;; https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el
-;; https://stackoverflow.com/questions/22915019/emacs-setq-before-loading
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -13,7 +8,13 @@
  '(comint-scroll-show-maximum-output t)
  '(comint-scroll-to-bottom-on-input t)
  '(comint-use-prompt-regexp nil nil nil "nil enables evil motions")
- '(company-global-modes nil)
+ '(company-frontends
+   (quote
+    (company-pseudo-tooltip-unless-just-one-frontend company-preview-if-just-one-frontend)) nil nil "Rm company-echo-metadata-frontend to speed up candidate navigation")
+ '(company-global-modes nil nil nil "TODO: Change nil to '(ess-r-mode)")
+ '(company-idle-delay 0)
+ '(company-minimum-prefix-length 0.2 nil nil "Min # chars before completion")
+ '(company-show-numbers t nil nil "Use M-1, etc., to select candidates")
  '(confirm-kill-processes nil)
  '(counsel-bookmark-avoid-dired t)
  '(counsel-mode t nil nil "Remap common commands to counsel commands")
@@ -22,6 +23,14 @@
    (quote
     ("37f32706ffc6d7d021adf6b4d2a84eae7e0cfb7871cd39e21eaddc77c52bf4a7" "332fcf3c7208aca9fab65d54203f78a242482e7fd65f5725a2482c20b1730732" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default)))
  '(delete-by-moving-to-trash t)
+ '(eldoc-echo-area-use-multiline-p t nil nil "May not have an effect. Test on longer function signatures sometime.")
+ '(ess-ask-for-ess-directory nil)
+ '(ess-eldoc-abbreviation-style (quote mild))
+ '(ess-eldoc-show-on-symbol t nil nil "Show function signature in echo area when inside function and on symbol. May not show until first argument has been completed.")
+ '(ess-eval-visibly nil)
+ '(ess-indent-with-fancy-comments nil nil nil "I suspect this is the reason comments were forced toward the right margin in R scripts")
+ '(ess-style (quote RStudio))
+ '(ess-use-company nil)
  '(evil-default-state (quote emacs))
  '(evil-emacs-state-modes nil)
  '(evil-escape-delay 0.2)
@@ -31,7 +40,6 @@
  '(evil-motion-state-modes nil nil nil "Read-only modes start in default mode (should be emacs)")
  '(evil-overriding-maps nil)
  '(evil-want-keybinding nil)
- '(global-command-log-mode t)
  '(global-display-line-numbers-mode t)
  '(global-page-break-lines-mode t nil (page-break-lines))
  '(hydra-hint-display-type (quote lv))
@@ -51,7 +59,9 @@
  '(recentf-mode t)
  '(scroll-bar-mode nil)
  '(scroll-conservatively 1000000 nil nil "Seems to prevent auto-recentering of point when scrolling")
+ '(tab-always-indent (quote complete))
  '(tool-bar-mode nil)
+ '(use-package-verbose t)
  '(which-key-allow-evil-operators t)
  '(which-key-compute-remaps t nil nil "e.g. w/ counsel-mode: apropos-command -> counsel-apropos")
  '(which-key-idle-delay 0.2)
@@ -62,7 +72,7 @@
  '(which-key-separator " ")
  '(which-key-show-docstrings t)
  '(which-key-show-operator-state-maps t)
- '(which-key-show-transient-maps t nil nil "w/ modified which-key--update, allows hydra display")
+ '(which-key-show-transient-maps t nil nil "see modified which-key--update")
  '(which-key-side-window-location (quote bottom))
  '(which-key-side-window-max-height 0.2)
  '(which-key-sort-order (quote which-key-key-order-alpha))
@@ -74,3 +84,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
+
+
+
+
+

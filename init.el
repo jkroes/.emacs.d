@@ -35,35 +35,11 @@
 ;;    similar to relative filename args in `load' (including reliance on `load-path'.
 ;;    One difference is that it will not re-load a file/feature.
 
-;;; Package config and profiling
-
-(defun my/init-maybe-profile (&optional when?)
-  "Optionally profile load before or after package initialization. See results of
-profiling with `benchmark-init/show-durations-tree' (calls shown in reverse order)
-or in a sortable table with `benchmark-init/show-durations-tabulated'.
-
-when? can have values of before-init, after-init, or anything else for no profiling."
-  (defun my/profile ()
-    (load (concat (car (file-expand-wildcards "~/.emacs.d/elpa/benchmark-init*" t))
-		  "/benchmark-init"))
-    (add-hook 'after-init-hook 'benchmark-init/deactivate)
-    (benchmark-init/activate))
-  
-  (defun my/init ()
-    ;; Configure package.el
-    (require 'package)
-    (setq package-archives '(("gnu"   . "http://elpa.gnu.org/packages/")
-			     ("melpa" . "https://melpa.org/packages/")))
-    ;; Add pkg files to load-path and Info-directory-list; ready autoloads
-    (package-initialize))
-  
-  (pcase when?
-    ('before-init (my/profile) (my/init))
-    ('after-init (my/init) (my/profile))
-    (_ (my/init))))  ;; Includes nil argument
-
+;;; package.el config and profiling
+(setq load-path (cons "~/.emacs.d/lisp" load-path))
+(load "my-functions.el") ;; Also loads functions required by hydras
 (my/init-maybe-profile)
-  
+ 
 ;;; Bootstrap `use-package`
 
 (unless (package-installed-p 'use-package)
@@ -71,27 +47,24 @@ when? can have values of before-init, after-init, or anything else for no profil
   (package-install 'use-package))
 (add-to-list 'load-path "~/.emacs.d/elpa/use-package-20190716.1829")
 (require 'use-package)
-(setq use-package-verbose t)
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
 
 ;;; Install missing packages, load customizations, then load packages
-(let ((packages '(quelpa help-fns+ smex flx hydra which-key page-break-lines evil-escape ace-window
-			 general evil-tutor org command-log-mode hercules dracula-theme)))
-  (dolist (pkg packages)
-    (unless (package-installed-p pkg)
-      (cond ((string= pkg "help-fns+")
-	     (quelpa '(help-fns+ :fetcher wiki)))
-	    (t (package-refresh-contents)
-	       (package-install pkg)))))
-    ;; Not sure if customizations need loading prior to requiring packages...
-  (setq custom-file "~/.emacs.d/emacs-custom.el")
-  (load custom-file)
-  (dolist (pkg packages)
-    (require pkg)))
+;; (let ((packages '(quelpa help-fns+ general)))
+;;   (dolist (pkg packages)
+;;     (unless (package-installed-p pkg)
+;;       (cond ((string= pkg "help-fns+")
+;; 	     (quelpa '(help-fns+ :fetcher wiki)))
+;; 	    (t (package-refresh-contents)
+;; 	       (package-install pkg)))))
+;;     ;; Not sure if customizations need loading prior to requiring packages...
+;;   (setq custom-file "~/.emacs.d/emacs-custom.el")
+;;   (load custom-file)
+;;   (dolist (pkg packages)
+;;     (require pkg)))
 
-;;; Customization
-
-
-;;; General, non-customization config
+;;; OS-specific configuration
 
 (cond ((eq system-type 'gnu/linux)
        ;; Hack to open URLs from within WSL using browse-url-* commands
@@ -107,376 +80,39 @@ when? can have values of before-init, after-init, or anything else for no profil
        ;; Alternatively, add dir to exec-path
        (setq find-program "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe")))
 
-;;; Which-key/hydra integration hacks
+;; Custom configuration
 
-;; TODO: Modify which-key-undo-key to undo transient maps
+(setq custom-file "~/.emacs.d/emacs-custom.el")
+(load custom-file)
 
-(defun which-key--update ()
-  "Modified which-key--update that allows hydras to display."
-  (let ((prefix-keys (which-key--this-command-keys))
-        delay-time)
-    (cond ((and (> (length prefix-keys) 0)
-                (or (keymapp (key-binding prefix-keys))
-                    ;; Some keymaps are stored here like iso-transl-ctl-x-8-map
-                    (keymapp (which-key--safe-lookup-key
-                              key-translation-map prefix-keys))
-                    ;; just in case someone uses one of these
-                    (keymapp (which-key--safe-lookup-key
-                              function-key-map prefix-keys)))
-                (not which-key-inhibit)
-                (or (null which-key-allow-regexps)
-                    (which-key--any-match-p
-                     which-key-allow-regexps (key-description prefix-keys)))
-                (or (null which-key-inhibit-regexps)
-                    (not
-                     (which-key--any-match-p
-                      which-key-inhibit-regexps (key-description prefix-keys))))
-                ;; Do not display the popup if a command is currently being
-                ;; executed
-                (or (and which-key-allow-evil-operators
-                         (bound-and-true-p evil-this-operator))
-                    (and which-key--god-mode-support-enabled
-                         (bound-and-true-p god-local-mode)
-                         (eq this-command 'god-mode-self-insert))
-                    (null this-command)))
-           (when (and (not (equal prefix-keys (which-key--current-prefix)))
-                      (or (null which-key-delay-functions)
-                          (null (setq delay-time
-                                      (run-hook-with-args-until-success
-                                       'which-key-delay-functions
-                                       (key-description prefix-keys)
-                                       (length prefix-keys))))
-                          (sit-for delay-time)))
-             (setq which-key--automatic-display t)
-             (which-key--create-buffer-and-show prefix-keys)
-             (when (and which-key-idle-secondary-delay
-                        (not which-key--secondary-timer-active))
-               (which-key--start-timer which-key-idle-secondary-delay t))))
-          ((and which-key-show-transient-maps
-                (keymapp overriding-terminal-local-map))
-           (which-key--create-buffer-and-show
-            nil overriding-terminal-local-map))
-          ((and which-key-show-operator-state-maps
-                (bound-and-true-p evil-state)
-                (eq evil-state 'operator)
-                (not (which-key--popup-showing-p)))
-           (which-key--show-evil-operator-keymap))
-          (which-key--automatic-display
-           (which-key--hide-popup)))))
+;;; Package configuration
 
+;; Bug prevents use of :custom: https://github.com/jwiegley/use-package/issues/702
 
-;; Hide implicit hydra commands from which-key
-(push '((nil . "hydra--digit-argument") . t) which-key-replacement-alist)
-(push '((nil . "hydra--negative-argument") . t) which-key-replacement-alist)
-(push '((nil . "hydra--universal-argument") . t) which-key-replacement-alist)
+(use-package smex)
+(use-package flx)
+(use-package evil-tutor :after evil :bind (:map help-map ("T" . evil-tutor-start)))
+(use-package org)
+(use-package dracula-theme)
+(use-package evil-escape :after evil :config (evil-escape-mode))
+(use-package page-break-lines)
+(use-package ace-window)
+(use-package which-key :bind (:map help-map ("C-w" . which-key-show-keymap)))
+(use-package hydra
+  :after counsel
+  :config
+  (defun counsel-hydra-integrate (old-func &rest args)
+    "Function used to advise `counsel-hydra-heads' to work with
+blue and amranath hydras."
+    (hydra-keyboard-quit)
+    (apply old-func args)
+    (funcall-interactively hydra-curr-body-fn))
+  (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
+  (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads))
 
-(defun my/defhydra (name)
-  "Replace the docstring of each head with that of the function used to create it, and modify
-the binding description to reflect the original function name, rather than hydra's derived 
-name for the head.
-
-Calls to my/defhydra should follow calls to defhydra."  
-  (let* ((prefix (concat (symbol-name name) "/")))
-    ;; Replacements for which-key descriptions of hydra heads. wk does at most a single
-    ;; replacement, unless which-key-allow-multiple-replacements is non-nil. In lieu of setting
-    ;; that, you can place more targeted regexps at the start of which-key-replacement-alist (by
-    ;; push-ing the less comprehensive ones on earlier), as is this done here
-    (push `((nil . ,prefix) . (nil . "")) which-key-replacement-alist)
-    (push `((nil . ,(concat prefix "\\(.*\\)-and-exit")) . (nil . "\\1")) which-key-replacement-alist) 
-    (dolist (h (symbol-value (intern (concat prefix "heads"))))
-      (let* ((h-cmd (nth 1 h)) ;; The original command in the hydradef
-	     ;; hydra renames commands in several possible ways, depending on :color
-	     (visible-cmd1 (intern (concat prefix (symbol-name h-cmd))))
-	     (visible-cmd2 (intern (concat (symbol-name visible-cmd1) "-and-exit"))))
-	;; NOTE: To retrieve the original docstring defined in the function, you must
-	;; remove the function-documentation property, which shadows it
-	(put (cond ((fboundp visible-cmd1) visible-cmd1)
-		   ((fboundp visible-cmd2) visible-cmd2))
-	     'function-documentation
-	     (if h-cmd
-		 (documentation h-cmd)
-	       ;; Note: nil is only useful for blue/amaranth hydras, which don't work
-	       ;; with which-key paging commands currently
-	       (concat "Exit " (symbol-name name))))))))
-
-;;; General emacs keybindings
-
-(define-key global-map (kbd "C-x C-c") 'kill-emacs)
-;; c-x a ;; abbrev 
-;; c-x r ;; bookmarks
-;; c-x v ;; version control
-
-;;; help-map ("C-h") mods
-
-(general-unbind help-map
-  "C-h" ;; Enable which-key navigation of help-map bindings
-  "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-w" "C-\\")
-
-(general-define-key
- :keymaps 'help-map
- "M" 'describe-minor-mode
- "s" 'describe-symbol
- "T" 'evil-tutor-start
- "C-w" 'which-key-show-keymap)
-
-;;; My leader map
-
-(defun my/kill-other-buffers ()
-  "Kill other buffers."
-  (interactive)
-  (mapc 'kill-buffer
-	(delq (current-buffer)
-	      (buffer-list))))
-
-(defun my/switch-to-scratch ()
-  "Switch buffer to *Scratch*."
-  (interactive)
-  (switch-to-buffer "*scratch*"))
-
-(defhydra hydra-buffer ()
-  "Buffer"
-  ("B" counsel-buffer-or-recentf :color blue)
-  ("b" ivy-switch-buffer :color blue) ;; faster than counsel-switch-buffer b/c lack of preview
-  ("l" evil-switch-to-windows-last-buffer)
-  ("k" kill-buffer) ;; nil arg means kill current buffer (ivy auto-selects current buffer)
-  ("K" my/kill-other-buffers :color blue)
-  ("r" read-only-mode)
-  ("s" my/switch-to-scratch)
-  ("v" view-buffer)
-  ("w" hydra-window/body :color blue)
-  ("q" nil)) 
-
-;; TODO: Set which-key-max-description-length to less than 1/2 window; otherwise buffer can't show
-;; TODO: See counsel-hydra-integrate below. Need to set before you define other hydras?
-(defun my/split-window-right-move ()
-  (interactive)
-  (split-window-right)
-  (windmove-right))
-
-(defun my/split-window-below-move ()
-  (interactive)
-  (split-window-below)
-  (windmove-down))
-
-(defun my/delete-other-windows-and-buffers ()
-  (interactive)
-  (defun select-kill-window-and-buffer (window)
-    (select-window window)
-    (kill-buffer-and-window))
-  (let ((other-windows
-	 (delq (selected-window)
-	       (window-list (window-frame (selected-window)))))
-	(kill-buffer-query-functions ;; Disable prompt to end process buffers
-	 (delq 'process-kill-buffer-query-function kill-buffer-query-functions)))
-    (mapc 'select-kill-window-and-buffer other-windows)))
-
-(defun my/hydra-winner-undo ()
-  "A version of winner-undo that works with hydras, hopefully..."
-  (interactive)
-  (winner-undo)
-  (setq this-command 'winner-undo))
-
-(defhydra hydra-window ()
-  "Window"
-  ("-" evil-window-decrease-height)
-  ("+" evil-window-increase-height)
-  ("<" evil-window-decrease-width)
-  (">" evil-window-increase-width)
-  ("h" windmove-left)
-  ("j" windmove-down)
-  ("k" windmove-up)
-  ("l" windmove-right)
-  ("b" hydra-buffer/body :color blue)
-  ("v" my/split-window-right-move)
-  ("x" my/split-window-below-move)
-  ("a" ace-window)
-  ("s" ace-swap-window)
-  ("c" evil-window-delete)
-  ("d" ace-delete-window)
-  ("m" delete-other-windows :color blue)
-  ("M" my/delete-other-windows-and-buffers :color blue)
-  ("r" evil-window-rotate-downwards)
-  ("R" evil-window-rotate-upwards)
-  ("z" winner-undo)
-  ;;("z" my/hydra-winner-undo)
-  ;; ("z" (progn
-  ;; 	 (winner-undo)
-  ;; 	 (setq this-command 'winner-undo))
-  ;;  "winner-undo") ;; Needed for winner-redo, it appears
-  ("Z" winner-redo)
-  ("q" nil))
-
-;; Any hydras that reference each other need to wait to call my/defhydra
-;; until after both hydras have been defined. This is a current limitation
-;; of my/defhydra that may be remedied in the future. Also, the name of
-;; the function should be changed, if I can'tfigure out a way to use
-;; my/defhydra as advice for defhydra at some point.
-(my/defhydra 'hydra-window) ;; Needs to run after hydra-buffer is defined
-(my/defhydra 'hydra-buffer) ;; Needs to run after hydra-window is defined
-
-(general-define-key
- :prefix-command 'my/bookmarks-map
- "d" 'bookmark-delete
- "D" 'counsel-bookmarked-directory
- "e" 'edit-bookmarks
- "j" 'counsel-bookmark ;; TODO: Customize counsel-bookmark action
- ;; list to include delete, rename, and set
- "r" 'bookmark-rename
- "s" 'bookmark-set)
-
-(general-define-key
- :prefix-command 'my/files-map
- "b" 'my/bookmarks-map
- "f" 'counsel-find-file
- "i" 'insert-file
- "j" 'counsel-file-jump
- "l" 'counsel-locate
- "r" 'counsel-recentf
- ;; "z" 'counssel-fzf
- )
-
-(general-define-key
-  :states '(motion insert emacs)
-  :prefix "SPC"
-  :non-normal-prefix "C-SPC"
-  "" nil
-  "SPC" 'counsel-M-x
-  "'" 'ivy-resume
-  ;; "b" 'my/buffers-mode
-  "b" 'hydra-buffer/body
-  "f" 'my/files-map
-  "o" 'clm/toggle-command-log-buffer
-  ;; "w" 'my/windows-mode
-  "w" 'hydra-window/body
-  )
-
-
-;; (defhydra hydra-r (:color pink)
-;;   "R"
-;;   ("SPC" ess-mark-function-or-para "mark")
-;;   ("a" ess-cycle-assign "assign-cycle") ;; See how electric functions work as hydras...
-;;   ("d" hydra-r-debug/body "R-debug" :color blue)
-;;   ("e" hydra-r-eval/body "R-eval" :color blue)
-;;   ("h" hydra-r-help/body "R-help" :color blue)
-;;   ("j" ess-goto-end-of-function-or-para "func-end")
-;;   ("k" ess-goto-beginning-of-function-or-para "func-beg")
-;;   ("r" (lambda()
-;; 	 (interactive)
-;; 	 (save-selected-window
-;; 	   (run-ess-r-newest)
-;; 	   ;;(ess-rdired)
-;; 	   ))
-;;    "R-init")
-;;   ("s" ess-switch-to-inferior-or-script-buffer "switch" :color blue)
-;;   ("z" ess-submit-bug-report "report-bug" :color blue)
-;;   ("q" nil :color blue)
-;;   ;; prog-indent-sexp
-;;   ;; ess-indent-exp
-;;   ;; ess-indent-new-comment-line
-;;   ;; ess-complete-object-name 
-;;   )
-
-;; (defhydra hydra-r-help (:color blue) ;; ess-doc-map
-;;   "R-help"
-;;   ("a" ess-display-help-apropos "apropos")
-;;   ("e" hydra-r-eval/body "R-eval")
-;;   ("i" ess-display-package-index "package-index")
-;;   ("m" ess-manual-lookup "manual")
-;;   ("o" ess-display-help-on-object "help-on-object")
-;;   ("p" ess-describe-object-at-point "object-at-point")
-;;   ("r" hydra-r/body "R" :color blue)
-;;   ("t" ess-display-demos "demos")
-;;   ("v" ess-display-vignettes "vignettes")
-;;   ("w" ess-help-web-search "web")
-;;   ("q" nil)
-;;   )
-
-;; (defhydra hydra-r-eval (:color pink) ;; ess-rutils-map and ess-extra-map
-;;   "R-eval"
-;;   ("<C-return>" ess-eval-region-or-function-or-paragraph-and-step "reg-func-para")
-;;   ("RET" ess-eval-region-or-line-and-step "reg-line")
-;;   ("b" ess-eval-buffer-from-beg-to-here "to-here")
-;;   ("e" ess-eval-buffer-from-here-to-end "to-end")
-;;   ("E" ess-dirs "emacs-dir")
-;;   ("f" ess-load-file "source")
-;;   ("F" ess-force-buffer-current) ;; Only needed when a detached process is created (e.g. via request-a-process)
-;;   ("i" inferior-ess-reload "reload-proc")
-;;   ("P" ess-request-a-process "iESS proc") ;; Switch iESS process and its buffer
-;;   ;; in the iESS buffer
-;;   ("p" ess-switch-process "ESS proc") ;; Switch process attached to script
-;;   ("s" ess-switch-to-inferior-or-script-buffer "switch")
-;;   ("r" hydra-r/body "R" :color blue)
-;;   ("R" ess-rdired "rdired")
-;;   ("u" ess-use-this-dir "setwd-this")
-;;   ("w" ess-change-directory "setwd")
-;;   ("q" nil :color blue)
-;;   ;; ess-force-buffer-current ;; Currently repeated C-g seems to work
-;;   ;; comint-interrupt-subjob
-;;   ;; ess-interrupt
-;;   )
-
-;; ;; Note that several commands available in the inferior ess R
-;; ;; process while debugging are absent:
-;; ;; f (finish)
-;; ;; s (step)
-;; ;; help
-;; ;; where
-;; ;; <expr>
-;; ;; As such, it is best to debug from the inferior process where
-;; ;; the additional, built-in functionality is needed
-;; ;; TODO: Add commands here to ess-debug-minor-mode-map
-;; (defhydra hydra-r-debug (:color amaranth) ;; ess-debug-minor-mode-map and ess-dev-map
-;;   "R-debug"
-;;   ("c" ess-debug-command-continue "continue")
-;;   ("C" ess-debug-command-quit "quit-debug" :color blue) ;; Investigate diff b/w this and ess-debug-stop
-;;   ("f" ess-debug-flag-for-debugging "flag-func") ;; base:::debug()
-;;   ("g" ess-debug-goto-debug-point)
-;;   ("n" ess-debug-command-next "next")
-;;   ("N" next-error)
-;;   ("p" previous-error)
-;;   ("Q" ess-debug-stop "quit-debug-buffer" :color blue)
-;;   ("s" ess-switch-to-ess "console" :color blue)
-;;   ("t" ess-debug-toggle-error-action) ;; Sets value of error option (e.g. options(error=recover)) for active process
-;;   ("u" ess-debug-command-up "frame-up") ;; TODO: Does this work without recover()?
-;;   ("U" ess-debug-unflag-for-debugging "unflag-func") ;; base:::undebug()
-;;   ("q" nil :color blue)
-;;   ;; ess-debug-goto-input-event-marker
-;;   ;; ess-debug-insert-in-forward-ring
-;;   )
-
-
-
-
-
-;;; Mode-specific keybindings
-
-(general-define-key
- :keymaps 'emacs-lisp-mode-map
- :prefix "C-j"
- "c" 'check-parens            ;; Debugging "End of file during parsing"
- "d" 'eval-defun              ;; evals outermost expression containing or following point
- ;; ...and forces reset to initial value within a defvar,
- ;; defcustom, and defface expressions
- "j" 'counsel-el
- "m" 'pp-eval-expression      ;; "m" for minibuffer, where exp is evaluated
- "s" 'pp-eval-last-sexp       ;; evals expression preceding point
- "i" 'eval-print-last-sexp    ;; "i" for insert(ing result)
- "r" 'eval-region)
-
-;;https://github.com/noctuid/evil-guide
-;;https://raw.githubusercontent.com/emacs-evil/evil/master/doc/evil.pdf
-;;evil-tutor-start
-;;https://www.emacswiki.org/emacs/Evil
-;;https://emacs.stackexchange.com/questions/12175/instructions-on-how-to-work-with-evil-mode (see config)
-;;https://github.com/emacs-evil/evil-collection
-;;https://www.linode.com/docs/tools-reference/tools/emacs-evil-mode/
-;;https://github.com/noctuid/evil-guide/issues/11
-;;https://github.com/emacs-evil/evil/blob/3766a521a60e6fb0073220199425de478de759ad/evil-maps.el
 (use-package evil
-  :ensure t
   :config
   ;; (defalias 'evil-insert-state 'evil-emacs-state)    ;; Alternative to disabling insert-state bindings
-  ;; Base-emacs modes to start in normal state:
   (setq evil-normal-state-modes
 	'(lisp-interaction-mode                         ;; *scratch*
 	  emacs-lisp-mode                               ;; .el
@@ -484,99 +120,25 @@ Calls to my/defhydra should follow calls to defhydra."
 	evil-insert-state-modes
 	'(inferior-ess-r-mode)                           ;; ess R console
 	)
-  (evil-mode)
-  (evil-escape-mode))
+  (evil-mode))
 
-;; https://oremacs.com/swiper/
-;; https://github.com/abo-abo/swiper/wiki
-;; https://github.com/abo-abo/swiper/blob/master/ivy-hydra.el
-;; https://github.com/abo-abo/hydra/wiki/hydra-ivy-replacement
-;; https://writequit.org/denver-emacs/presentations/2017-04-11-ivy.html#fn.1
-;; See ivy info node
-;; Relevant maps:
-;; minibuffer maps
-;; ivy-minibuffer-map
-;; counsel command maps (e.g. counsel-find-file-map)
-;;  NOTE: '`' shows ?? as the binding. See counsel.el,
-;;  counsel-find-file-map, where '`' is bound to a call
-;;  to ivy-make-magic-action with arg "b", equiv. to
-;;  M-o b
 (use-package counsel ;; Installs and loads ivy and swiper as dependencies
-  :ensure t
+  :bind (:map ivy-minibuffer-map
+	      ("M-m" . ivy-mark)
+	      ("M-u" . ivy-unmark)
+	      ([remap ivy-done] . ivy-alt-done)
+	      ([remap ivy-alt-done] . ivy-done))
   :config
   (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
-	ivy-help-file "~/.emacs.d/ivy-help.org" ;; Custom help file
-	)
-  (define-key ivy-minibuffer-map (kbd "M-m") 'ivy-mark)
-  (define-key ivy-minibuffer-map (kbd "M-u") 'ivy-unmark)
-  (define-key ivy-minibuffer-map [remap ivy-done] 'ivy-alt-done)
-  (define-key ivy-minibuffer-map [remap ivy-alt-done] 'ivy-done)
-  (with-eval-after-load "hydra"
-    (defun counsel-hydra-integrate (old-func &rest args)
-      "Function used to advise `counsel-hydra-heads' to work with
-blue and amranath hydras."
-      (hydra-keyboard-quit)
-      (apply old-func args)
-      (funcall-interactively hydra-curr-body-fn))
-    (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
-    ;; Add counsel support to all of my hydras
-    (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads))
+	ivy-help-file "~/.emacs.d/ivy-help.org")
   ) ;; Usage within minibuffer: C-h m
-;; What do these symbols do? 
-;;  counsel-find-symbol
-;;  counsel-semantic
-;; Navigation:
-;;  counsel-outline (navigates comments)
-;; Completion:
-;;  complete-symbol / indent-for-symbol
-;;  counsel-company  
-;;  counsel-jedi
-
-(use-package projectile
-  :ensure t
-  :config
-  (setq projectile-completion-system 'ivy))
-
-;; counsel-set-variable (defcustom completion)
-
-;; ivy-push-view (https://oremacs.com/2016/06/27/ivy-push-view/)
-;; ivy-pop-view
 
 (use-package company
-  :ensure t
-  ;; For some reason, this enables C-h during completion
   :hook ((after-init . global-company-mode))
   :bind (:map company-mode-map
-	 ("<tab>" . company-indent-or-complete-common))
-  :config
-  (setq company-idle-delay 0
-  	company-show-numbers t ;; Use M-1, M-2, etc. to select
-  	company-minimum-prefix-length .2 ;; Min # chars before completion
-  	;; company-require-match nil
-  	;; Remove company-echo-metadata-frontend speedup completion navigation
-  	company-frontends '(company-pseudo-tooltip-unless-just-one-frontend
-  			    company-preview-if-just-one-frontend))
-  (customize-set-variable 'company-global-modes
-			  nil))
-			  ;; '(ess-r-mode)))
+	      ("<tab>" . company-indent-or-complete-common)))
 
-
-
-;; ess-show-traceback, ess-show-call-stack, ess-parse-errors (for syntax errors)
-;; ESS maps:
-;; ess-help-mode-map
-;; inferior-ess-mode-map
-;; ess-r-help-mode-map
-;; ess-watch-mode-mape
-;; ess-rdired-mode-map
-;; ess-electric-selection-map
-;; inferior-ess-mode-map
-;; ess-mode-map
-;; inferior-ess-r-mode-map
-;; electric-indent-mode
-;; https://github.com/MilesMcBain/esscss
 (use-package ess
-  :ensure t
   :config
   ;; Override Windows' help_type option of "html"
   ;; TODO: Set this as part of the r-newest call (C-j r) as well as
@@ -590,6 +152,7 @@ blue and amranath hydras."
   ;;   (evil-set-initial-state el 'emacs))
   (add-hook 'ess-r-mode-hook
 	    (lambda ()
+	      (ess-set-style 'RStudio)
 	      (setq-local skeleton-pair t) ;; TODO: https://www.emacswiki.org/emacs/AutoPairs
 	      (local-set-key (kbd "(") 'skeleton-pair-insert-maybe)
 	      (local-set-key (kbd "[") 'skeleton-pair-insert-maybe)
@@ -602,22 +165,11 @@ blue and amranath hydras."
 	      ;; 		nil
 	      ;; 		'local)
 	      (local-set-key (kbd "C-j") 'hydra-r/body)))
-  (setq ess-ask-for-ess-directory nil
-	ess-default-style 'RStudio
-	;; ess-style 'RStudio
-	ess-indent-offset 4 ;; override RStudio default of 2
-	ess-indent-with-fancy-comments nil ;; Investigate. My comments have had crazy indentation.
-	ess-nuke-trailing-whitespace t ;; might want to add to a file-save hook
+  (setq ess-indent-offset 4 ;; override ess-style of 'RStudio default of 2
+	ess-nuke-trailing-whitespace-p t ;; might want to add to a file-save hook
 	;; ess-S-quit-kill-buffers-p 'ask 
-        tab-always-indent 'complete
-	ess-eval-visibly nil          ;; Do not display input to iESS buffer; do not stall Emacs
 	inhibit-field-text-motion nil ;; value of nil means  motions respect fields, meaning
 	;; the (current) prompt acts as beginning of line (if prompt is read-only)
-	ess-use-company nil
-	ess-eldoc-show-on-symbol t ;; Show function signature in echo area when inside function and on symbol
-	;; NOTE: May not show until first argument is completed
-	ess-eldoc-abbreviation-style nil
-	eldoc-echo-area-use-multiline-p t ;; May not have an effect. Unclear.
 	display-buffer-alist `(("\\*company-documentation\\*"
 				(display-buffer-reuse-mode-window display-buffer-in-side-window)
 				(mode. ess-r-help-mode)
@@ -673,7 +225,6 @@ blue and amranath hydras."
 
 ;;(define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
 
-
 ;; other-window-scroll-buffer
 ;; (ess-display-help-apropos (nth company-selection company-candidates))
 
@@ -707,7 +258,71 @@ blue and amranath hydras."
 ;; See sections 8 onward
 ;; Investigate whether C-w o is currently enough, or if ess-quit does something additional that is missing 
 
+;;; Keybindings
 
+(use-package general)
+(load "my-hydras")
+
+
+
+(general-define-key
+ :keymaps 'emacs-lisp-mode-map
+ :prefix "C-j"
+ "c" 'check-parens            ;; Debugging "End of file during parsing"
+ "d" 'eval-defun              ;; evals outermost expression containing or following point
+ ;; ...and forces reset to initial value within a defvar,
+ ;; defcustom, and defface expressions
+ "j" 'counsel-el
+ "m" 'pp-eval-expression      ;; "m" for minibuffer, where exp is evaluated
+ "s" 'pp-eval-last-sexp       ;; evals expression preceding point
+ "i" 'eval-print-last-sexp    ;; "i" for insert(ing result)
+ "r" 'eval-region)
+
+(define-key global-map (kbd "C-x C-c") 'kill-emacs)
+
+(general-unbind help-map
+  "C-h" ;; Enable which-key navigation of help-map bindings
+  "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
+
+(general-define-key
+ :keymaps 'help-map
+ "M" 'describe-minor-mode
+ "s" 'describe-symbol
+ )
+
+(general-define-key
+ :prefix-command 'my/bookmarks-map
+ "d" 'bookmark-delete
+ "D" 'counsel-bookmarked-directory
+ "e" 'edit-bookmarks
+ "j" 'counsel-bookmark ;; TODO: Customize counsel-bookmark action
+ ;; list to include delete, rename, and set
+ "r" 'bookmark-rename
+ "s" 'bookmark-set)
+
+(general-define-key
+ :prefix-command 'my/files-map
+ "b" 'my/bookmarks-map
+ "f" 'counsel-find-file
+ "i" 'insert-file
+ "j" 'counsel-file-jump
+ "l" 'counsel-locate
+ "r" 'counsel-recentf
+ ;; "z" 'counsel-fzf
+ )
+
+(general-define-key
+  :states '(motion insert emacs)
+  :prefix "SPC"
+  :non-normal-prefix "C-SPC"
+  "" nil
+  "SPC" 'counsel-M-x
+  "'" 'ivy-resume
+  "b" 'hydra-buffer/body
+  "f" 'my/files-map
+  "o" 'clm/toggle-command-log-buffer
+  "w" 'hydra-window/body
+  )
 
 ;;; Further reading:
 
@@ -719,3 +334,57 @@ blue and amranath hydras."
 ;; https://github.com/emacs-tw/awesome-emacs
 ;; https://github.com/MilesMcBain/esscss
 ;; https://www.masteringemacs.org/about
+
+;;; Evil
+;;https://github.com/noctuid/evil-guide
+;;https://raw.githubusercontent.com/emacs-evil/evil/master/doc/evil.pdf
+;;evil-tutor-start
+;;https://www.emacswiki.org/emacs/Evil
+;;https://emacs.stackexchange.com/questions/12175/instructions-on-how-to-work-with-evil-mode (see config)
+;;https://github.com/emacs-evil/evil-collection
+;;https://www.linode.com/docs/tools-reference/tools/emacs-evil-mode/
+;;https://github.com/noctuid/evil-guide/issues/11
+;;https://github.com/emacs-evil/evil/blob/3766a521a60e6fb0073220199425de478de759ad/evil-maps.el
+
+;;; Counsel
+;; https://oremacs.com/swiper/
+;; https://github.com/abo-abo/swiper/wiki
+;; https://github.com/abo-abo/swiper/blob/master/ivy-hydra.el
+;; https://github.com/abo-abo/hydra/wiki/hydra-ivy-replacement
+;; https://writequit.org/denver-emacs/presentations/2017-04-11-ivy.html#fn.1
+;; See ivy info node
+;; Relevant maps:
+;; minibuffer maps
+;; ivy-minibuffer-map
+;; counsel command maps (e.g. counsel-find-file-map)
+;;  NOTE: '`' shows ?? as the binding. See counsel.el,
+;;  counsel-find-file-map, where '`' is bound to a call
+;;  to ivy-make-magic-action with arg "b", equiv. to
+;;  M-o b
+;; Investigate actions for each counsel command
+;; E.g. M-o within counsel-M-x contains a jump to def action and
+;; a help action
+;; Navigation:
+;;  counsel-outline (navigates comments)
+;; Completion:
+;;  indent-for-symbol
+;;  counsel-company  
+;;  counsel-jedi
+;; counsel-set-variable (defcustom completion)
+;; ivy-push-view (https://oremacs.com/2016/06/27/ivy-push-view/)
+;; ivy-pop-view
+
+;;; ESS
+;; ess-show-traceback, ess-show-call-stack, ess-parse-errors (for syntax errors)
+;; ESS maps:
+;; ess-help-mode-map
+;; inferior-ess-mode-map
+;; ess-r-help-mode-map
+;; ess-watch-mode-mape
+;; ess-rdired-mode-map
+;; ess-electric-selection-map
+;; inferior-ess-mode-map
+;; ess-mode-map
+;; inferior-ess-r-mode-map
+;; electric-indent-mode
+;; https://github.com/MilesMcBain/esscss
