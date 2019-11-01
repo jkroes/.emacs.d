@@ -1,0 +1,38 @@
+
+;; ----- smex-history -----
+(
+ customize-group
+ comment-region
+ info-lookup-symbol
+ describe-symbol
+ customize-apropos
+ company-indent-or-complete-common
+ uncomment-region
+)
+
+;; ----- smex-data -----
+(
+ (counsel-descbinds . 2)
+ (info-apropos . 2)
+ (which-key-show-keymap . 2)
+ (windmove-left . 1)
+ (edebug-eval-top-level-form . 1)
+ (command-log-mode . 1)
+ (find-function . 3)
+ (customize-group . 18)
+ (customize-apropos . 4)
+ (comment-region . 13)
+ (find-file . 3)
+ (uncomment-region . 4)
+ (which-key-C-h-dispatch . 6)
+ (which-key-show-standard-help . 3)
+ (view-buffer-other-frame . 1)
+ (hydra-buffer/body . 2)
+ (split-window-right . 1)
+ (re-builder . 1)
+ (check-parens . 1)
+ (indent-region . 1)
+ (company-indent-or-complete-common . 1)
+ (describe-symbol . 1)
+ (info-lookup-symbol . 1)
+)

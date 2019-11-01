@@ -1,10 +1,4 @@
-*
-!.gitignore
-!*.el
-!*.org
-!bookmarks
-!.Rprofile
-!emacs-custom.el
-!which-key-summary
-!company-temp-notes
-!recentf
+\#*\#
+*~
+elpa
+quelpa

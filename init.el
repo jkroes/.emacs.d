@@ -118,7 +118,8 @@ blue and amranath hydras."
   (setq evil-normal-state-modes
 	'(lisp-interaction-mode                         ;; *scratch*
 	  emacs-lisp-mode
-	  ess-r-mode)
+	  ess-r-mode
+	  fundamental-mode)
         evil-insert-state-modes
 	'(inferior-ess-r-mode))
   (evil-mode))
