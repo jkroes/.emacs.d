@@ -99,7 +99,9 @@
 (use-package ace-window)
 (use-package which-key :bind (:map help-map ("C-w" . which-key-show-keymap)))
 (use-package hydra
-  :after counsel
+  :after counsel ;; Untested whether this is necessary,
+  ;; but might be wise if counsel-hydra-heads isn't autoloaded and counsel
+  ;; hasn't otherwise been loaded
   :config
   (defun counsel-hydra-integrate (old-func &rest args)
     "Function used to advise `counsel-hydra-heads' to work with
@@ -115,13 +117,13 @@ blue and amranath hydras."
   ;; (defalias 'evil-insert-state 'evil-emacs-state)    ;; Alternative to disabling insert-state bindings
   (setq evil-normal-state-modes
 	'(lisp-interaction-mode                         ;; *scratch*
-	  emacs-lisp-mode                               ;; .el
-	  ess-r-mode)                                   ;; .R
-	evil-insert-state-modes
-	'(inferior-ess-r-mode)                           ;; ess R console
-	)
+	  emacs-lisp-mode
+	  ess-r-mode)
+        evil-insert-state-modes
+	'(inferior-ess-r-mode))
   (evil-mode))
 
+;; Usage within minibuffer: C-h m
 (use-package counsel ;; Installs and loads ivy and swiper as dependencies
   :bind (:map ivy-minibuffer-map
 	      ("M-m" . ivy-mark)
@@ -130,29 +132,31 @@ blue and amranath hydras."
 	      ([remap ivy-alt-done] . ivy-done))
   :config
   (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
-	ivy-help-file "~/.emacs.d/ivy-help.org")
-  ) ;; Usage within minibuffer: C-h m
+	ivy-help-file "~/.emacs.d/ivy-help.org"))
 
 (use-package company
   :hook ((after-init . global-company-mode))
   :bind (:map company-mode-map
 	      ("<tab>" . company-indent-or-complete-common)))
 
+;; force-buffer-current
 (use-package ess
   :config
-  ;; Override Windows' help_type option of "html"
-  ;; TODO: Set this as part of the r-newest call (C-j r) as well as
-  ;; with force-buffer-current
-  (cond ((eq system-type 'windows-nt)
-	 (setenv "R_PROFILE" "C:\\Users\\jkroes\\.emacs.d"))
-	((eq system-type 'darwin)
-	 (setenv "R_PROFILE" "~/.emacs.d")))
-  (require 'info-look)                ;; needed for info-lookup-other-window-flag to exist
-  ;; (dolist (el '(ess-debug-minor-mode ess-r-help-mode inferior-ess-r-mode))
-  ;;   (evil-set-initial-state el 'emacs))
+  ;; Override Windows' help_type option of "html", to open help
+  ;; in help buffer, not browser
+  (pcase system-type
+    ('windows-nt (setenv "R_PROFILE" "C:\\Users\\jkroes\\.emacs.d"))
+    ('darwin (setenv "R_PROFILE" "~/.emacs.d")))
+  ;; (cond ((eq system-type 'windows-nt)
+  ;; 	 (setenv "R_PROFILE" "C:\\Users\\jkroes\\.emacs.d"))
+  ;; 	((eq system-type 'darwin)
+  ;; 	 (setenv "R_PROFILE" "~/.emacs.d")))
   (add-hook 'ess-r-mode-hook
 	    (lambda ()
 	      (ess-set-style 'RStudio)
+	      ;; https://www.gnu.org/software/emacs/manual/html_node/autotype/Inserting-Pairs.html#Inserting-Pairs
+	      ;; https://www.emacswiki.org/emacs/SkeletonPair
+	      ;; https://www.emacswiki.org/emacs/AutoPairs
 	      (setq-local skeleton-pair t) ;; TODO: https://www.emacswiki.org/emacs/AutoPairs
 	      (local-set-key (kbd "(") 'skeleton-pair-insert-maybe)
 	      (local-set-key (kbd "[") 'skeleton-pair-insert-maybe)
@@ -196,7 +200,6 @@ blue and amranath hydras."
 			       ;; TODO: Convert display-buffer-alist to an add statement to separate out non-ess buffers below
 			       ("\\*Help\\*" display-buffer-same-window)
 			       ("\\*Apropos\\*" display-buffer-same-window))
-	info-lookup-other-window-flag t ;; TODO: move
 	;; TODO: Specify paths to Windows binary and make this OS-conditional
 	;; inferior-ess-r-program "/usr/local/bin/r"
 	)
