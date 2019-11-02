@@ -80,7 +80,7 @@
        ;; Alternatively, add dir to exec-path
        (setq find-program "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe")))
 
-;; Custom configuration
+;;; Custom configuration
 
 (setq custom-file "~/.emacs.d/emacs-custom.el")
 (load custom-file)
@@ -144,73 +144,30 @@ blue and amranath hydras."
 (use-package ess
   :config
   ;; Override Windows' help_type option of "html", to open help
-  ;; in help buffer, not browser
+  ;; in help buffer, not browser (see contents of .Rprofile)
   (pcase system-type
     ('windows-nt (setenv "R_PROFILE" "C:\\Users\\jkroes\\.emacs.d"))
     ('darwin (setenv "R_PROFILE" "~/.emacs.d")))
-  ;; (cond ((eq system-type 'windows-nt)
-  ;; 	 (setenv "R_PROFILE" "C:\\Users\\jkroes\\.emacs.d"))
-  ;; 	((eq system-type 'darwin)
-  ;; 	 (setenv "R_PROFILE" "~/.emacs.d")))
+  ;; inferior-ess-r-program
+
   (add-hook 'ess-r-mode-hook
 	    (lambda ()
 	      (ess-set-style 'RStudio)
-	      ;; https://www.gnu.org/software/emacs/manual/html_node/autotype/Inserting-Pairs.html#Inserting-Pairs
-	      ;; https://www.emacswiki.org/emacs/SkeletonPair
-	      ;; https://www.emacswiki.org/emacs/AutoPairs
-	      (setq-local skeleton-pair t) ;; TODO: https://www.emacswiki.org/emacs/AutoPairs
-	      (local-set-key (kbd "(") 'skeleton-pair-insert-maybe)
-	      (local-set-key (kbd "[") 'skeleton-pair-insert-maybe)
-	      ;; "{" already set to skeleton-pair-insert-maybe
-	      (local-set-key (kbd "\"") 'skeleton-pair-insert-maybe)
-	      (local-set-key (kbd "\'") 'skeleton-pair-insert-maybe)
-	      (local-set-key (kbd "\`") 'skeleton-pair-insert-maybe)
-	      ;; (add-hook 'ess-idle-timer-functions
-	      ;; 		'ess-indent-or-complete
-	      ;; 		nil
-	      ;; 		'local)
-	      (local-set-key (kbd "C-j") 'hydra-r/body)))
-  (setq ess-indent-offset 4 ;; override ess-style of 'RStudio default of 2
-	ess-nuke-trailing-whitespace-p t ;; might want to add to a file-save hook
+	      (setq-local ess-indent-offset 4) ;; RStudio uses a value of 2
+	      (local-set-key (kbd "C-j") 'hydra-r/body)
+	      ;; Rely on electric-pair-mode instead of skeleton
+	      (local-set-key (kbd "{") 'self-insert-command)
+	      (local-set-key (kbd "}") 'self-insert-command)
+	      ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
+	      ;; if electric-layout-mode is enabled (it is not by default)
+	      (setq-local electric-layout-rules nil)))
+  ;; (add-hook 'ess-idle-timer-functions
+  ;; 		'ess-indent-or-complete
+  ;; 		nil
+  ;; 		'local)
+  (setq ess-nuke-trailing-whitespace-p t
 	;; ess-S-quit-kill-buffers-p 'ask 
-	inhibit-field-text-motion nil ;; value of nil means  motions respect fields, meaning
-	;; the (current) prompt acts as beginning of line (if prompt is read-only)
-	display-buffer-alist `(("\\*company-documentation\\*"
-				(display-buffer-reuse-mode-window display-buffer-in-side-window)
-				(mode. ess-r-help-mode)
-				(side . right)
-				(slot . 1)
-				(window-width . 0.33)
-				(reusable-frames . nil))
-			       ("\\*R Dired"
-				(display-buffer-reuse-mode-window display-buffer-in-side-window)
-				(side . right)
-				(slot . -1)
-				(window-width . 0.33)
-				(reusable-frames . nil))
-			       ("\\*R:"
-				(display-buffer-reuse-mode-window display-buffer-below-selected)
-				(window-height . 0.5)
-				(reusable-frames . nil))
-			       ("\\*Help\\[R"
-				(display-buffer-reuse-mode-window display-buffer-in-side-window)
-				(side . right)
-				(slot . 1)
-				(window-width . 0.33)
-				(reusable-frames . nil))
-			       ;; TODO: Convert display-buffer-alist to an add statement to separate out non-ess buffers below
-			       ("\\*Help\\*" display-buffer-same-window)
-			       ("\\*Apropos\\*" display-buffer-same-window))
-	;; TODO: Specify paths to Windows binary and make this OS-conditional
-	;; inferior-ess-r-program "/usr/local/bin/r"
-	)
-  ;; Function to add the pipe operator (set in map above)
-  (defun my/add-pipe ()
-    "Adds a pipe operator %>% with one space to the left and then starts a newline with proper indentation"
-    (interactive)
-    (just-one-space 1)
-    (insert "%>%")
-    (ess-newline-and-indent)))
+	inhibit-field-text-motion nil)) ;; prompt acts as beginning of line if prompt is read-only
 
 ;; Prevent window displaying company documentation buffer from vanishing when
 ;; invoking a binding not in company--electric-commands
@@ -225,35 +182,10 @@ blue and amranath hydras."
     (unless obj-help
       (company-show-doc-buffer))
     ))
+
 ;; (define-key company-active-map (kbd "C-h") 'show-company-doc-as-ess-help)
-
 ;;(define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
-
-;; other-window-scroll-buffer
 ;; (ess-display-help-apropos (nth company-selection company-candidates))
-
-
-;; (defun switch-to-debug (old-func &rest args)
-;;   (when (ess-debug-active-p)
-;;     (mapcar (lambda (buffer)
-;; 	      (when (string= "inferior-ess-r-mode" (buffer-local-value 'major-mode buffer))
-;; 		(select-window (get-buffer-window buffer))))
-;; 	    (buffer-list)))
-;;   (apply old-func args))
-
-;; (advice-add 'ess-debug-start :around 'switch-to-debug)
-;; (advice-add 'ess-load-file :around 'switch-to-debug)
-	      
-  ;; (add-hook 'ess-debug-minor-mode-hook
-  ;; 	    (lambda ()
-  ;; 	      (with-temp-message "This worked?"
-  ;; 		(mapcar (lambda (buffer)
-  ;; 			(when (string= "inferior-ess-r-mode" (buffer-local-value 'major-mode buffer))
-  ;; 			  (select-window (get-buffer-window buffer))))
-  ;; 			(buffer-list)))))
-
-;; electric-layout-mode w/ ess-r-mode-hook. Lower down in manual, it says braces are uto-indented,
-;;  and user variables are provided to control amount of indentation/style
 ;; tab-always-indent instead of ess-tab-always-indent or ess-tab-complete-in-script
 ;; TODO: Make ess-load-file default to current buffer if buffer is an R script
 ;; TODO: set-initial-state for ess buffers
@@ -266,8 +198,6 @@ blue and amranath hydras."
 
 (use-package general)
 (load "my-hydras")
-
-
 
 (general-define-key
  :keymaps 'emacs-lisp-mode-map
@@ -327,6 +257,37 @@ blue and amranath hydras."
   "o" 'clm/toggle-command-log-buffer
   "w" 'hydra-window/body
   )
+
+;;; Buffer window display management
+
+(setq display-buffer-alist `(("\\*company-documentation\\*"
+			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
+			      (mode. ess-r-help-mode)
+			      (side . right)
+			      (slot . 1)
+			      (window-width . 0.33)
+			      (reusable-frames . nil))
+			     ("\\*R Dired"
+			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
+			      (side . right)
+			      (slot . -1)
+			      (window-width . 0.33)
+			      (reusable-frames . nil))
+			     ("\\*R:"
+			      (display-buffer-reuse-mode-window display-buffer-below-selected)
+			      (window-height . 0.5)
+			      (reusable-frames . nil))
+			     ("\\*Help\\[R"
+			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
+			      (side . right)
+			      (slot . 1)
+			      (window-width . 0.33)
+			      (reusable-frames . nil))
+			     ("\\*Help\\*" display-buffer-same-window)
+			     ("\\*Apropos\\*" display-buffer-same-window)))
+
+
+
 
 ;;; Further reading:
 

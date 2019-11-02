@@ -1,13 +1,13 @@
 
 ;; ----- smex-history -----
 (
- customize-group
- comment-region
- info-lookup-symbol
- describe-symbol
- customize-apropos
  company-indent-or-complete-common
- uncomment-region
+ company-complete
+ customize-group
+ customize-apropos
+ semantic-mode
+ ess-complete-object-name
+ indent-region
 )
 
 ;; ----- smex-data -----
@@ -19,11 +19,11 @@
  (edebug-eval-top-level-form . 1)
  (command-log-mode . 1)
  (find-function . 3)
- (customize-group . 18)
- (customize-apropos . 4)
- (comment-region . 13)
+ (customize-group . 33)
+ (customize-apropos . 11)
+ (comment-region . 16)
  (find-file . 3)
- (uncomment-region . 4)
+ (uncomment-region . 6)
  (which-key-C-h-dispatch . 6)
  (which-key-show-standard-help . 3)
  (view-buffer-other-frame . 1)
@@ -31,8 +31,16 @@
  (split-window-right . 1)
  (re-builder . 1)
  (check-parens . 1)
- (indent-region . 1)
- (company-indent-or-complete-common . 1)
+ (indent-region . 2)
+ (company-indent-or-complete-common . 2)
  (describe-symbol . 1)
  (info-lookup-symbol . 1)
+ (org-open-link-from-string . 1)
+ (calendar-exchange-point-and-mark . 1)
+ (browse-url . 3)
+ (mark-sexp . 5)
+ (set-mark-command . 1)
+ (ess-complete-object-name . 1)
+ (semantic-mode . 1)
+ (company-complete . 2)
 )
