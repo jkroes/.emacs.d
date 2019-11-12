@@ -36,16 +36,19 @@ when? can have values of before-init, after-init, or anything else for no profil
   (switch-to-buffer "*scratch*"))
 
 (defun my/split-window-right-move ()
+  "Split window vertically and move to new window."
   (interactive)
   (split-window-right)
   (windmove-right))
 
 (defun my/split-window-below-move ()
+  "Split window horizontally and move to new window."
   (interactive)
   (split-window-below)
   (windmove-down))
 
 (defun my/delete-other-windows-and-buffers ()
+  "Delete other windows and buffers."
   (interactive)
   (defun select-kill-window-and-buffer (window)
     (select-window window)
@@ -56,3 +59,12 @@ when? can have values of before-init, after-init, or anything else for no profil
 	(kill-buffer-query-functions ;; Disable prompt to end process buffers
 	 (delq 'process-kill-buffer-query-function kill-buffer-query-functions)))
     (mapc 'select-kill-window-and-buffer other-windows)))
+
+(defun my/start-r ()
+  "Start an R process."
+  (interactive)
+  (save-selected-window
+    (run-ess-r-newest)
+    (ess-rdired))
+  (ess-force-buffer-current))
+

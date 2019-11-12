@@ -135,56 +135,14 @@ blue and amranath hydras."
   (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
 	ivy-help-file "~/.emacs.d/ivy-help.org"))
 
+;; To add 
 (use-package company
-  :hook ((after-init . global-company-mode))
+  ;; :hook ((after-init . global-company-mode))
   :bind (:map company-mode-map
 	      ("<tab>" . company-indent-or-complete-common)))
 
-;; force-buffer-current
-(use-package ess
-  :config
-  ;; Override Windows' help_type option of "html", to open help
-  ;; in help buffer, not browser (see contents of .Rprofile)
-  (pcase system-type
-    ('windows-nt (setenv "R_PROFILE" "C:\\Users\\jkroes\\.emacs.d"))
-    ('darwin (setenv "R_PROFILE" "~/.emacs.d")))
-  ;; inferior-ess-r-program
 
-  (add-hook 'ess-r-mode-hook
-	    (lambda ()
-	      (ess-set-style 'RStudio)
-	      (setq-local ess-indent-offset 4) ;; RStudio uses a value of 2
-	      (local-set-key (kbd "C-j") 'hydra-r/body)
-	      ;; Rely on electric-pair-mode instead of skeleton
-	      (local-set-key (kbd "{") 'self-insert-command)
-	      (local-set-key (kbd "}") 'self-insert-command)
-	      ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
-	      ;; if electric-layout-mode is enabled (it is not by default)
-	      (setq-local electric-layout-rules nil)))
-  ;; (add-hook 'ess-idle-timer-functions
-  ;; 		'ess-indent-or-complete
-  ;; 		nil
-  ;; 		'local)
-  (setq ess-nuke-trailing-whitespace-p t
-	;; ess-S-quit-kill-buffers-p 'ask 
-	inhibit-field-text-motion nil)) ;; prompt acts as beginning of line if prompt is read-only
 
-;; Prevent window displaying company documentation buffer from vanishing when
-;; invoking a binding not in company--electric-commands
-;; (defun forget-saved-window-config ()
-;;   (setq company--electric-saved-window-configuration nil))
-;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
-
-(defun show-company-doc-as-ess-help ()
-  (interactive)
-  (let* ((selected (nth company-selection company-candidates))
-	 (obj-help (ess-display-help-on-object selected)))
-    (unless obj-help
-      (company-show-doc-buffer))
-    ))
-
-;; (define-key company-active-map (kbd "C-h") 'show-company-doc-as-ess-help)
-;;(define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
 ;; (ess-display-help-apropos (nth company-selection company-candidates))
 ;; tab-always-indent instead of ess-tab-always-indent or ess-tab-complete-in-script
 ;; TODO: Make ess-load-file default to current buffer if buffer is an R script
@@ -193,8 +151,60 @@ blue and amranath hydras."
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/List-Motion.html#List-Motion -- recommended by manual
 ;; See sections 8 onward
 ;; Investigate whether C-w o is currently enough, or if ess-quit does something additional that is missing 
+  ;; inferior-ess-r-program
+  ;; (add-hook 'ess-idle-timer-functions
+  ;; 		'ess-indent-or-complete
+  ;; 		nil
+  ;; 		'local)
+(use-package ess
+  :hook (ess-r-mode . config-ess-r-mode)
+  :config
+  ;; Prevent window displaying company documentation buffer from vanishing when
+  ;; invoking a binding not in company--electric-commands
+  ;; (defun forget-saved-window-config ()
+  ;;   (setq company--electric-saved-window-configuration nil))
+  ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
+
+  (defun show-company-doc-as-ess-help ()
+    "Show ess help if available, else show company help"
+    (interactive)
+    (let* ((selected (nth company-selection company-candidates))
+	   (obj-help (ess-display-help-on-object selected)))
+      (unless obj-help
+	(company-show-doc-buffer))
+      ))
+
+  (defun config-ess-r-mode ()
+    ;; TODO: Only bind in map for ess-r-mode
+    (define-key company-active-map (kbd "C-h") 'show-company-doc-as-ess-help)
+    (ess-set-style 'RStudio)
+    (setq-local ess-indent-offset 4) ;; RStudio uses a value of 2
+    (local-set-key (kbd "C-j") 'hydra-r/body)
+    (my/defhydra 'hydra-r)
+    (my/defhydra 'hydra-r-help)
+    (my/defhydra 'hydra-r-eval)
+    (my/defhydra 'hydra-r-debug)
+    ;; Rely on electric-pair-mode instead of skeleton
+    (local-set-key (kbd "{") 'self-insert-command)
+    (local-set-key (kbd "}") 'self-insert-command)
+    ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
+    ;; if electric-layout-mode is enabled (it is not by default)
+    (setq-local electric-layout-rules nil))
+  ;; Override Windows' help_type option of "html", to open help
+  ;; in help buffer, not browser (see contents of .Rprofile)
+  (pcase system-type
+    ('windows-nt (setenv "R_PROFILE" "C:\\Users\\jkroes\\.emacs.d"))
+    ('darwin (setenv "R_PROFILE" "~/.emacs.d")))
+  (setq ess-nuke-trailing-whitespace-p t
+	;; ess-S-quit-kill-buffers-p 'ask 
+	inhibit-field-text-motion nil)) ;; prompt acts as beginning of line if prompt is read-only
+
 
 ;;; Keybindings
+
+(use-package key-chord
+  :config
+  (key-chord-mode 1))
 
 (use-package general)
 (load "my-hydras")
@@ -224,15 +234,20 @@ blue and amranath hydras."
  "s" 'describe-symbol
  )
 
+
 (general-define-key
- :prefix-command 'my/bookmarks-map
- "d" 'bookmark-delete
- "D" 'counsel-bookmarked-directory
- "e" 'edit-bookmarks
- "j" 'counsel-bookmark ;; TODO: Customize counsel-bookmark action
- ;; list to include delete, rename, and set
- "r" 'bookmark-rename
- "s" 'bookmark-set)
+  :states '(motion insert emacs)
+  :prefix "SPC"
+  :non-normal-prefix (general-chord "fd")
+  ;;:non-normal-prefix "C-SPC"
+  "" nil
+  "SPC" 'counsel-M-x
+  "'" 'ivy-resume
+  "b" 'hydra-buffer/body
+  "f" 'my/files-map
+  ;; "o" 'clm/toggle-command-log-buffer
+  "w" 'hydra-window/body
+  )
 
 (general-define-key
  :prefix-command 'my/files-map
@@ -246,17 +261,15 @@ blue and amranath hydras."
  )
 
 (general-define-key
-  :states '(motion insert emacs)
-  :prefix "SPC"
-  :non-normal-prefix "C-SPC"
-  "" nil
-  "SPC" 'counsel-M-x
-  "'" 'ivy-resume
-  "b" 'hydra-buffer/body
-  "f" 'my/files-map
-  "o" 'clm/toggle-command-log-buffer
-  "w" 'hydra-window/body
-  )
+ :prefix-command 'my/bookmarks-map
+ "d" 'bookmark-delete
+ "D" 'counsel-bookmarked-directory
+ "e" 'edit-bookmarks
+ "j" 'counsel-bookmark ;; TODO: Customize counsel-bookmark action
+ ;; list to include delete, rename, and set
+ "r" 'bookmark-rename
+ "s" 'bookmark-set)
+
 
 ;;; Buffer window display management
 

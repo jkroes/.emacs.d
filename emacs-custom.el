@@ -11,7 +11,7 @@
  '(company-frontends
    (quote
     (company-pseudo-tooltip-unless-just-one-frontend company-preview-if-just-one-frontend)) nil nil "Rm company-echo-metadata-frontend to speed up candidate navigation")
- '(company-global-modes (quote (ess-r-mode)) nil nil "TODO: Change nil to '(ess-r-mode)")
+ '(company-global-modes (quote (ess-r-mode emacs-lisp-mode)))
  '(company-idle-delay 0)
  '(company-minimum-prefix-length 0.2 nil nil "Min # chars before completion")
  '(company-show-numbers t nil nil "Use M-1, etc., to select candidates")
@@ -33,7 +33,7 @@
  '(ess-eval-visibly nil)
  '(ess-indent-with-fancy-comments nil nil nil "I suspect this is the reason comments were forced toward the right margin in R scripts")
  '(ess-style (quote RStudio))
- '(ess-use-company nil)
+ '(ess-use-company t)
  '(evil-default-state (quote emacs))
  '(evil-emacs-state-modes nil)
  '(evil-escape-delay 0.2)
@@ -44,6 +44,7 @@
  '(evil-motion-state-modes nil nil nil "Read-only modes start in default mode (should be emacs)")
  '(evil-overriding-maps nil)
  '(evil-want-keybinding nil)
+ '(global-company-mode t)
  '(global-display-line-numbers-mode t)
  '(global-page-break-lines-mode t nil (page-break-lines))
  '(hydra-hint-display-type (quote lv))
@@ -58,7 +59,7 @@
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (company projectile counsel hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window)))
+    (key-chord company projectile counsel hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window)))
  '(recentf-max-saved-items 100 nil nil "Affects number of candidates with ivy-use-virtual-buffers?")
  '(recentf-mode t)
  '(scroll-bar-mode nil)
@@ -83,7 +84,7 @@
  '(which-key-show-operator-state-maps t)
  '(which-key-show-transient-maps t nil nil "see modified which-key--update")
  '(which-key-side-window-location (quote bottom))
- '(which-key-side-window-max-height 0.2)
+ '(which-key-side-window-max-height 0.1)
  '(which-key-sort-order (quote which-key-key-order-alpha))
  '(which-key-sort-uppercase-first nil)
  '(winner-mode t))

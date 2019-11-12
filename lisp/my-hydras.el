@@ -34,7 +34,6 @@
   ("r" evil-window-rotate-downwards)
   ("R" evil-window-rotate-upwards)
   ("z" winner-undo)
-  ;;("z" my/hydra-winner-undo)
   ;; ("z" (progn
   ;; 	 (winner-undo)
   ;; 	 (setq this-command 'winner-undo))
@@ -50,12 +49,7 @@
   ("h" hydra-r-help/body :color blue)
   ("j" ess-goto-end-of-function-or-para)
   ("k" ess-goto-beginning-of-function-or-para)
-  ("r" (lambda()
-  	 (interactive)
-  	 (save-selected-window
-  	   (run-ess-r-newest)
-  	   ;;(ess-rdired)
-  	   )))
+  ("r" my/start-r :color blue)
   ("s" ess-switch-to-inferior-or-script-buffer :color blue)
   ("z" ess-submit-bug-report :color blue)
   ;; prog-indent-sexp
@@ -85,20 +79,16 @@
   ("e" ess-eval-buffer-from-here-to-end)
   ("E" ess-dirs)
   ("f" ess-load-file)
-  ("F" ess-force-buffer-current) ;; Only needed when a detached process is created (e.g. via request-a-process)
   ("i" inferior-ess-reload)
-  ("P" ess-request-a-process) ;; Switch iESS process and its buffer
-  ;; in the iESS buffer
-  ("p" ess-switch-process) ;; Switch process attached to script
+  ;; ("P" ess-request-a-process) ;; Display selected iESS process and buffer
+  ("p" ess-switch-process) ;; Switch process attached to script (current process buffer auto-displays if new,
+  ;; but any script evaluation will auto-display attached process buffer if not already visible
   ("s" ess-switch-to-inferior-or-script-buffer)
   ("r" hydra-r/body :color blue)
   ("R" ess-rdired)
   ("u" ess-use-this-dir)
-  ("w" ess-change-directory)
-  ;; ess-force-buffer-current ;; Currently repeated C-g seems to work
-  ;; comint-interrupt-subjob
-  ;; ess-interrupt
-  )
+  ("w" ess-change-directory))
+
 
 ;; Note that several commands available in the inferior ess R
 ;; process while debugging are absent:
@@ -113,17 +103,17 @@
 (defhydra hydra-r-debug () ;; ess-debug-minor-mode-map and ess-dev-map
   "R-debug"
   ("c" ess-debug-command-continue)
-  ("C" ess-debug-command-quit :color blue) ;; Investigate diff b/w this and ess-debug-stop
   ("f" ess-debug-flag-for-debugging) ;; base:::debug()
+  ("F" ess-debug-unflag-for-debugging) ;; base:::undebug()
   ("g" ess-debug-goto-debug-point)
   ("n" ess-debug-command-next)
   ("N" next-error)
   ("p" previous-error)
+  ("q" ess-debug-command-quit :color blue) ;; Investigate diff b/w this and ess-debug-stop
   ("Q" ess-debug-stop :color blue)
-  ("s" ess-switch-to-ess :color blue)
-  ("t" ess-debug-toggle-error-action) ;; Sets value of error option (e.g. options(error=recover)) for active process
-  ("u" ess-debug-command-up) ;; TODO: Does this work without recover()?
-  ("U" ess-debug-unflag-for-debugging) ;; base:::undebug()
+  ("s" ess-switch-to-ESS :color blue)
+  ;; ("t" ess-debug-toggle-error-action) ;; Sets value of error option (e.g. options(error=recover)) for active process
+  ;; ("u" ess-debug-command-up) ;; NOTE: currently broken. Use recover() from within debugging session (i.e. browse())
   ;; ess-debug-goto-input-event-marker
   ;; ess-debug-insert-in-forward-ring
   )
