@@ -150,7 +150,6 @@ blue and amranath hydras."
 ;; See section 7.4 of ess manual for comments, indents, style
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/List-Motion.html#List-Motion -- recommended by manual
 ;; See sections 8 onward
-;; Investigate whether C-w o is currently enough, or if ess-quit does something additional that is missing 
   ;; inferior-ess-r-program
   ;; (add-hook 'ess-idle-timer-functions
   ;; 		'ess-indent-or-complete

@@ -1,9 +1,9 @@
 
 ;; ----- smex-history -----
 (
+ customize-group
  ess-display-help-apropos
  ess-display-help-on-object
- customize-group
  describe-symbol
  find-file
  customize-apropos
@@ -19,7 +19,7 @@
  (edebug-eval-top-level-form . 1)
  (command-log-mode . 1)
  (find-function . 3)
- (customize-group . 41)
+ (customize-group . 44)
  (customize-apropos . 12)
  (comment-region . 16)
  (find-file . 5)
