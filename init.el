@@ -98,20 +98,6 @@
 (use-package page-break-lines)
 (use-package ace-window)
 (use-package which-key :bind (:map help-map ("C-w" . which-key-show-keymap)))
-(use-package hydra
-  :after counsel ;; Untested whether this is necessary,
-  ;; but might be wise if counsel-hydra-heads isn't autoloaded and counsel
-  ;; hasn't otherwise been loaded
-  :config
-  (defun counsel-hydra-integrate (old-func &rest args)
-    "Function used to advise `counsel-hydra-heads' to work with
-blue and amranath hydras."
-    (hydra-keyboard-quit)
-    (apply old-func args)
-    (funcall-interactively hydra-curr-body-fn))
-  (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
-  (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads))
-
 (use-package evil
   :config
   ;; (defalias 'evil-insert-state 'evil-emacs-state)    ;; Alternative to disabling insert-state bindings
@@ -138,18 +124,41 @@ blue and amranath hydras."
 (use-package company
   ;; :hook ((after-init . global-company-mode))
   :bind (:map company-mode-map
-	      ("<tab>" . company-indent-or-complete-common)))
+	      ("<tab>" . company-indent-or-complete-common)
+	      :map company-active-map
+	      ("M-n" . nil)
+	      ("M-p" . nil)
+	      ("C-n" . company-select-next)
+	      ("C-p" . company-select-previous)))
 
-;;; Global Evil keybindings
-
-(use-package key-chord
+(use-package hydra
+  :after (counsel which-key) ;; Untested whether this is necessary
   :config
-  (key-chord-mode 1))
+  ;; Add opinionated counsel-hydra-heads to all hydras 
+  (defun counsel-hydra-integrate (old-func &rest args)
+    "Function used to advise `counsel-hydra-heads' to work with
+blue and amranath hydras."
+    (hydra-keyboard-quit)
+    (apply old-func args)
+    (funcall-interactively hydra-curr-body-fn))
+  (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
+  (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads)
+  
+  ;; Load hydras and integrate with which-key
+  (load "my-hydras")
+  (load "which-key-hacks")
+  (my/defhydra 'hydra-window) ;;Needs to run after hydra-buffer is defined
+  (my/defhydra 'hydra-buffer) ;;Needs to run after hydra-window is defined
+  (add-hook 'ess-r-mode-hook
+	    (lambda ()
+	      (my/defhydra 'hydra-r)
+	      (my/defhydra 'hydra-r-help)
+	      (my/defhydra 'hydra-r-eval)
+	      (my/defhydra 'hydra-r-debug))))
+
+;;; General keybindings
 
 (use-package general)
-(load "my-hydras")
-
-(define-key global-map (kbd "C-x C-c") 'kill-emacs)
 
 (general-unbind help-map
   "C-h" ;; Enable which-key navigation of help-map bindings
@@ -159,6 +168,10 @@ blue and amranath hydras."
  :keymaps 'help-map
  "M" 'describe-minor-mode
  "s" 'describe-symbol)
+
+;; (use-package key-chord
+;;   :config
+;;   (key-chord-mode 1))
 
 (general-create-definer my-definer
   :states '(motion insert emacs)
@@ -170,9 +183,9 @@ blue and amranath hydras."
   "" nil
   "SPC" 'counsel-M-x
   "'" 'ivy-resume
-  "b" '(hydra-buffer/body :wk "hydra-buffer")
+  "b" 'hydra-buffer/body
   "f" 'my/files-map
-  "w" '(hydra-window/body :wk "hydra-window"))
+  "w" 'hydra-window/body)
 
 (general-define-key
  :prefix-command 'my/files-map
@@ -215,15 +228,6 @@ blue and amranath hydras."
 
 ;;; R
 
-;; TODO: Make ess-load-file default to current buffer if buffer is an R script
-;; See section 7.4 of ess manual for comments, indents, style
-;; https://www.gnu.org/software/emacs/manual/html_node/elisp/List-Motion.html#List-Motion -- recommended by manual
-;; See sections 8 onward
-  ;; inferior-ess-r-program
-  ;; (add-hook 'ess-idle-timer-functions
-  ;; 		'ess-indent-or-complete
-  ;; 		nil
-  ;; 		'local)
 (use-package ess
   :hook (ess-r-mode . config-ess-r-mode)
   :config
@@ -233,31 +237,35 @@ blue and amranath hydras."
   ;;   (setq company--electric-saved-window-configuration nil))
   ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
 
-  (defun show-company-doc-as-ess-help ()
-    "Show ess help if available, else show company help"
-    (interactive)
-    (let* ((selected (nth company-selection company-candidates))
-	   (obj-help (ess-display-help-on-object selected)))
-      (unless obj-help
-	(company-show-doc-buffer))
-      ))
-
   (defun config-ess-r-mode ()
-    ;; TODO: Only bind in map for ess-r-mode
-    (define-key company-active-map (kbd "C-h") 'show-company-doc-as-ess-help)
     (ess-set-style 'RStudio)
-    (setq-local ess-indent-offset 4) ;; RStudio uses a value of 2
-    (my-definer :keymaps 'local "m" 'hydra-r/body)
-    (my/defhydra 'hydra-r)
-    (my/defhydra 'hydra-r-help)
-    (my/defhydra 'hydra-r-eval)
-    (my/defhydra 'hydra-r-debug)
+    (setq-local ess-indent-offset 4) ;; RStudio style uses a value of 2
+
+    (defun show-company-doc-as-ess-help ()
+      "Show ess help if available, else show company help"
+      (interactive)
+      (let* ((selected (nth company-selection company-candidates))
+	   (obj-help (ess-display-help-on-object selected)))
+	(unless obj-help
+	  (company-show-doc-buffer))))
+    (defun mode-specific-C-h ()
+      "Mode-specific C-h for company-active-map"
+      (interactive)
+      (pcase major-mode
+	('ess-r-mode (show-company-doc-as-ess-help))
+	(_ (company-show-doc-buffer))))
+    (define-key company-active-map (kbd "C-h") 'mode-specific-C-h)
+
     ;; Rely on electric-pair-mode instead of skeleton
     (local-set-key (kbd "{") 'self-insert-command)
     (local-set-key (kbd "}") 'self-insert-command)
+    
     ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
     ;; if electric-layout-mode is enabled (it is not by default)
-    (setq-local electric-layout-rules nil))
+    (setq-local electric-layout-rules nil)
+
+    (my-definer :keymaps 'local "m" 'hydra-r/body))
+  
   ;; Override Windows' help_type option of "html", to open help
   ;; in help buffer, not browser (see contents of .Rprofile)
   (pcase system-type
@@ -266,9 +274,6 @@ blue and amranath hydras."
   (setq ess-nuke-trailing-whitespace-p t
 	;; ess-S-quit-kill-buffers-p 'ask 
 	inhibit-field-text-motion nil)) ;; prompt acts as beginning of line if prompt is read-only
-
-
-
 
 ;;; Buffer window display management
 
@@ -297,9 +302,6 @@ blue and amranath hydras."
 			      (reusable-frames . nil))
 			     ("\\*Help\\*" display-buffer-same-window)
 			     ("\\*Apropos\\*" display-buffer-same-window)))
-
-
-
 
 ;;; Further reading:
 

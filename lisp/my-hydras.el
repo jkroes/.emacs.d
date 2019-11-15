@@ -123,7 +123,4 @@
 ;; of my/defhydra that may be remedied in the future. Also, the name of
 ;; the function should be changed, if I can'tfigure out a way to use
 ;; my/defhydra as advice for defhydra at some point.
-(load "which-key-hacks")
-(my/defhydra 'hydra-window) ;;Needs to run after hydra-buffer is defined
-(my/defhydra 'hydra-buffer) ;;Needs to run after hydra-window is defined
 

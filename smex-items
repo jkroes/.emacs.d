@@ -1,29 +1,29 @@
 
 ;; ----- smex-history -----
 (
- counsel-el
- uncomment-region
  comment-region
+ uncomment-region
+ hydra-r-debug/body
+ customize-group
+ hydra-r/body
  which-key-show-keymap
- package-refresh-contents
- emacs-lisp-mode
- describe-prefix-bindings
+ counsel-el
 )
 
 ;; ----- smex-data -----
 (
  (counsel-descbinds . 2)
  (info-apropos . 2)
- (which-key-show-keymap . 11)
+ (which-key-show-keymap . 12)
  (windmove-left . 1)
  (edebug-eval-top-level-form . 1)
  (command-log-mode . 1)
  (find-function . 3)
- (customize-group . 44)
+ (customize-group . 46)
  (customize-apropos . 12)
- (comment-region . 25)
+ (comment-region . 28)
  (find-file . 5)
- (uncomment-region . 12)
+ (uncomment-region . 14)
  (which-key-C-h-dispatch . 6)
  (which-key-show-standard-help . 3)
  (view-buffer-other-frame . 1)
@@ -53,4 +53,6 @@
  (which-key-show-full-keymap . 2)
  (package-refresh-contents . 1)
  (counsel-el . 1)
+ (hydra-r/body . 1)
+ (hydra-r-debug/body . 1)
 )

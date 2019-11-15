@@ -61,13 +61,22 @@ the binding description to reflect the original function name, rather than hydra
 name for the head.
 
 Calls to my/defhydra should follow calls to defhydra."  
-  (let* ((prefix (concat (symbol-name name) "/")))
+  (let* ((prefix-sans-slash (symbol-name name))
+	 (prefix (concat prefix-sans-slash "/")))
     ;; Replacements for which-key descriptions of hydra heads. wk does at most a single
     ;; replacement, unless which-key-allow-multiple-replacements is non-nil. In lieu of setting
     ;; that, you can place more targeted regexps at the start of which-key-replacement-alist (by
-    ;; push-ing the less comprehensive ones on earlier), as is this done here
-    (push `((nil . ,prefix) . (nil . "")) which-key-replacement-alist)
-    (push `((nil . ,(concat prefix "\\(.*\\)-and-exit")) . (nil . "\\1")) which-key-replacement-alist) 
+    ;; push-ing the less comprehensive ones on earlier), as is this done here:
+    ;; hydra-window/winner-undo -> winner-undo
+    (push `((nil . ,(concat "^" prefix)) . (nil . "")) which-key-replacement-alist)
+    ;; hydra-window/body -> hydra-window
+    (push `((nil . ,(concat "^" prefix "body$")) . (nil . ,prefix-sans-slash)) which-key-replacement-alist)
+    ;; hydra-window/my/delete-other-window-and-buffers-and-exit -> my/delete-other-windows-and-buffers
+    (push `((nil . ,(concat "^" prefix "\\(.*\\)-and-exit$")) . (nil . "\\1")) which-key-replacement-alist)
+    ;; hydra-window/hydra-buffer/body-and-exit -> hydra-buffer
+    (push `((nil . ,(concat "^" prefix "\\(.*\\)/body-and-exit$")) . (nil . "\\1")) which-key-replacement-alist)
+
+    ;; Retrieving/modifying docstrings in case toggled in which-key
     (dolist (h (symbol-value (intern (concat prefix "heads"))))
       (let* ((h-cmd (nth 1 h)) ;; The original command in the hydradef
 	     ;; hydra renames commands in several possible ways, depending on :color
