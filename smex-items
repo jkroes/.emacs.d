@@ -1,29 +1,29 @@
 
 ;; ----- smex-history -----
 (
- customize-group
- ess-display-help-apropos
- ess-display-help-on-object
- describe-symbol
- find-file
- customize-apropos
- key-chord-mode
+ counsel-el
+ uncomment-region
+ comment-region
+ which-key-show-keymap
+ package-refresh-contents
+ emacs-lisp-mode
+ describe-prefix-bindings
 )
 
 ;; ----- smex-data -----
 (
  (counsel-descbinds . 2)
  (info-apropos . 2)
- (which-key-show-keymap . 2)
+ (which-key-show-keymap . 11)
  (windmove-left . 1)
  (edebug-eval-top-level-form . 1)
  (command-log-mode . 1)
  (find-function . 3)
  (customize-group . 44)
  (customize-apropos . 12)
- (comment-region . 16)
+ (comment-region . 25)
  (find-file . 5)
- (uncomment-region . 6)
+ (uncomment-region . 12)
  (which-key-C-h-dispatch . 6)
  (which-key-show-standard-help . 3)
  (view-buffer-other-frame . 1)
@@ -48,4 +48,9 @@
  (key-chord-mode . 1)
  (ess-display-help-on-object . 4)
  (ess-display-help-apropos . 1)
+ (describe-prefix-bindings . 1)
+ (emacs-lisp-mode . 2)
+ (which-key-show-full-keymap . 2)
+ (package-refresh-contents . 1)
+ (counsel-el . 1)
 )

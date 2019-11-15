@@ -135,18 +135,87 @@ blue and amranath hydras."
   (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
 	ivy-help-file "~/.emacs.d/ivy-help.org"))
 
-;; To add 
 (use-package company
   ;; :hook ((after-init . global-company-mode))
   :bind (:map company-mode-map
 	      ("<tab>" . company-indent-or-complete-common)))
 
+;;; Global Evil keybindings
 
+(use-package key-chord
+  :config
+  (key-chord-mode 1))
 
-;; (ess-display-help-apropos (nth company-selection company-candidates))
-;; tab-always-indent instead of ess-tab-always-indent or ess-tab-complete-in-script
+(use-package general)
+(load "my-hydras")
+
+(define-key global-map (kbd "C-x C-c") 'kill-emacs)
+
+(general-unbind help-map
+  "C-h" ;; Enable which-key navigation of help-map bindings
+  "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
+
+(general-define-key
+ :keymaps 'help-map
+ "M" 'describe-minor-mode
+ "s" 'describe-symbol)
+
+(general-create-definer my-definer
+  :states '(motion insert emacs)
+  :prefix "SPC"
+  ;; :non-normal-prefix (general-chord "fd")
+  :non-normal-prefix "C-SPC")
+
+(my-definer
+  "" nil
+  "SPC" 'counsel-M-x
+  "'" 'ivy-resume
+  "b" '(hydra-buffer/body :wk "hydra-buffer")
+  "f" 'my/files-map
+  "w" '(hydra-window/body :wk "hydra-window"))
+
+(general-define-key
+ :prefix-command 'my/files-map
+ "b" 'my/bookmarks-map
+ "f" 'counsel-find-file
+ "i" 'insert-file
+ "j" 'counsel-file-jump
+ "l" 'counsel-locate
+ "r" 'counsel-recentf
+ ;; "z" 'counsel-fzf
+ )
+
+(general-define-key
+ :prefix-command 'my/bookmarks-map
+ "d" 'bookmark-delete
+ "D" 'counsel-bookmarked-directory
+ "e" 'edit-bookmarks
+ "j" 'counsel-bookmark ;; TODO: Customize counsel-bookmark action
+ ;; list to include delete, rename, and set
+ "r" 'bookmark-rename
+ "s" 'bookmark-set)
+
+;;; Lisp 
+
+(general-define-key
+ :prefix-command 'my/elisp-map
+ "c" 'check-parens            ;; Debugging "End of file during parsing"
+ "d" 'eval-defun              ;; evals outermost expression containing or following point
+ ;; ...and forces reset to initial value within a defvar,
+ ;; defcustom, and defface expressions
+ "m" 'pp-eval-expression      ;; "m" for minibuffer, where exp is evaluated
+ "s" 'pp-eval-last-sexp       ;; evals expression preceding point
+ "i" 'eval-print-last-sexp    ;; "i" for insert(ing result)
+ "r" 'eval-region)
+(add-hook 'emacs-lisp-mode-hook
+	  (lambda ()
+	    (my-definer :keymaps 'local
+	      "<backtab>" 'counsel-el ;; counsel-assisted completion
+	      "m" 'my/elisp-map)))
+
+;;; R
+
 ;; TODO: Make ess-load-file default to current buffer if buffer is an R script
-;; TODO: set-initial-state for ess buffers
 ;; See section 7.4 of ess manual for comments, indents, style
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/List-Motion.html#List-Motion -- recommended by manual
 ;; See sections 8 onward
@@ -178,7 +247,7 @@ blue and amranath hydras."
     (define-key company-active-map (kbd "C-h") 'show-company-doc-as-ess-help)
     (ess-set-style 'RStudio)
     (setq-local ess-indent-offset 4) ;; RStudio uses a value of 2
-    (local-set-key (kbd "C-j") 'hydra-r/body)
+    (my-definer :keymaps 'local "m" 'hydra-r/body)
     (my/defhydra 'hydra-r)
     (my/defhydra 'hydra-r-help)
     (my/defhydra 'hydra-r-eval)
@@ -199,75 +268,6 @@ blue and amranath hydras."
 	inhibit-field-text-motion nil)) ;; prompt acts as beginning of line if prompt is read-only
 
 
-;;; Keybindings
-
-(use-package key-chord
-  :config
-  (key-chord-mode 1))
-
-(use-package general)
-(load "my-hydras")
-
-(general-define-key
- :keymaps 'emacs-lisp-mode-map
- :prefix "C-j"
- "c" 'check-parens            ;; Debugging "End of file during parsing"
- "d" 'eval-defun              ;; evals outermost expression containing or following point
- ;; ...and forces reset to initial value within a defvar,
- ;; defcustom, and defface expressions
- "j" 'counsel-el
- "m" 'pp-eval-expression      ;; "m" for minibuffer, where exp is evaluated
- "s" 'pp-eval-last-sexp       ;; evals expression preceding point
- "i" 'eval-print-last-sexp    ;; "i" for insert(ing result)
- "r" 'eval-region)
-
-(define-key global-map (kbd "C-x C-c") 'kill-emacs)
-
-(general-unbind help-map
-  "C-h" ;; Enable which-key navigation of help-map bindings
-  "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
-
-(general-define-key
- :keymaps 'help-map
- "M" 'describe-minor-mode
- "s" 'describe-symbol
- )
-
-
-(general-define-key
-  :states '(motion insert emacs)
-  :prefix "SPC"
-  :non-normal-prefix (general-chord "fd")
-  ;;:non-normal-prefix "C-SPC"
-  "" nil
-  "SPC" 'counsel-M-x
-  "'" 'ivy-resume
-  "b" 'hydra-buffer/body
-  "f" 'my/files-map
-  ;; "o" 'clm/toggle-command-log-buffer
-  "w" 'hydra-window/body
-  )
-
-(general-define-key
- :prefix-command 'my/files-map
- "b" 'my/bookmarks-map
- "f" 'counsel-find-file
- "i" 'insert-file
- "j" 'counsel-file-jump
- "l" 'counsel-locate
- "r" 'counsel-recentf
- ;; "z" 'counsel-fzf
- )
-
-(general-define-key
- :prefix-command 'my/bookmarks-map
- "d" 'bookmark-delete
- "D" 'counsel-bookmarked-directory
- "e" 'edit-bookmarks
- "j" 'counsel-bookmark ;; TODO: Customize counsel-bookmark action
- ;; list to include delete, rename, and set
- "r" 'bookmark-rename
- "s" 'bookmark-set)
 
 
 ;;; Buffer window display management
