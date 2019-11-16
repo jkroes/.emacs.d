@@ -76,8 +76,10 @@
       ((eq system-type 'windows-nt)
        ;; (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
        ;; 	     shell-file-name explicit-shell-file-name))
+       ;; To configure locate:
+       ;; Open Git's bash.exe; mkdir /usr/var; updatedb --localpaths='/c/ /d/ /h/'
+       (add-to-list 'exec-path "c:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/")
        ;; Use git-bash's find.exe for file jumping
-       ;; Alternatively, add dir to exec-path
        (setq find-program "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe")))
 
 ;;; Custom configuration
@@ -290,7 +292,7 @@ blue and amranath hydras."
 			      (slot . -1)
 			      (window-width . 0.33)
 			      (reusable-frames . nil))
-			     ("\\*R:"
+			     ("\\*R"
 			      (display-buffer-reuse-mode-window display-buffer-below-selected)
 			      (window-height . 0.5)
 			      (reusable-frames . nil))
