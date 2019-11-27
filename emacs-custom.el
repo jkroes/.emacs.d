@@ -3,6 +3,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(auto-save-default nil)
  '(aw-keys (quote (97 115 100 102 103 104 106 107 108)))
  '(comint-prompt-read-only t nil nil "Read-only prompt (\">\" in ess-R)")
  '(comint-scroll-show-maximum-output t)

@@ -1,13 +1,13 @@
 
 ;; ----- smex-history -----
 (
- comment-region
- uncomment-region
+ browse-url
+ evil-paste-pop
  hydra-r-debug/body
+ uncomment-region
+ comment-region
  customize-group
  hydra-r/body
- which-key-show-keymap
- counsel-el
 )
 
 ;; ----- smex-data -----
@@ -21,9 +21,9 @@
  (find-function . 3)
  (customize-group . 46)
  (customize-apropos . 12)
- (comment-region . 28)
+ (comment-region . 32)
  (find-file . 5)
- (uncomment-region . 14)
+ (uncomment-region . 15)
  (which-key-C-h-dispatch . 6)
  (which-key-show-standard-help . 3)
  (view-buffer-other-frame . 1)
@@ -37,7 +37,7 @@
  (info-lookup-symbol . 1)
  (org-open-link-from-string . 1)
  (calendar-exchange-point-and-mark . 1)
- (browse-url . 3)
+ (browse-url . 5)
  (mark-sexp . 5)
  (set-mark-command . 1)
  (ess-complete-object-name . 1)
@@ -54,5 +54,6 @@
  (package-refresh-contents . 1)
  (counsel-el . 1)
  (hydra-r/body . 1)
- (hydra-r-debug/body . 1)
+ (hydra-r-debug/body . 2)
+ (evil-paste-pop . 1)
 )

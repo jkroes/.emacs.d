@@ -210,6 +210,17 @@ blue and amranath hydras."
  "r" 'bookmark-rename
  "s" 'bookmark-set)
 
+;;; comint
+
+(defun clear-shell ()
+   (interactive)
+   (let ((old-max comint-buffer-maximum-size))
+     (setq comint-buffer-maximum-size 0)
+     (comint-truncate-buffer)
+     (setq comint-buffer-maximum-size old-max))) 
+
+(global-set-key  (kbd "\C-x c") 'clear-shell)
+
 ;;; Lisp 
 
 (general-define-key
@@ -290,17 +301,17 @@ blue and amranath hydras."
 			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
 			      (side . right)
 			      (slot . -1)
-			      (window-width . 0.33)
+			      (window-width . 0.5)
 			      (reusable-frames . nil))
 			     ("\\*R"
 			      (display-buffer-reuse-mode-window display-buffer-below-selected)
-			      (window-height . 0.5)
+			      (window-height . 0.2)
 			      (reusable-frames . nil))
 			     ("\\*Help\\[R"
 			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
 			      (side . right)
 			      (slot . 1)
-			      (window-width . 0.33)
+			      (window-width . 0.5)
 			      (reusable-frames . nil))
 			     ("\\*Help\\*" display-buffer-same-window)
 			     ("\\*Apropos\\*" display-buffer-same-window)))
