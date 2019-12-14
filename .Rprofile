@@ -1,8 +1,13 @@
+# Textual menu selection (for pkg installation if a CRAN mirror isn't set)
+options(menu.graphics=FALSE)
+
+# set a CRAN mirror
+local({r <- getOption("repos")
+       r["CRAN"] <- "http://cran.cnr.berkeley.edu"
+       options(repos=r)})
+
 # Open help within emacs buffer, not browser
 options(help_type = "text")
 
-options(digits=4)
-
-# RStudio downloads pandoc with rmarkdown, but outside of RStudio
-# you need to notify R of the executable's directory
-Sys.setenv(RSTUDIO_PANDOC = "C:/Users/jkroes/AppData/Local/Pandoc")
+# Clear environment
+rm(list=ls())

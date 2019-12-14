@@ -64,7 +64,8 @@ when? can have values of before-init, after-init, or anything else for no profil
   "Start an R process."
   (interactive)
   (save-selected-window
-    (run-ess-r-newest)
-    (ess-rdired))
+    (run-ess-r)
+    ;;(ess-rdired)
+    )
   (ess-force-buffer-current))
 

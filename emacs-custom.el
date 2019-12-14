@@ -47,6 +47,8 @@
  '(evil-want-keybinding nil)
  '(global-company-mode t)
  '(global-display-line-numbers-mode t)
+ '(global-evil-mc-mode t)
+ '(global-evil-surround-mode t)
  '(global-page-break-lines-mode t nil (page-break-lines))
  '(hydra-hint-display-type (quote lv))
  '(hydra-is-helpful nil nil nil "see which-key-show-transient-maps")
@@ -60,7 +62,7 @@
  '(menu-bar-mode nil)
  '(package-selected-packages
    (quote
-    (key-chord company projectile counsel hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window)))
+    (evil-mc evil-surround multiple-cursors key-chord company projectile counsel hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window)))
  '(recentf-max-saved-items 100 nil nil "Affects number of candidates with ivy-use-virtual-buffers?")
  '(recentf-mode t)
  '(scroll-bar-mode nil)

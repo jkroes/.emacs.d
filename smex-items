@@ -1,13 +1,13 @@
 
 ;; ----- smex-history -----
 (
- browse-url
- evil-paste-pop
- hydra-r-debug/body
- uncomment-region
  comment-region
- customize-group
- hydra-r/body
+ uncomment-region
+ comment-line
+ indent-region
+ comment-or-uncomment-region
+ run-ess-r
+ run-ess-r-newest
 )
 
 ;; ----- smex-data -----
@@ -21,9 +21,9 @@
  (find-function . 3)
  (customize-group . 46)
  (customize-apropos . 12)
- (comment-region . 32)
+ (comment-region . 51)
  (find-file . 5)
- (uncomment-region . 15)
+ (uncomment-region . 22)
  (which-key-C-h-dispatch . 6)
  (which-key-show-standard-help . 3)
  (view-buffer-other-frame . 1)
@@ -31,7 +31,7 @@
  (split-window-right . 1)
  (re-builder . 1)
  (check-parens . 1)
- (indent-region . 2)
+ (indent-region . 3)
  (company-indent-or-complete-common . 2)
  (describe-symbol . 2)
  (info-lookup-symbol . 1)
@@ -56,4 +56,9 @@
  (hydra-r/body . 1)
  (hydra-r-debug/body . 2)
  (evil-paste-pop . 1)
+ (select-tags-table-quit . 1)
+ (comment-or-uncomment-region . 2)
+ (run-ess-r . 2)
+ (run-ess-r-newest . 1)
+ (comment-line . 2)
 )
