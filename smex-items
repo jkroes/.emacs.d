@@ -4,10 +4,10 @@
  comment-region
  uncomment-region
  comment-line
+ keyboard-quit
  indent-region
  comment-or-uncomment-region
- run-ess-r
- run-ess-r-newest
+ customize-group
 )
 
 ;; ----- smex-data -----
@@ -21,9 +21,9 @@
  (find-function . 3)
  (customize-group . 46)
  (customize-apropos . 12)
- (comment-region . 51)
+ (comment-region . 64)
  (find-file . 5)
- (uncomment-region . 22)
+ (uncomment-region . 29)
  (which-key-C-h-dispatch . 6)
  (which-key-show-standard-help . 3)
  (view-buffer-other-frame . 1)
@@ -59,6 +59,7 @@
  (select-tags-table-quit . 1)
  (comment-or-uncomment-region . 2)
  (run-ess-r . 2)
- (run-ess-r-newest . 1)
- (comment-line . 2)
+ (run-ess-r-newest . 2)
+ (comment-line . 3)
+ (keyboard-quit . 1)
 )

@@ -284,19 +284,12 @@ blue and amranath hydras."
   ;; in help buffer, not browser (see contents of .Rprofile)
   (pcase system-type
     ('windows-nt
-     ;; Set interpreter path for ess to a directory where you have permissions (Documents)
      ;; iESS searches the paths listed in the variable exec-path for inferior-ess-r-program
-     (add-to-list 'exec-path "c:/Users/jkroes/Documents/R/R-3.6.1/bin/")
+     (add-to-list 'exec-path "c:/Users/jkroes/Documents/R/R-3.6.2/bin")
+     ;; Sets R_USER and R_LIBS_USER
+     (setenv "R_USER" "c:/Users/jkroes/Documents")
      ;; run-ess-r fails when this is set to Rterm
      (setq inferior-ess-r-program "R")
-     ;;https://cran.r-project.org/bin/windows/base/rw-FAQ.html#What-are-HOME-and-working-directories_003f
-     ;; In ESS, R_HOME seems to be set based on the interpreter path, though the link above says that
-     ;; it is set to the value of the first env var it finds: R_USER, HOME, etc.
-     ;; https://cran.r-project.org/bin/windows/base/rw-FAQ.html#I-don_0027t-have-permission-to-write-to-the-R_002d3_002e6_002e1_005clibrary-directory
-     ;; If R_USER defaults to HOME, R_LIBS_USER uses that as its root directory
-     ;; If R_USER is set, R_LIBS_USER is based on that. R_LIBS_USER can also be set directly. This determines package insallation.
-     (setenv "R_USER" "c:/Users/jkroes/Documents")
-     ;; Where to find .Rprofile
      (setenv "R_PROFILE_USER" "C:/Users/jkroes/.emacs.d/.Rprofile")
      ;; RStudio downloads pandoc with rmarkdown, but outside of RStudio
      ;; you need to notify R of the executable's directory
