@@ -1,13 +1,13 @@
 
 ;; ----- smex-history -----
 (
+ version
+ jupyter-run-repl
+ shell
+ evil-paste-pop
+ jupyter-org-execute-and-next-block
+ package-refresh-contents
  comment-region
- uncomment-region
- comment-line
- keyboard-quit
- indent-region
- comment-or-uncomment-region
- customize-group
 )
 
 ;; ----- smex-data -----
@@ -51,15 +51,21 @@
  (describe-prefix-bindings . 1)
  (emacs-lisp-mode . 2)
  (which-key-show-full-keymap . 2)
- (package-refresh-contents . 1)
+ (package-refresh-contents . 2)
  (counsel-el . 1)
  (hydra-r/body . 1)
  (hydra-r-debug/body . 2)
- (evil-paste-pop . 1)
+ (evil-paste-pop . 3)
  (select-tags-table-quit . 1)
  (comment-or-uncomment-region . 2)
  (run-ess-r . 2)
  (run-ess-r-newest . 2)
  (comment-line . 3)
  (keyboard-quit . 1)
+ (jupyter-run-repl . 4)
+ (python-shell-send-region . 1)
+ (python-shell-send-file . 1)
+ (jupyter-org-execute-and-next-block . 1)
+ (shell . 4)
+ (version . 1)
 )

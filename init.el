@@ -286,10 +286,8 @@ blue and amranath hydras."
     ('windows-nt
      ;; iESS searches the paths listed in the variable exec-path for inferior-ess-r-program
      (add-to-list 'exec-path "c:/Users/jkroes/Documents/R/R-3.6.2/bin")
-     ;; Sets R_USER and R_LIBS_USER
-     (setenv "R_USER" "c:/Users/jkroes/Documents")
-     ;; run-ess-r fails when this is set to Rterm
-     (setq inferior-ess-r-program "R")
+     (setenv "R_USER" "c:/Users/jkroes/Documents") ;; Sets R_USER and R_LIBS_USER
+     (setq inferior-ess-r-program "R") ;; run-ess-r fails when this is set to Rterm
      (setenv "R_PROFILE_USER" "C:/Users/jkroes/.emacs.d/.Rprofile")
      ;; RStudio downloads pandoc with rmarkdown, but outside of RStudio
      ;; you need to notify R of the executable's directory
@@ -327,6 +325,14 @@ blue and amranath hydras."
 			      (reusable-frames . nil))
 			     ("\\*Help\\*" display-buffer-same-window)
 			     ("\\*Apropos\\*" display-buffer-same-window)))
+
+(use-package jupyter
+  :config
+  (add-to-list 'exec-path "c:/Users/jkroes/Documents/Python") ;; interpreter
+  (add-to-list 'exec-path "c:/Users/jkroes/Documents/Python/Scripts") ;; pip
+  (setenv "PATH" (concat "C:/Users/jkroes/Documents/Python"
+			 "c:/Users/jkroes/Documents/Python/Scripts"
+			 (getenv "PATH")))) ;; Shell path to interpreter and pip
 
 ;;; Further reading:
 
