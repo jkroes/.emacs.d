@@ -181,7 +181,7 @@
   ;; Disable underlines in lsp-ui-doc child frames
   (custom-set-faces '(nobreak-space ((t nil)))))
 
-(use-package lsp-ivy :commands lsp-ivy-workspace-symbol) 
+(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
 ;; (use-package lsp-treemacs :commands lsp-treemacs-error-list)
 ;; (use-package dap-mode)
 ;; (require 'dap-python)
@@ -397,8 +397,8 @@ blue and amranath hydras."
  "i" 'eval-print-last-sexp    ;; "i" for insert(ing result)
  "r" 'eval-region)
 (add-hook 'emacs-lisp-mode-hook
-	  (lambda ()
-	    (my-definer :keymaps 'local
-	      "<backtab>" 'counsel-el ;; counsel-assisted completion
-	      "m" 'my/elisp-map)))
+          (lambda ()
+            (my-definer :keymaps 'local
+                        "<backtab>" 'counsel-el ;; counsel-assisted completion
+                        "m" 'my/elisp-map)))
 

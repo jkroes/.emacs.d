@@ -5,6 +5,6 @@ elpa
 quelpa
 .mc-list.el
 bookmarks
-recentf
-smex-items
+recentf*
+smex-items*
 .lsp-session-v1

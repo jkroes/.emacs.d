@@ -1,4 +1,15 @@
+; From custom:
 
+   (quote
+    (jupyter emacs-jupyter evil-mc evil-surround multiple-cursors key-chord company projectile counsel hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window)))
+
+(use-package jupyter
+  :config
+  (add-to-list 'exec-path "c:/Users/jkroes/Documents/Python") ;; interpreter
+  (add-to-list 'exec-path "c:/Users/jkroes/Documents/Python/Scripts") ;; pip
+  (setenv "PATH" (concat "C:/Users/jkroes/Documents/Python"
+                         "c:/Users/jkroes/Documents/Python/Scripts"
+                         (getenv "PATH")))) ;; Shell path to interpreter and pip
 
 ;;; Buffer window display management
 
