@@ -35,9 +35,17 @@
 ;;    similar to relative filename args in `load' (including reliance on `load-path'.
 ;;    One difference is that it will not re-load a file/feature.
 
+;; Installing emacs from source on Linux:
+;; See 7.1 How do I install emacs?
+;; Drop the -g flag from tar when installing a .xz from
+;; alpha.gnu.org/gnu/emacs/pretest rather than .gz
+;; Installing Hack font on Linux:
+;; github.com/source-foundry/Hack#quick-installation
+
+
 ;; TODO:
 ;; [x] Color theme
-;; [] Font with ligatures
+;; [x] Font
 ;; []
 ;; []
 ;; []
@@ -79,12 +87,13 @@
 ;;; OS-specific configuration
 
 (cond ((eq system-type 'gnu/linux)
+       (set-frame-font "Hack 12" nil)
        ;; Hack to open URLs from within WSL using browse-url-* commands
        (when (string-match "Linux.*Microsoft.*Linux"
-			   (shell-command-to-string "uname -a"))
-	 (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
-	       browse-url-generic-args '("/c" "start" "")
-	       browse-url-browser-function 'browse-url-generic)))
+			               (shell-command-to-string "uname -a"))
+         (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
+               browse-url-generic-args '("/c" "start" "")
+               browse-url-browser-function 'browse-url-generic)))
       ((eq system-type 'windows-nt)
        ;; (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
        ;; 	     shell-file-name explicit-shell-file-name))
@@ -99,8 +108,12 @@
       ;; Requires a GUI version of emacs
       ;; See https://www.emacswiki.org/emacs/EmacsForMacOS
       ((eq system-type 'darwin)
+       (set-frame-font "Hack 14" nil)
        (setq mac-command-modifier 'ctrl)
        (setq mac-control-modifier 'super)))
+
+;; NOTE: Ligatures are not enabled. See
+;; https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
 
 ;;; Default directory
 
@@ -118,12 +131,6 @@
   (load-theme 'solarized-dark t))
 ;; (use-package dracula-theme)
 
-;;; Font
-
-(set-frame-font "Hack 14" nil)
-;; (set-frame-font "FiraCode Nerd Font 14" nil)
-;; NOTE: Ligatures are not enabled. See
-;; https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
 
 ;;; Completion / LSP Extension
 
