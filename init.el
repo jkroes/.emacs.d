@@ -28,24 +28,36 @@
 ;;   See related commands `load-file', `load-library', etc.
 ;; `autoload' and magic comments can be used to created autoloaded functions
 ;;   Calls to autoloaded functions load the file where the actual function is
-;;    defined.
+;;    define.
 ;;   `autoloadp' identifies autoloaded objects
 ;;  Re-loading a file does not re-initialize defvar, defcustom, defun
 ;;  `require' is an alternative to `load'. It searches for a feature in `features',
 ;;    similar to relative filename args in `load' (including reliance on `load-path'.
 ;;    One difference is that it will not re-load a file/feature.
 
+;; TODO:
+;; [x] Color theme
+;; [] Font with ligatures
+;; []
+;; []
+;; []
+;; []
+;; []
+;; []
+;; []
+;; []
+
+
 ;;; package.el config and profiling
 (setq load-path (cons "~/.emacs.d/lisp" load-path))
 (load "my-functions.el") ;; Also loads functions required by hydras
 (my/init-maybe-profile)
- 
-;;; Bootstrap `use-package`
 
+;;; Bootstrap `use-package`
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-(add-to-list 'load-path "~/.emacs.d/elpa/use-package-20190716.1829")
+; (add-to-list 'load-path "~/.emacs.d/elpa/use-package")
 (require 'use-package)
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
@@ -80,49 +92,40 @@
        ;; Open Git's bash.exe; mkdir /usr/var; updatedb --localpaths='/c/ /d/ /h/'
        (add-to-list 'exec-path "c:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/")
        ;; Use git-bash's find.exe for file jumping
-       (setq find-program "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe")))
+       (setq find-program "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe"))
+      ;; For my programming keyboard. PC mode doesn't have CMD, and CTRL/CMD are at the
+      ;; same thumb position in PC/MAC modes, respectively. Saves me redefining the
+      ;; keymapings
+      ;; Requires a GUI version of emacs
+      ;; See https://www.emacswiki.org/emacs/EmacsForMacOS
+      ((eq system-type 'darwin)
+       (setq mac-command-modifier 'ctrl)
+       (setq mac-control-modifier 'super)))
+
+;;; Default directory
+
+(setq default-directory "~/")
 
 ;;; Custom configuration
 
 (setq custom-file "~/.emacs.d/emacs-custom.el")
 (load custom-file)
 
-;;; Package configuration
+;;; Color scheme (https://emacsthemes.com/)
 
-;; Bug prevents use of :custom: https://github.com/jwiegley/use-package/issues/702
+(use-package solarized-theme
+  :init
+  (load-theme 'solarized-dark t))
+;; (use-package dracula-theme)
 
-(use-package evil-surround :after evil)
-(use-package smex)
-(use-package flx)
-(use-package evil-tutor :after evil :bind (:map help-map ("T" . evil-tutor-start)))
-(use-package org)
-(use-package dracula-theme)
-(use-package evil-escape :after evil :config (evil-escape-mode))
-(use-package page-break-lines)
-(use-package ace-window)
-(use-package which-key :bind (:map help-map ("C-w" . which-key-show-keymap)))
-(use-package evil
-  :config
-  ;; (defalias 'evil-insert-state 'evil-emacs-state)    ;; Alternative to disabling insert-state bindings
-  (setq evil-normal-state-modes
-	'(lisp-interaction-mode                         ;; *scratch*
-	  emacs-lisp-mode
-	  ess-r-mode
-	  fundamental-mode)
-        evil-insert-state-modes
-	'(inferior-ess-r-mode))
-  (evil-mode))
+;;; Font
 
-;; Usage within minibuffer: C-h m
-(use-package counsel ;; Installs and loads ivy and swiper as dependencies
-  :bind (:map ivy-minibuffer-map
-	      ("M-m" . ivy-mark)
-	      ("M-u" . ivy-unmark)
-	      ([remap ivy-done] . ivy-alt-done)
-	      ([remap ivy-alt-done] . ivy-done))
-  :config
-  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
-	ivy-help-file "~/.emacs.d/ivy-help.org"))
+(set-frame-font "Hack 14" nil)
+;; (set-frame-font "FiraCode Nerd Font 14" nil)
+;; NOTE: Ligatures are not enabled. See
+;; https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
+
+;;; Completion / LSP Extension
 
 (use-package company
   ;; :hook ((after-init . global-company-mode))
@@ -134,10 +137,184 @@
 	      ("C-n" . company-select-next)
 	      ("C-p" . company-select-previous)))
 
+;;; Language Server Protocol (LSP)
+
+(add-to-list 'exec-path "/usr/local/bin")
+(setq python-shell-interpreter "python3")
+
+;; Testing out for parameter completion in lsp...
+(use-package yasnippet
+  :hook ((python-mode . yas-minor-mode)
+         (ess-r-mode . yas-minor-mode)))
+
+(use-package lsp-mode
+  :hook ((python-mode . lsp)
+         (ess-r-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp
+  :config
+  (setq read-process-output-max (* 1024 1024)
+        lsp-prefer-capf t
+        lsp-idle-delay 0.500))
+
+(use-package lsp-ui
+  :commands lsp-ui-mode
+  :config
+  (defun scroll-down-lsp-ui ()
+    "Enable scrolling documentation child frames when using lsp-ui-doc-glance"
+    (interactive)
+    (if (lsp-ui-doc--frame-visible-p)
+        (let ((kmap (make-sparse-keymap)))
+          (define-key kmap (kbd "q")
+            '(lambda ()
+            (interactive)
+            (lsp-ui-doc-unfocus-frame)
+            (setq overriding-terminal-local-map nil)
+            (setq which-key-show-transient-maps t)))
+          (setq which-key-show-transient-maps nil)
+          (setq overriding-terminal-local-map kmap)
+          (lsp-ui-doc-focus-frame)))
+    (evil-scroll-page-down 1))
+  (general-define-key
+   :states '(motion insert emacs)
+   "C-f" 'scroll-down-lsp-ui)
+  ;; Disable underlines in lsp-ui-doc child frames
+  (custom-set-faces '(nobreak-space ((t nil)))))
+
+(use-package lsp-ivy :commands lsp-ivy-workspace-symbol) 
+;; (use-package lsp-treemacs :commands lsp-treemacs-error-list)
+;; (use-package dap-mode)
+;; (require 'dap-python)
+
+;;; Random packages
+;; Bug prevents use of :custom: https://github.com/jwiegley/use-package/issues/702
+; (use-package evil-surround :after evil)
+; (use-package org)
+(use-package page-break-lines)
+; (use-package osx-browse)
+;; Potential ideas for fixing indentation? Didn't work when tried:
+;; https://stackoverflow.com/questions/4643206/how-to-configure-indentation-in-emacs-lua-mode
+;; https://github.com/kengonakajima/lua-mode/blob/master/my-lua.el
+;; Turning off lua-electric-flag via setq-local in a hook
+; (use-package lua-mode)
+; (use-package jupyter)
+
+;;; Vim emulation
+
+(use-package evil-tutor :after evil :bind (:map help-map ("T" . evil-tutor-start)))
+(use-package evil-escape :after evil :config (evil-escape-mode))
+(use-package evil
+  :config
+  ;; (defalias 'evil-insert-state 'evil-emacs-state)    ;; Alternative to disabling insert-state bindings
+  (setq evil-normal-state-modes
+	'(lisp-interaction-mode                         ;; *scratch*
+	  emacs-lisp-mode
+      python-mode
+	  ess-r-mode
+	  fundamental-mode
+          lua-mode)
+        evil-insert-state-modes
+	'(inferior-ess-r-mode))
+  (evil-mode))
+
+
+;;; REPLs/Programming
+
+;; R
+
+(use-package ess
+  :hook (ess-r-mode . config-ess-r-mode)
+  :config
+  ;; Prevent window displaying company documentation buffer from vanishing when
+  ;; invoking a binding not in company--electric-commands
+  ;; (defun forget-saved-window-config ()
+  ;;   (setq company--electric-saved-window-configuration nil))
+  ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
+
+  (defun config-ess-r-mode ()
+    (ess-set-style 'RStudio)
+    (setq-local ess-indent-offset 4) ;; RStudio style uses a value of 2
+
+    (defun show-company-doc-as-ess-help ()
+      "Show ess help if available, else show company help"
+      (interactive)
+      (let* ((selected (nth company-selection company-candidates))
+	         (obj-help (ess-display-help-on-object selected)))
+        (unless obj-help
+          (company-show-doc-buffer))))
+
+    (defun mode-specific-C-h ()
+      "Mode-specific C-h for company-active-map"
+      (interactive)
+      (pcase major-mode
+        ('ess-r-mode (show-company-doc-as-ess-help))
+        (_ (company-show-doc-buffer))))
+
+    (define-key company-active-map (kbd "C-h") 'mode-specific-C-h)
+
+    ;; Rely on electric-pair-mode instead of skeleton
+    (local-set-key (kbd "{") 'self-insert-command)
+    (local-set-key (kbd "}") 'self-insert-command)
+
+    ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
+    ;; if electric-layout-mode is enabled (it is not by default)
+    (setq-local electric-layout-rules nil)
+
+    (my-definer :keymaps 'local "m" 'hydra-r/body))
+
+  ;; Override Windows' help_type option of "html", to open help
+  ;; in help buffer, not browser (see contents of .Rprofile)
+  (pcase system-type
+    ('windows-nt
+     ;; iESS searches the paths listed in the variable exec-path for inferior-ess-r-program
+     (add-to-list 'exec-path "c:/Users/jkroes/Documents/R/R-3.6.2/bin")
+     ;; Sets R_USER and R_LIBS_USER
+     (setenv "R_USER" "c:/Users/jkroes/Documents")
+     ;; run-ess-r fails when this is set to Rterm
+     (setq inferior-ess-r-program "R")
+     (setenv "R_PROFILE_USER" "C:/Users/jkroes/.emacs.d/.Rprofile")
+     ;; RStudio downloads pandoc with rmarkdown, but outside of RStudio
+     ;; you need to notify R of the executable's directory
+     (setenv "RSTUDIO_PANDOC" "C:/Users/jkroes/AppData/Local/Pandoc")
+     )
+    ('darwin (setenv "R_PROFILE_USER" "~/.emacs.d/.Rprofile")))
+  (setq ess-nuke-trailing-whitespace-p t
+	;; ess-S-quit-kill-buffers-p 'ask
+	inhibit-field-text-motion nil)) ;; prompt acts as beginning of line if prompt is read-only
+
+(defun clear-shell ()
+   (interactive)
+   (let ((old-max comint-buffer-maximum-size))
+     (setq comint-buffer-maximum-size 0)
+     (comint-truncate-buffer)
+     (setq comint-buffer-maximum-size old-max)))
+
+(global-set-key  (kbd "\C-x c") 'clear-shell)
+
+;;; Fuzzy finder
+
+;; Usage within minibuffer: C-h m
+(use-package counsel ;; Installs and loads ivy and swiper as dependencies
+  :bind (:map ivy-minibuffer-map
+	      ("M-m" . ivy-mark)
+	      ("M-u" . ivy-unmark)
+	      ([remap ivy-done] . ivy-alt-done)
+	      ([remap ivy-alt-done] . ivy-done))
+  :config
+  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
+	ivy-help-file "~/.emacs.d/ivy-help.org"))
+(use-package smex)
+(use-package flx)
+
+;;; Keymaps
+
+(use-package which-key :bind (:map help-map ("C-w" . which-key-show-keymap)))
+(use-package ace-window)
+
 (use-package hydra
   :after (counsel which-key) ;; Untested whether this is necessary
   :config
-  ;; Add opinionated counsel-hydra-heads to all hydras 
+  ;; Add opinionated counsel-hydra-heads to all hydras
   (defun counsel-hydra-integrate (old-func &rest args)
     "Function used to advise `counsel-hydra-heads' to work with
 blue and amranath hydras."
@@ -146,7 +323,7 @@ blue and amranath hydras."
     (funcall-interactively hydra-curr-body-fn))
   (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
   (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads)
-  
+
   ;; Load hydras and integrate with which-key
   (load "my-hydras")
   (load "which-key-hacks")
@@ -158,8 +335,6 @@ blue and amranath hydras."
 	      (my/defhydra 'hydra-r-help)
 	      (my/defhydra 'hydra-r-eval)
 	      (my/defhydra 'hydra-r-debug))))
-
-;;; General keybindings
 
 (use-package general)
 
@@ -211,19 +386,6 @@ blue and amranath hydras."
  "r" 'bookmark-rename
  "s" 'bookmark-set)
 
-;;; comint
-
-(defun clear-shell ()
-   (interactive)
-   (let ((old-max comint-buffer-maximum-size))
-     (setq comint-buffer-maximum-size 0)
-     (comint-truncate-buffer)
-     (setq comint-buffer-maximum-size old-max))) 
-
-(global-set-key  (kbd "\C-x c") 'clear-shell)
-
-;;; Lisp 
-
 (general-define-key
  :prefix-command 'my/elisp-map
  "c" 'check-parens            ;; Debugging "End of file during parsing"
@@ -240,155 +402,3 @@ blue and amranath hydras."
 	      "<backtab>" 'counsel-el ;; counsel-assisted completion
 	      "m" 'my/elisp-map)))
 
-;;; R
-
-(use-package ess
-  :hook (ess-r-mode . config-ess-r-mode)
-  :config
-  ;; Prevent window displaying company documentation buffer from vanishing when
-  ;; invoking a binding not in company--electric-commands
-  ;; (defun forget-saved-window-config ()
-  ;;   (setq company--electric-saved-window-configuration nil))
-  ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
-
-  (defun config-ess-r-mode ()
-    (ess-set-style 'RStudio)
-    (setq-local ess-indent-offset 4) ;; RStudio style uses a value of 2
-
-    (defun show-company-doc-as-ess-help ()
-      "Show ess help if available, else show company help"
-      (interactive)
-      (let* ((selected (nth company-selection company-candidates))
-	   (obj-help (ess-display-help-on-object selected)))
-	(unless obj-help
-	  (company-show-doc-buffer))))
-    (defun mode-specific-C-h ()
-      "Mode-specific C-h for company-active-map"
-      (interactive)
-      (pcase major-mode
-	('ess-r-mode (show-company-doc-as-ess-help))
-	(_ (company-show-doc-buffer))))
-    (define-key company-active-map (kbd "C-h") 'mode-specific-C-h)
-
-    ;; Rely on electric-pair-mode instead of skeleton
-    (local-set-key (kbd "{") 'self-insert-command)
-    (local-set-key (kbd "}") 'self-insert-command)
-    
-    ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
-    ;; if electric-layout-mode is enabled (it is not by default)
-    (setq-local electric-layout-rules nil)
-
-    (my-definer :keymaps 'local "m" 'hydra-r/body))
-
-  ;; Override Windows' help_type option of "html", to open help
-  ;; in help buffer, not browser (see contents of .Rprofile)
-  (pcase system-type
-    ('windows-nt
-     ;; iESS searches the paths listed in the variable exec-path for inferior-ess-r-program
-     (add-to-list 'exec-path "c:/Users/jkroes/Documents/R/R-3.6.2/bin")
-     ;; Sets R_USER and R_LIBS_USER
-     (setenv "R_USER" "c:/Users/jkroes/Documents")
-     ;; run-ess-r fails when this is set to Rterm
-     (setq inferior-ess-r-program "R")
-     (setenv "R_PROFILE_USER" "C:/Users/jkroes/.emacs.d/.Rprofile")
-     ;; RStudio downloads pandoc with rmarkdown, but outside of RStudio
-     ;; you need to notify R of the executable's directory
-     (setenv "RSTUDIO_PANDOC" "C:/Users/jkroes/AppData/Local/Pandoc")
-     )
-    ('darwin (setenv "R_PROFILE_USER" "~/.emacs.d/.Rprofile")))
-  (setq ess-nuke-trailing-whitespace-p t
-	;; ess-S-quit-kill-buffers-p 'ask 
-	inhibit-field-text-motion nil)) ;; prompt acts as beginning of line if prompt is read-only
-
-;;; Buffer window display management
-
-(setq display-buffer-alist `(("\\*company-documentation\\*"
-			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
-			      (mode. ess-r-help-mode)
-			      (side . right)
-			      (slot . 1)
-			      (window-width . 0.33)
-			      (reusable-frames . nil))
-			     ("\\*R Dired"
-			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
-			      (side . right)
-			      (slot . -1)
-			      (window-width . 0.5)
-			      (reusable-frames . nil))
-			     ("\\*R"
-			      (display-buffer-reuse-mode-window display-buffer-below-selected)
-			      (window-height . 0.2)
-			      (reusable-frames . nil))
-			     ("\\*Help\\[R"
-			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
-			      (side . right)
-			      (slot . 1)
-			      (window-width . 0.5)
-			      (reusable-frames . nil))
-			     ("\\*Help\\*" display-buffer-same-window)
-			     ("\\*Apropos\\*" display-buffer-same-window)))
-
-;;; Further reading:
-
-;; https://dev.to/huytd/emacs-from-scratch-1cg6
-;; https://www.reddit.com/r/emacs/comments/2edbau/what_are_some_great_emacsd_examples/ 
-;; https://github.com/caisah/emacs.dz
-;; https://emacs.sexy/#resources
-;; https://www.reddit.com/r/emacs/comments/6s5470/useful_packages/
-;; https://github.com/emacs-tw/awesome-emacs
-;; https://github.com/MilesMcBain/esscss
-;; https://www.masteringemacs.org/about
-
-;;; Evil
-;;https://github.com/noctuid/evil-guide
-;;https://raw.githubusercontent.com/emacs-evil/evil/master/doc/evil.pdf
-;;evil-tutor-start
-;;https://www.emacswiki.org/emacs/Evil
-;;https://emacs.stackexchange.com/questions/12175/instructions-on-how-to-work-with-evil-mode (see config)
-;;https://github.com/emacs-evil/evil-collection
-;;https://www.linode.com/docs/tools-reference/tools/emacs-evil-mode/
-;;https://github.com/noctuid/evil-guide/issues/11
-;;https://github.com/emacs-evil/evil/blob/3766a521a60e6fb0073220199425de478de759ad/evil-maps.el
-
-;;; Counsel
-;; https://oremacs.com/swiper/
-;; https://github.com/abo-abo/swiper/wiki
-;; https://github.com/abo-abo/swiper/blob/master/ivy-hydra.el
-;; https://github.com/abo-abo/hydra/wiki/hydra-ivy-replacement
-;; https://writequit.org/denver-emacs/presentations/2017-04-11-ivy.html#fn.1
-;; See ivy info node
-;; Relevant maps:
-;; minibuffer maps
-;; ivy-minibuffer-map
-;; counsel command maps (e.g. counsel-find-file-map)
-;;  NOTE: '`' shows ?? as the binding. See counsel.el,
-;;  counsel-find-file-map, where '`' is bound to a call
-;;  to ivy-make-magic-action with arg "b", equiv. to
-;;  M-o b
-;; Investigate actions for each counsel command
-;; E.g. M-o within counsel-M-x contains a jump to def action and
-;; a help action
-;; Navigation:
-;;  counsel-outline (navigates comments)
-;; Completion:
-;;  indent-for-symbol
-;;  counsel-company  
-;;  counsel-jedi
-;; counsel-set-variable (defcustom completion)
-;; ivy-push-view (https://oremacs.com/2016/06/27/ivy-push-view/)
-;; ivy-pop-view
-
-;;; ESS
-;; ess-show-traceback, ess-show-call-stack, ess-parse-errors (for syntax errors)
-;; ESS maps:
-;; ess-help-mode-map
-;; inferior-ess-mode-map
-;; ess-r-help-mode-map
-;; ess-watch-mode-mape
-;; ess-rdired-mode-map
-;; ess-electric-selection-map
-;; inferior-ess-mode-map
-;; ess-mode-map
-;; inferior-ess-r-mode-map
-;; electric-indent-mode
-;; https://github.com/MilesMcBain/esscss
