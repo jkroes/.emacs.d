@@ -9,7 +9,7 @@
     ('gnu/linux
      (add-to-list 'exec-path "/home/jkroes/.local/bin") ;; path to jupyter
      (setq python-shell-interpreter "python3.6"))))
-  
+
   (add-to-list 'exec-path "c:/Users/jkroes/Documents/Python") ;; interpreter
   (add-to-list 'exec-path "c:/Users/jkroes/Documents/Python/Scripts") ;; pip
   (setenv "PATH" (concat "C:/Users/jkroes/Documents/Python"
@@ -19,30 +19,30 @@
 ;;; Buffer window display management
 
 (setq display-buffer-alist `(("\\*company-documentation\\*"
-			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
-			      (mode. ess-r-help-mode)
-			      (side . right)
-			      (slot . 1)
-			      (window-width . 0.33)
-			      (reusable-frames . nil))
-			     ("\\*R Dired"
-			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
-			      (side . right)
-			      (slot . -1)
-			      (window-width . 0.5)
-			      (reusable-frames . nil))
-			     ("\\*R"
-			      (display-buffer-reuse-mode-window display-buffer-below-selected)
-			      (window-height . 0.2)
-			      (reusable-frames . nil))
-			     ("\\*Help\\[R"
-			      (display-buffer-reuse-mode-window display-buffer-in-side-window)
-			      (side . right)
-			      (slot . 1)
-			      (window-width . 0.5)
-			      (reusable-frames . nil))
-			     ("\\*Help\\*" display-buffer-same-window)
-			     ("\\*Apropos\\*" display-buffer-same-window)))
+                  (display-buffer-reuse-mode-window display-buffer-in-side-window)
+                  (mode. ess-r-help-mode)
+                  (side . right)
+                  (slot . 1)
+                  (window-width . 0.33)
+                  (reusable-frames . nil))
+                 ("\\*R Dired"
+                  (display-buffer-reuse-mode-window display-buffer-in-side-window)
+                  (side . right)
+                  (slot . -1)
+                  (window-width . 0.5)
+                  (reusable-frames . nil))
+                 ("\\*R"
+                  (display-buffer-reuse-mode-window display-buffer-below-selected)
+                  (window-height . 0.2)
+                  (reusable-frames . nil))
+                 ("\\*Help\\[R"
+                  (display-buffer-reuse-mode-window display-buffer-in-side-window)
+                  (side . right)
+                  (slot . 1)
+                  (window-width . 0.5)
+                  (reusable-frames . nil))
+                 ("\\*Help\\*" display-buffer-same-window)
+                 ("\\*Apropos\\*" display-buffer-same-window)))
 
 ;;; Further reading:
 

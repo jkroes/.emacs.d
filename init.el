@@ -35,6 +35,8 @@
 ;;    similar to relative filename args in `load' (including reliance on `load-path'.
 ;;    One difference is that it will not re-load a file/feature.
 
+;;; Installation
+
 ;; Installing emacs from source on Linux:
 ;; See 7.1 How do I install emacs?
 ;; Drop the -g flag from tar when installing a .xz from
@@ -42,19 +44,49 @@
 ;; Installing Hack font on Linux:
 ;; github.com/source-foundry/Hack#quick-installation
 
+;;; TODO
 
-;; TODO:
 ;; [x] Color theme
 ;; [x] Font
-;; []
-;; []
-;; []
-;; []
-;; []
-;; []
-;; []
-;; []
-
+;; [x] Move to newly split windows, splitbelow, splitright
+;; [] Change what evil considers to be a word (iskeyword)
+;; [] Change which horiz movements can cross lines (whichwrap)
+;; [x] Make tabs visible
+;; [x] Break lines at 80 chars (auto-fill-mode)
+;; [x] Disable temp files (auto save and backup files)
+;; [] Truecolor for terminal? Not currently using terminal
+;; [] Terminal configuration (neoterm, nvr)
+;; [x] Remove trailing whitespace on write
+;; [x] nerdcommenter
+;; [] Enable manual indentation? See https://www.pement.org/emacs_tabs.htm#nothing for an
+;;    explanation and note that a better option may be to improve a mode's autoindentation.
+;; [] Fix tab. Currently it doesn't tab at all. Indentation seems to be forced in lisp mode.
+;; [] undotree
+;; [] vim-clap
+;; [] floating terminal
+;; [] vimwiki
+;; [] R (polymode and ess; note polymode has its own website similar to lsp-mode)
+;; [] python (emacs-jupyter?)
+;; [x] Replicate coc.nvim
+;;     [x] Floating help next to completion items: company-box!
+;;     [x] Callable help: lsp-ui-doc-glance and company-show-doc-buffer
+;;     [x] Scrollable help: custom lisp function
+;; [x] Fuzzy file finder that searches all subdirs? See counsel-fzf
+;; [] Make graphical emacs not started from Terminal use $PATH in exec-path
+;;    See https://github.com/purcell/exec-path-from-shell
+;; [] Ensure page breaks are enabled such that ^H isn't visible in help(?) docs
+;; [] mode-line-format customization?
+;; [x] Highlight parens (see show-paren-mode and evil-highlight-closing-paren-at-point states)
+;; [x] Customize background,foreground face for show-paren-mode
+;;     [] Does evil-highlight-closing-paren-at-point affect this?
+;; [] Improve company selected completion item face for this theme (it's barely visible)
+;;    NOTE: Appears to only affect the WSL version of emacs...
+;; [] Update plugins and __init.el
+;; [] Review ivy/counsel/swiper changelog, wiki, and external website to see what's changed
+;;    and what I missed the first time I started using emacs. E.g., I bound both fzf and
+;;    jump to my files hydra, even though they are presumably similar commands.
+;; [] counsel-el is deprecated. (Try running the command for suggested fix).
+;;    Change the binding at the bottom of init.el
 
 ;;; package.el config and profiling
 (setq load-path (cons "~/.emacs.d/lisp" load-path))
@@ -65,7 +97,6 @@
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package))
-; (add-to-list 'load-path "~/.emacs.d/elpa/use-package")
 (require 'use-package)
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
@@ -75,9 +106,9 @@
 ;;   (dolist (pkg packages)
 ;;     (unless (package-installed-p pkg)
 ;;       (cond ((string= pkg "help-fns+")
-;; 	     (quelpa '(help-fns+ :fetcher wiki)))
-;; 	    (t (package-refresh-contents)
-;; 	       (package-install pkg)))))
+;;        (quelpa '(help-fns+ :fetcher wiki)))
+;;       (t (package-refresh-contents)
+;;          (package-install pkg)))))
 ;;     ;; Not sure if customizations need loading prior to requiring packages...
 ;;   (setq custom-file "~/.emacs.d/emacs-custom.el")
 ;;   (load custom-file)
@@ -90,13 +121,13 @@
        (set-frame-font "Hack 12" nil)
        ;; Hack to open URLs from within WSL using browse-url-* commands
        (when (string-match "Linux.*Microsoft.*Linux"
-			               (shell-command-to-string "uname -a"))
+                           (shell-command-to-string "uname -a"))
          (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
                browse-url-generic-args '("/c" "start" "")
                browse-url-browser-function 'browse-url-generic)))
       ((eq system-type 'windows-nt)
        ;; (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
-       ;; 	     shell-file-name explicit-shell-file-name))
+       ;;        shell-file-name explicit-shell-file-name))
        ;; To configure locate:
        ;; Open Git's bash.exe; mkdir /usr/var; updatedb --localpaths='/c/ /d/ /h/'
        (add-to-list 'exec-path "c:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/")
@@ -115,34 +146,93 @@
 ;; NOTE: Ligatures are not enabled. See
 ;; https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
 
-;;; Default directory
+;;; Non-customization settings
 
 (setq default-directory "~/")
+;; (standard-display-ascii ?\t "^I")
 
-;;; Custom configuration
+(setq auto-fill-mode t)
 
-(setq custom-file "~/.emacs.d/emacs-custom.el")
-(load custom-file)
+;;;; Whitespace (https://dougie.io/emacs/indentation)
 
-;;; Color scheme (https://emacsthemes.com/)
+;; Show tabs and trailing space
+(global-whitespace-mode)
+(setq whitespace-style
+      '(face tabs tab-mark trailing))
+(custom-set-faces
+ '(whitespace-tab ((t (:foreground "#636363")))))
+
+(setq whitespace-display-mappings
+      '((tab-mark 9 [124 9] [92 9])))
+
+;; Delete tabs as a unit, not one space at a time
+(setq backward-delete-char-untabify-method nil)
+
+;; Trim whitespace on save
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
+;;;; Color scheme (https://emacsthemes.com/)
 
 (use-package solarized-theme
   :init
   (load-theme 'solarized-dark t))
 ;; (use-package dracula-theme)
 
+;;; Custom configuration
+
+(setq custom-file "~/.emacs.d/emacs-custom.el")
+(load custom-file)
+
+;;; Comments
+
+;; See README for examples, evil usage, and tips
+;; There is a comment object and comment operators
+(use-package evil-nerd-commenter
+  :after evil
+  :config
+  ;; Extracted from source code.
+  (define-key evil-normal-state-map ",." 'evilnc-copy-and-comment-operator)
+  (define-key evil-visual-state-map ",." 'evilnc-copy-and-comment-operator)
+  (define-key evil-normal-state-map ",," 'evilnc-comment-operator)
+  (define-key evil-visual-state-map ",," 'evilnc-comment-operator)
+  (general-define-key
+   :prefix-command 'my/comments-map
+   "c" 'evilnc-comment-or-uncomment-lines
+   "C" 'evilnc-copy-and-comment-lines
+   "i" 'counsel-imenu-comments
+   ;; When given C-u <n>, will forward-match <n> against the rightmost
+   ;; digits of each line. E.g., on line 160, C-u <72> will target lines
+   ;; 160-172
+   "l" 'evilnc-quick-comment-or-uncomment-to-the-line
+   "p" 'evilnc-comment-or-uncomment-paragraphs
+   "y" 'evilnc-comment-and-kill-ring-save
+   ;; Whether empty lines can be commented as part of a selection
+   "e" 'evilnc-toggle-comment-empty-lines
+   ;; When toggled off, all lines in a selection are commented if any
+   ;; uncommented lines are included. Note that blank lines never count
+   "v" 'evilnc-toggle-invert-comment-line-by-line)
+  (defun counsel-imenu-comments ()
+    (interactive)
+    (let* ((imenu-create-index-function 'evilnc-imenu-create-index-function))
+      (unless (featurep 'counsel) (require 'counsel))
+      (counsel-imenu))))
 
 ;;; Completion / LSP Extension
 
 (use-package company
   ;; :hook ((after-init . global-company-mode))
   :bind (:map company-mode-map
-	      ("<tab>" . company-indent-or-complete-common)
-	      :map company-active-map
-	      ("M-n" . nil)
-	      ("M-p" . nil)
-	      ("C-n" . company-select-next)
-	      ("C-p" . company-select-previous)))
+              ("<tab>" . company-indent-or-complete-common)
+              :map company-active-map
+              ("M-n" . nil)
+              ("M-p" . nil)
+              ("C-n" . company-select-next)
+              ("C-p" . company-select-previous)))
+
+;; Provides custom icons and popup documentation to the right of
+;; completion items, similar to coc.nvim, when used with lsp-mode.
+(use-package company-box
+  :hook (company-mode . company-box-mode))
 
 ;;; Language Server Protocol (LSP)
 
@@ -150,9 +240,9 @@
 (setq python-shell-interpreter "python3")
 
 ;; Testing out for parameter completion in lsp...
-(use-package yasnippet
-  :hook ((python-mode . yas-minor-mode)
-         (ess-r-mode . yas-minor-mode)))
+;; (use-package yasnippet
+;;   :hook ((python-mode . yas-minor-mode)
+;;          (ess-r-mode . yas-minor-mode)))
 
 (use-package lsp-mode
   :hook ((python-mode . lsp)
@@ -174,10 +264,10 @@
         (let ((kmap (make-sparse-keymap)))
           (define-key kmap (kbd "q")
             '(lambda ()
-            (interactive)
-            (lsp-ui-doc-unfocus-frame)
-            (setq overriding-terminal-local-map nil)
-            (setq which-key-show-transient-maps t)))
+               (interactive)
+               (lsp-ui-doc-unfocus-frame)
+               (setq overriding-terminal-local-map nil)
+               (setq which-key-show-transient-maps t)))
           (setq which-key-show-transient-maps nil)
           (setq overriding-terminal-local-map kmap)
           (lsp-ui-doc-focus-frame)))
@@ -189,22 +279,24 @@
   (custom-set-faces '(nobreak-space ((t nil)))))
 
 (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+
 ;; (use-package lsp-treemacs :commands lsp-treemacs-error-list)
 ;; (use-package dap-mode)
 ;; (require 'dap-python)
 
 ;;; Random packages
+
 ;; Bug prevents use of :custom: https://github.com/jwiegley/use-package/issues/702
-; (use-package evil-surround :after evil)
-; (use-package org)
+;; (use-package evil-surround :after evil)
+;; (use-package org)
 (use-package page-break-lines)
-; (use-package osx-browse)
+;; (use-package osx-browse)
 ;; Potential ideas for fixing indentation? Didn't work when tried:
 ;; https://stackoverflow.com/questions/4643206/how-to-configure-indentation-in-emacs-lua-mode
 ;; https://github.com/kengonakajima/lua-mode/blob/master/my-lua.el
 ;; Turning off lua-electric-flag via setq-local in a hook
-; (use-package lua-mode)
-; (use-package jupyter)
+                                        ; (use-package lua-mode)
+                                        ; (use-package jupyter)
 
 ;;; Vim emulation
 
@@ -212,22 +304,36 @@
 (use-package evil-escape :after evil :config (evil-escape-mode))
 (use-package evil
   :config
-  ;; (defalias 'evil-insert-state 'evil-emacs-state)    ;; Alternative to disabling insert-state bindings
+  ;; (defalias 'evil-insert-state 'evil-emacs-state)    ; Alternative to disabling insert-state bindings
   (setq evil-normal-state-modes
-	'(lisp-interaction-mode                         ;; *scratch*
-	  emacs-lisp-mode
-      python-mode
-	  ess-r-mode
-	  fundamental-mode
+        '(lisp-interaction-mode                         ; *scratch*
+          emacs-lisp-mode
+          python-mode
+          ess-r-mode
+          markdown-mode
+          fundamental-mode
           lua-mode)
         evil-insert-state-modes
-	'(inferior-ess-r-mode))
+        '(inferior-ess-r-mode))
   (evil-mode))
 
 
 ;;; REPLs/Programming
 
-;; R
+;;;; R
+
+;; (use-package markdown-mode)
+;; (use-package poly-markdown
+;;   :mode (("\\md" . poly-markdown-mode)))
+;; (use-package poly-R
+;;   :mode (("\\.Rmd" . poly-markdown+R-mode)))
+;; (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode))
+;; (add-to-list 'auto-mode-alist '("\\.Rmd" . poly-markdown+r-mode))
+;; https://github.com/polymode/polymode/issues/92
+(use-package poly-markdown)
+;; NOTE: ess-r configuration and bindings are available inside chunks, where R-mode is active
+;; I have bound polymode-export (render) to SPC-m-e-k
+(use-package poly-R)
 
 (use-package ess
   :hook (ess-r-mode . config-ess-r-mode)
@@ -240,13 +346,13 @@
 
   (defun config-ess-r-mode ()
     (ess-set-style 'RStudio)
-    (setq-local ess-indent-offset 4) ;; RStudio style uses a value of 2
+    (setq-local ess-indent-offset 4) ; RStudio style uses a value of 2
 
     (defun show-company-doc-as-ess-help ()
       "Show ess help if available, else show company help"
       (interactive)
       (let* ((selected (nth company-selection company-candidates))
-	         (obj-help (ess-display-help-on-object selected)))
+             (obj-help (ess-display-help-on-object selected)))
         (unless obj-help
           (company-show-doc-buffer))))
 
@@ -286,15 +392,15 @@
      )
     ('darwin (setenv "R_PROFILE_USER" "~/.emacs.d/.Rprofile")))
   (setq ess-nuke-trailing-whitespace-p t
-	;; ess-S-quit-kill-buffers-p 'ask
-	inhibit-field-text-motion nil)) ;; prompt acts as beginning of line if prompt is read-only
+        ;; ess-S-quit-kill-buffers-p 'ask
+        inhibit-field-text-motion nil)) ; prompt acts as beginning of line if prompt is read-only
 
 (defun clear-shell ()
-   (interactive)
-   (let ((old-max comint-buffer-maximum-size))
-     (setq comint-buffer-maximum-size 0)
-     (comint-truncate-buffer)
-     (setq comint-buffer-maximum-size old-max)))
+  (interactive)
+  (let ((old-max comint-buffer-maximum-size))
+    (setq comint-buffer-maximum-size 0)
+    (comint-truncate-buffer)
+    (setq comint-buffer-maximum-size old-max)))
 
 (global-set-key  (kbd "\C-x c") 'clear-shell)
 
@@ -303,18 +409,23 @@
 ;; Usage within minibuffer: C-h m
 (use-package counsel ;; Installs and loads ivy and swiper as dependencies
   :bind (:map ivy-minibuffer-map
-	      ("M-m" . ivy-mark)
-	      ("M-u" . ivy-unmark)
-	      ([remap ivy-done] . ivy-alt-done)
-	      ([remap ivy-alt-done] . ivy-done))
+              ("M-m" . ivy-mark)
+              ("M-u" . ivy-unmark)
+              ([remap ivy-done] . ivy-alt-done)
+              ([remap ivy-alt-done] . ivy-done))
   :config
   (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
-	ivy-help-file "~/.emacs.d/ivy-help.org"))
+        ivy-help-file "~/.emacs.d/ivy-help.org"))
 (use-package smex)
 (use-package flx)
 
 ;;; Keymaps
 
+;; NOTE: The two evil-related which-key configuration settings are disabled.
+;; It seems that they set an extremely rapid timeout for evil motions, preventing
+;; any evil motions short of instinctive ones. The popups for evil are not worth
+;; this, though there may be a configuration setting to increase the length of
+;; time before keys timeout.
 (use-package which-key :bind (:map help-map ("C-w" . which-key-show-keymap)))
 (use-package ace-window)
 
@@ -334,19 +445,19 @@ blue and amranath hydras."
   ;; Load hydras and integrate with which-key
   (load "my-hydras")
   (load "which-key-hacks")
-  (my/defhydra 'hydra-window) ;;Needs to run after hydra-buffer is defined
-  (my/defhydra 'hydra-buffer) ;;Needs to run after hydra-window is defined
+  (my/defhydra 'hydra-window) ; Needs to run after hydra-buffer is defined
+  (my/defhydra 'hydra-buffer) ; Needs to run after hydra-window is defined
   (add-hook 'ess-r-mode-hook
-	    (lambda ()
-	      (my/defhydra 'hydra-r)
-	      (my/defhydra 'hydra-r-help)
-	      (my/defhydra 'hydra-r-eval)
-	      (my/defhydra 'hydra-r-debug))))
+            (lambda ()
+              (my/defhydra 'hydra-r)
+              (my/defhydra 'hydra-r-help)
+              (my/defhydra 'hydra-r-eval)
+              (my/defhydra 'hydra-r-debug))))
 
 (use-package general)
 
 (general-unbind help-map
-  "C-h" ;; Enable which-key navigation of help-map bindings
+  "C-h" ; Enable which-key navigation of help-map bindings
   "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
 
 (general-define-key
@@ -369,43 +480,50 @@ blue and amranath hydras."
   "SPC" 'counsel-M-x
   "'" 'ivy-resume
   "b" 'hydra-buffer/body
+  "c" 'my/comments-map
   "f" 'my/files-map
+  ;; https://www.masteringemacs.org/article/complete-guide-mastering-eshell
+  "e" 'eshell ; Cross-platform shell that implements common programs (e.g., ls) in elisp
+  "t" 'ansi-term
+  ;; https://www.masteringemacs.org/article/executing-shell-commands-emacs
+  "&" 'async-shell-command
   "w" 'hydra-window/body)
 
 (general-define-key
  :prefix-command 'my/files-map
  "b" 'my/bookmarks-map
- "f" 'counsel-find-file
+ "d" 'counsel-find-file
+ "f" 'counsel-fzf
  "i" 'insert-file
- "j" 'counsel-file-jump
- "l" 'counsel-locate
- "r" 'counsel-recentf
- ;; "z" 'counsel-fzf
- )
+ ;; Is jump just a variation of fzf?
+ ;; "j" 'counsel-file-jump
+ ;; Locate doesn't work out of the box on MacOS
+ ;; "l" 'counsel-locate
+ "m" 'counsel-recentf)
 
 (general-define-key
  :prefix-command 'my/bookmarks-map
  "d" 'bookmark-delete
  "D" 'counsel-bookmarked-directory
  "e" 'edit-bookmarks
- "j" 'counsel-bookmark ;; TODO: Customize counsel-bookmark action
+ "j" 'counsel-bookmark ; TODO: Customize counsel-bookmark action
  ;; list to include delete, rename, and set
  "r" 'bookmark-rename
  "s" 'bookmark-set)
 
 (general-define-key
  :prefix-command 'my/elisp-map
- "c" 'check-parens            ;; Debugging "End of file during parsing"
- "d" 'eval-defun              ;; evals outermost expression containing or following point
+ "c" 'check-parens            ; Debugging "End of file during parsing"
+ "d" 'eval-defun              ; evals outermost expression containing or following point
  ;; ...and forces reset to initial value within a defvar,
  ;; defcustom, and defface expressions
- "m" 'pp-eval-expression      ;; "m" for minibuffer, where exp is evaluated
- "s" 'pp-eval-last-sexp       ;; evals expression preceding point
- "i" 'eval-print-last-sexp    ;; "i" for insert(ing result)
+ "m" 'pp-eval-expression      ; "m" for minibuffer, where exp is evaluated
+ "s" 'pp-eval-last-sexp       ; evals expression preceding point
+ "i" 'eval-print-last-sexp    ; "i" for insert(ing result)
  "r" 'eval-region)
+
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
             (my-definer :keymaps 'local
-                        "<backtab>" 'counsel-el ;; counsel-assisted completion
-                        "m" 'my/elisp-map)))
-
+              ;; "<backtab>" 'counsel-el ; counsel-assisted completion
+              "m" 'my/elisp-map)))

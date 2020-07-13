@@ -8,7 +8,7 @@
   ("r" read-only-mode)
   ("s" my/switch-to-scratch)
   ("v" view-buffer)
-  ("w" hydra-window/body :color blue)) 
+  ("w" hydra-window/body :color blue))
 
 ;; TODO: Set which-key-max-description-length to less than 1/2 window; otherwise buffer can't show
 ;; TODO: See counsel-hydra-integrate below. Need to set before you define other hydras?
@@ -55,7 +55,7 @@
   ;; prog-indent-sexp
   ;; ess-indent-exp
   ;; ess-indent-new-comment-line
-  ;; ess-complete-object-name 
+  ;; ess-complete-object-name
   )
 
 (defhydra hydra-r-help () ;; ess-doc-map
@@ -80,6 +80,7 @@
   ("E" ess-dirs)
   ("f" ess-load-file)
   ("i" inferior-ess-reload)
+  ("k" polymode-export)
   ;; ("P" ess-request-a-process) ;; Display selected iESS process and buffer
   ("p" ess-switch-process) ;; Switch process attached to script (current process buffer auto-displays if new,
   ;; but any script evaluation will auto-display attached process buffer if not already visible
@@ -123,4 +124,3 @@
 ;; of my/defhydra that may be remedied in the future. Also, the name of
 ;; the function should be changed, if I can'tfigure out a way to use
 ;; my/defhydra as advice for defhydra at some point.
-
