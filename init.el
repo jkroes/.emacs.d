@@ -65,6 +65,7 @@
 ;; [] vim-clap
 ;; [] floating terminal
 ;; [] vimwiki
+;; [] grep commands (bind to spc f g)
 ;; [] R (polymode and ess; note polymode has its own website similar to lsp-mode)
 ;; [] python (emacs-jupyter?)
 ;; [x] Replicate coc.nvim
@@ -475,6 +476,10 @@ blue and amranath hydras."
   ;; :non-normal-prefix (general-chord "fd")
   :non-normal-prefix "C-SPC")
 
+(defun org-index ()
+  (interactive)
+  (find-file "~/org/index.org"))
+
 (my-definer
   "" nil
   "SPC" 'counsel-M-x
@@ -484,6 +489,7 @@ blue and amranath hydras."
   "f" 'my/files-map
   ;; https://www.masteringemacs.org/article/complete-guide-mastering-eshell
   "e" 'eshell ; Cross-platform shell that implements common programs (e.g., ls) in elisp
+  "o" 'org-index
   "t" 'ansi-term
   ;; https://www.masteringemacs.org/article/executing-shell-commands-emacs
   "&" 'async-shell-command
@@ -527,3 +533,20 @@ blue and amranath hydras."
             (my-definer :keymaps 'local
               ;; "<backtab>" 'counsel-el ; counsel-assisted completion
               "m" 'my/elisp-map)))
+
+;; (general-define-key
+;;  :prefix-command 'my/org-map
+;;  )
+
+;; (add-hook 'org-mode-map
+;;           (lambda()
+;;             (my-definer :keymaps 'local
+;;               "m" 'my/org-map)))
+
+;; C-c l org-store-link
+;; C-c a org-agenda
+;; org-todo-keywords
+;; org-tags-alist
+;; C-c a a curr week agenda
+;; C-c a t global TODO
+;; org-agenda files (c-c [ or ])

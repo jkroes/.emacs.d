@@ -28,7 +28,6 @@
  '(cua-normal-cursor-color "#839496")
  '(cua-overwrite-cursor-color "#b58900")
  '(cua-read-only-cursor-color "#859900")
- '(custom-enabled-themes '(dracula))
  '(custom-safe-themes
    '("dcdd1471fde79899ae47152d090e3551b889edf4b46f00df36d653adc2bf550d" "37f32706ffc6d7d021adf6b4d2a84eae7e0cfb7871cd39e21eaddc77c52bf4a7" "332fcf3c7208aca9fab65d54203f78a242482e7fd65f5725a2482c20b1730732" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default))
  '(delete-by-moving-to-trash t)
@@ -124,6 +123,12 @@
  '(nrepl-message-colors
    '("#dc322f" "#cb4b16" "#b58900" "#5b7300" "#b3c34d" "#0061a8" "#2aa198" "#d33682" "#6c71c4"))
  '(ns-auto-hide-menu-bar nil)
+ '(org-agenda-files '("~/org"))
+ '(org-agenda-include-diary t)
+ '(org-agenda-todo-ignore-scheduled 'future)
+ '(org-enforce-todo-checkbox-dependencies t)
+ '(org-enforce-todo-dependencies t)
+ '(org-todo-keywords '((sequence "TODO" "DONE" "WAITING" "STARTED")))
  '(osx-browse-mode t)
  '(package-selected-packages
    '(company-box poly-R poly-markdown evil-nerd-commenter lsp-python-ms yasnippet smex dap-python dap-mode lsp-treemacs lsp-ivy lsp-ui lsp-mode jupyter lua-mode osx-browse evil-mc evil-surround multiple-cursors key-chord company projectile counsel hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window))
