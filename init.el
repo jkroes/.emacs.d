@@ -1,4 +1,4 @@
-;;; Loading Emacs packages
+;; Loading Emacs packages
 ;; See '48.2 Package Installation' (emacs), '41.1 Packaging Basics' (elisp), comments in
 ;;  package.el, and docstring of package-initialize and
 ;;  https://lists.gnu.org/archive/html/emacs-devel/2017-08/msg00154.html
@@ -44,6 +44,13 @@
 ;; Installing Hack font on Linux:
 ;; github.com/source-foundry/Hack#quick-installation
 
+;; Further reading on customization, defer, demand:
+;; https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el
+;; https://menno.io/posts/use-package/
+;; https://jwiegley.github.io/use-package/keywords/#custom
+;; https://emacs.stackexchange.com/questions/10396/difference-between-init-and-config-in-use-package#:~:text=They%20are%20different%20if%20the,the%20package%20is%20actually%20loaded.&text=You%20have%20configured%20the%20package,an%20html%20file%20is%20visited.
+;; https://opensource.com/article/20/3/variables-emacs (see csetq discussion)
+
 ;;; TODO
 
 ;; [x] Color theme
@@ -63,7 +70,7 @@
 ;; [] Fix tab. Currently it doesn't tab at all. Indentation seems to be forced in lisp mode.
 ;; [] undotree
 ;; [] vim-clap
-;; [] floating terminal
+ ;; [] floating terminal
 ;; [] vimwiki
 ;; [] grep commands (bind to spc f g)
 ;; [] R (polymode and ess; note polymode has its own website similar to lsp-mode)
@@ -89,35 +96,34 @@
 ;; [] counsel-el is deprecated. (Try running the command for suggested fix).
 ;;    Change the binding at the bottom of init.el
 
-;;; package.el config and profiling
+;;; package.el config and startup time profiling
+
+;; Load function to configure package.el and functions used by hydras
 (setq load-path (cons "~/.emacs.d/lisp" load-path))
-(load "my-functions.el") ;; Also loads functions required by hydras
+(load "my-functions.el")
+;; When called with one of two arguments, benchmark-init/show-durations-* can be
+;; called to show startup times for each file loaded
 (my/init-maybe-profile)
 
 ;;; Bootstrap `use-package`
+
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
-  (package-install 'use-package))
-(require 'use-package)
+  (package-install 'use-package)
+  ;; Needs to come after loading my-functions.el
+  (package-install 'benchmark-init))
+(eval-when-compile
+  (require 'use-package))
+(require 'diminish)
+(require 'bind-key)
 (require 'use-package-ensure)
 (setq use-package-always-ensure t)
 
-;;; Install missing packages, load customizations, then load packages
-;; (let ((packages '(quelpa help-fns+ general)))
-;;   (dolist (pkg packages)
-;;     (unless (package-installed-p pkg)
-;;       (cond ((string= pkg "help-fns+")
-;;        (quelpa '(help-fns+ :fetcher wiki)))
-;;       (t (package-refresh-contents)
-;;          (package-install pkg)))))
-;;     ;; Not sure if customizations need loading prior to requiring packages...
-;;   (setq custom-file "~/.emacs.d/emacs-custom.el")
-;;   (load custom-file)
-;;   (dolist (pkg packages)
-;;     (require pkg)))
-
 ;;; OS-specific configuration
 
+;; NOTE: Ligatures are not enabled for Firacode. See
+;; https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
+;; Using Hack font instead
 (cond ((eq system-type 'gnu/linux)
        (set-frame-font "Hack 12" nil)
        ;; Hack to open URLs from within WSL using browse-url-* commands
@@ -142,26 +148,32 @@
       ((eq system-type 'darwin)
        (set-frame-font "Hack 14" nil)
        (setq mac-command-modifier 'ctrl)
+       ;; NOTE: s- indicates super; S- indicates shift
        (setq mac-control-modifier 'super)))
 
-;; NOTE: Ligatures are not enabled. See
-;; https://github.com/tonsky/FiraCode/wiki/Emacs-instructions
+;;; Color scheme (https://emacsthemes.com/)
+
+(use-package solarized-theme
+  :init
+  (load-theme 'solarized-dark t))
+;; (use-package dracula-theme)
 
 ;;; Non-customization settings
 
-(setq default-directory "~/")
-;; (standard-display-ascii ?\t "^I")
+(setq default-directory "~/.emacs.d")
 
 (setq auto-fill-mode t)
+
+;;;; Executable paths
+(add-to-list 'exec-path "/usr/local/bin")
+(setq python-shell-interpreter "python3")
 
 ;;;; Whitespace (https://dougie.io/emacs/indentation)
 
 ;; Show tabs and trailing space
 (global-whitespace-mode)
-(setq whitespace-style
-      '(face tabs tab-mark trailing))
-(custom-set-faces
- '(whitespace-tab ((t (:foreground "#636363")))))
+(setq whitespace-style '(face tabs tab-mark trailing))
+(custom-set-faces '(whitespace-tab ((t (:foreground "#636363")))))
 
 (setq whitespace-display-mappings
       '((tab-mark 9 [124 9] [92 9])))
@@ -172,73 +184,194 @@
 ;; Trim whitespace on save
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-;;;; Color scheme (https://emacsthemes.com/)
-
-(use-package solarized-theme
-  :init
-  (load-theme 'solarized-dark t))
-;; (use-package dracula-theme)
-
 ;;; Custom configuration
 
 (setq custom-file "~/.emacs.d/emacs-custom.el")
 (load custom-file)
 
-;;; Comments
+;;; Keymaps
+
+(use-package general
+  :config
+  (general-create-definer my-leader
+    :states '(motion insert emacs)
+    :prefix "SPC"
+    :non-normal-prefix "C-SPC")
+  (my-leader
+    "" nil ; Unbinding the prefix itself prevents errors about binding to non-prefix keys somehow
+    ;; https://www.masteringemacs.org/article/complete-guide-mastering-eshell
+    ;; Cross-platform shell that implements common programs (e.g., ls) in elisp
+    "e" 'eshell
+    "f" '(:prefix-command my/files-map :wk "files")
+    ;; "fi" 'insert-file
+    "t" 'ansi-term
+    ;; https://www.masteringemacs.org/article/executing-shell-commands-emacs
+    "&" 'async-shell-command)
+  (general-def my/files-map
+    :wk-full-keys nil ; Allows for consistent wk replacement text during cyclical map navigation
+    "b" '(:prefix-command my/bookmarks-map :wk "bookmarks")
+    "i" 'insert-file)
+  (general-def my/bookmarks-map
+    :wk-full-keys nil
+    "d" 'bookmark-delete
+    "e" 'edit-bookmark:w
+    ;; For each map referencing `my/files-map' we need `:wk' "files"
+    "f" '(my/files-map :wk "files")
+    "r" 'bookmark-rename
+    "s" 'bookmark-set)
+  (general-unbind help-map "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
+  (general-def help-map
+    "M" 'describe-minor-mode
+    "s" 'describe-symbol))
+
+(use-package which-key
+  :diminish which-key-mode
+  :demand t ; Ensure popup is visible for all buffers on startup
+  :general (:keymaps 'help-map
+                     "C-h" nil ; Enable which-key navigation of help-map bindings
+                     "C-w" 'which-key-show-keymap)
+  :config
+  (which-key-mode)
+  (load "which-key-hacks") ; Modifications to display hydras
+  ;; TODO: Fix indentation of keywords like (:keymaps ...):
+  ;; https://github.com/noctuid/general.el#use-package-keywords
+  :custom
+  (which-key-compute-remaps t "E.g. w/ counsel-mode: apropos-command -> counsel-apropos")
+  (which-key-idle-delay 0.2)
+  (which-key-max-description-length 100)
+  (which-key-popup-type 'side-window)
+  (which-key-prefix-prefix "+")
+  (which-key-separator " ")
+  (which-key-show-docstrings t)
+  (which-key-allow-evil-operators nil)
+  (which-key-show-operator-state-maps nil "Enabling leads to rapid timeout for evil (e.g., 10dj or d10j)")
+  (which-key-show-transient-maps t "See modified which-key--update")
+  (which-key-side-window-location 'bottom)
+  (which-key-side-window-max-height 0.1)
+  (which-key-sort-order 'which-key-key-order-alpha)
+  (which-key-sort-uppercase-first nil))
+
+(use-package hydra
+  ;; If which-key is not loaded at the time hydra is loaded and its :config run, hydra will fail to load
+  ;; because of missing variables/functions from which-key. which-key can be forced to load by using
+  ;; :demand t or by switching to an R file, which loads lsp-mode, which in turn loads which-key (probably
+  ;; via reference to a which-key autoloaded function). If hydra's loading has been deferred, then
+  ;; SPC m (hydra-r/body) will not work. I believe that use-package/general
+  ;; create autoloads for bindings via the :bind and :general keywords. If you instead run SPC b ('hydra-buffer/body),
+  ;; which should be such an autoload, then hydra will load, and SPC m will work. Alternativley, you can use
+  ;; :commands hydra-r/body to create an autoload that triggers when SPC m is pressed. However, at this point, hydra
+  ;; is loading after ess-r-mode, which needs my/defhydra to be present. If it's not, the hydra activates but the
+  ;; hydra heads won't have the desired names in which-key.
+  ;; :demand t
+  :after which-key
+  :commands hydra-r/body
+  :general
+  (my-leader
+    "b" 'hydra-buffer/body
+    "w" 'hydra-window/body)
+  ;; Add opinionated counsel-hydra-heads to all hydras
+  (:keymaps 'hydra-base-map "." 'counsel-hydra-heads)
+  :config
+  (defhydra hydra-window ()
+    "Window"
+    ("h" windmove-left)
+    ("j" windmove-down)
+    ("k" windmove-up)
+    ("l" windmove-right)
+    ("b" hydra-buffer/body :color blue)
+    ("v" my/split-window-right-move)
+    ("x" my/split-window-below-move)
+    ("m" delete-other-windows :color blue)
+    ("M" my/delete-other-windows-and-buffers :color blue)
+    ("z" winner-undo)
+    ;; ("z" (progn
+    ;;     (winner-undo)
+    ;;     (setq this-command 'winner-undo))
+    ;;  "winner-undo") ;; Needed for winner-redo, it appears
+    ("Z" winner-redo))
+  (defun counsel-hydra-integrate (old-func &rest args)
+    "Function used to advise `counsel-hydra-heads' to work with
+ blue and amranath hydras."
+    (hydra-keyboard-quit)
+    (apply old-func args)
+    (funcall-interactively hydra-curr-body-fn))
+  (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
+  ;; Load hydras and integrate with which-key
+  (winner-mode) ; Winner functions need to be present for hydras and/or hacks
+  (load "my-hydras")
+  (my/defhydra 'hydra-window) ; my/defhydra needs to run after loading hydras
+  (my/defhydra 'hydra-buffer)
+  :custom
+  (hydra-hint-display-type 'lv)
+  (hydra-is-helpful nil "Disabled in favor of which-key-show-transient-maps and which-key-hacks"))
+
+(use-package ace-window
+  :config
+  (with-eval-after-load "hydra"
+    (defhydra+ hydra-window ()
+      ("a" ace-window)
+      ("s" ace-swap-window)
+      ("d" ace-delete-window))))
+
+;;; File browser
+
+(use-package ranger
+  :defer t
+  :general (my-leader "r" 'deer)
+  ;; Use deer as directory handler
+  :config (ranger-override-dired-mode t))
+
+ ;;; Comments
 
 ;; See README for examples, evil usage, and tips
 ;; There is a comment object and comment operators
 (use-package evil-nerd-commenter
   :after evil
+  :general (my-leader
+             "c" '(:ignore t :wk "comments")
+             "cc" 'evilnc-comment-or-uncomment-lines
+             "cC" 'evilnc-copy-and-comment-lines
+             "ci" 'counsel-imenu-comments
+             ;; When given C-u <n>, will forward-match <n> against the rightmost
+             ;; digits of each line. E.g., on line 160, C-u <72> will target lines
+             ;; 160-172
+             "cl" 'evilnc-quick-comment-or-uncomment-to-the-line
+             "cp" 'evilnc-comment-or-uncomment-paragraphs
+             "cy" 'evilnc-comment-and-kill-ring-save
+             ;; Whether empty lines can be commented as part of a selection
+             "ce" 'evilnc-toggle-comment-empty-lines
+             ;; When toggled off, all lines in a selection are commented if any
+             ;; uncommented lines are included. Note that blank lines never count
+             "cv" 'evilnc-toggle-invert-comment-line-by-line
+             "c," 'evilnc-comment-operator
+             "c." 'evilnc-copy-and-comment-operator)
   :config
-  ;; Extracted from source code.
-  (define-key evil-normal-state-map ",." 'evilnc-copy-and-comment-operator)
-  (define-key evil-visual-state-map ",." 'evilnc-copy-and-comment-operator)
-  (define-key evil-normal-state-map ",," 'evilnc-comment-operator)
-  (define-key evil-visual-state-map ",," 'evilnc-comment-operator)
-  (general-define-key
-   :prefix-command 'my/comments-map
-   "c" 'evilnc-comment-or-uncomment-lines
-   "C" 'evilnc-copy-and-comment-lines
-   "i" 'counsel-imenu-comments
-   ;; When given C-u <n>, will forward-match <n> against the rightmost
-   ;; digits of each line. E.g., on line 160, C-u <72> will target lines
-   ;; 160-172
-   "l" 'evilnc-quick-comment-or-uncomment-to-the-line
-   "p" 'evilnc-comment-or-uncomment-paragraphs
-   "y" 'evilnc-comment-and-kill-ring-save
-   ;; Whether empty lines can be commented as part of a selection
-   "e" 'evilnc-toggle-comment-empty-lines
-   ;; When toggled off, all lines in a selection are commented if any
-   ;; uncommented lines are included. Note that blank lines never count
-   "v" 'evilnc-toggle-invert-comment-line-by-line)
   (defun counsel-imenu-comments ()
+    "Use counsel to display comments in current buffer"
     (interactive)
     (let* ((imenu-create-index-function 'evilnc-imenu-create-index-function))
       (unless (featurep 'counsel) (require 'counsel))
       (counsel-imenu))))
 
-;;; Completion / LSP Extension
+ ;;; Completion / LSP Extension
 
 (use-package company
-  ;; :hook ((after-init . global-company-mode))
-  :bind (:map company-mode-map
-              ("<tab>" . company-indent-or-complete-common)
-              :map company-active-map
-              ("M-n" . nil)
-              ("M-p" . nil)
-              ("C-n" . company-select-next)
-              ("C-p" . company-select-previous)))
+  :general
+  (:keymaps 'company-mode-map
+            "<tab>" 'company-indent-or-complete-common)
+  (:keymaps 'company-active-map
+            "M-n"  nil
+            "M-p"  nil
+            "C-n"  'company-select-next
+            "C-p"  'company-select-previous))
 
 ;; Provides custom icons and popup documentation to the right of
 ;; completion items, similar to coc.nvim, when used with lsp-mode.
 (use-package company-box
+  :diminish company-box-mode
   :hook (company-mode . company-box-mode))
 
-;;; Language Server Protocol (LSP)
-
-(add-to-list 'exec-path "/usr/local/bin")
-(setq python-shell-interpreter "python3")
+ ;;; Language Server Protocol (LSP)
 
 ;; Testing out for parameter completion in lsp...
 ;; (use-package yasnippet
@@ -285,11 +418,11 @@
 ;; (use-package dap-mode)
 ;; (require 'dap-python)
 
-;;; Random packages
+ ;;; Random packages
 
 ;; Bug prevents use of :custom: https://github.com/jwiegley/use-package/issues/702
 ;; (use-package evil-surround :after evil)
-;; (use-package org)
+
 (use-package page-break-lines)
 ;; (use-package osx-browse)
 ;; Potential ideas for fixing indentation? Didn't work when tried:
@@ -299,10 +432,16 @@
                                         ; (use-package lua-mode)
                                         ; (use-package jupyter)
 
-;;; Vim emulation
+ ;;; Vim emulation
 
-(use-package evil-tutor :after evil :bind (:map help-map ("T" . evil-tutor-start)))
-(use-package evil-escape :after evil :config (evil-escape-mode))
+(use-package evil-tutor :after evil
+  :general (:keymaps 'help-map "T" 'evil-tutor-start))
+
+(use-package evil-escape
+  :after evil
+  :diminish evil-escape-mode
+  :config (evil-escape-mode))
+
 (use-package evil
   :config
   ;; (defalias 'evil-insert-state 'evil-emacs-state)    ; Alternative to disabling insert-state bindings
@@ -313,15 +452,24 @@
           ess-r-mode
           markdown-mode
           fundamental-mode
-          lua-mode)
+          lua-mode
+          org-mode)
         evil-insert-state-modes
         '(inferior-ess-r-mode))
+  (defhydra+ hydra-window ()
+    ("-" evil-window-decrease-height)
+    ("+" evil-window-increase-height)
+    ("<" evil-window-decrease-width)
+    (">" evil-window-increase-width)
+    ("c" evil-window-delete)
+    ("r" evil-window-rotate-downwards)
+    ("R" evil-window-rotate-upwards))
   (evil-mode))
 
 
-;;; REPLs/Programming
+ ;;; REPLs/Programming
 
-;;;; R
+ ;;;; R
 
 ;; (use-package markdown-mode)
 ;; (use-package poly-markdown
@@ -373,8 +521,18 @@
     ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
     ;; if electric-layout-mode is enabled (it is not by default)
     (setq-local electric-layout-rules nil)
+    )
+    (add-hook 'ess-r-mode-hook
+              (lambda ()
+                (my/defhydra 'hydra-r)
+                (my/defhydra 'hydra-r-help)
+                (my/defhydra 'hydra-r-eval)
+                (my/defhydra 'hydra-r-debug)))
 
-    (my-definer :keymaps 'local "m" 'hydra-r/body))
+  ;; Major-mode binding is more efficient than buffer-local binding in a hook. E.g.
+  ;; (my-leader :keymaps 'local "m" 'hydra-r/body)
+  ;; in def of `config-ess-r-mode'
+  (my-leader :keymaps 'ess-r-mode-map "m" 'hydra-r/body)
 
   ;; Override Windows' help_type option of "html", to open help
   ;; in help buffer, not browser (see contents of .Rprofile)
@@ -405,117 +563,38 @@
 
 (global-set-key  (kbd "\C-x c") 'clear-shell)
 
-;;; Fuzzy finder
+ ;;; Fuzzy finder
 
 ;; Usage within minibuffer: C-h m
 (use-package counsel ;; Installs and loads ivy and swiper as dependencies
-  :bind (:map ivy-minibuffer-map
-              ("M-m" . ivy-mark)
-              ("M-u" . ivy-unmark)
-              ([remap ivy-done] . ivy-alt-done)
-              ([remap ivy-alt-done] . ivy-done))
+  :general
+  (my-leader
+    "SPC" 'counsel-M-x
+    "'" 'ivy-resume)
+  (:keymaps 'my/files-map
+                   "d" 'counsel-find-file
+                   "f" 'counsel-fzf
+                   ;; Is jump just a variation of fzf?
+                   ;; "j" 'counsel-file-jump
+                   ;; Locate doesn't work out of the box on MacOS
+                   ;; "l" 'counsel-locate
+                   "m" 'counsel-recentf)
+  (:keymaps 'my/bookmarks-map
+                   "D" 'counsel-bookmarked-directory
+                   ;; TODO: Customize counsel-bookmark action list to include delete, rename, and set
+                   "j" 'counsel-bookmark)
+  (:keymaps 'ivy-minibuffer-map
+              "M-m"  'ivy-mark
+              "M-u"  'ivy-unmark
+              ;; For counsel-find-file, RET should add dir to search path instead of pulling up dired
+              [remap ivy-done] 'ivy-alt-done
+              [remap ivy-alt-done] 'ivy-done
+              )
   :config
   (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
         ivy-help-file "~/.emacs.d/ivy-help.org"))
 (use-package smex)
 (use-package flx)
-
-;;; Keymaps
-
-;; NOTE: The two evil-related which-key configuration settings are disabled.
-;; It seems that they set an extremely rapid timeout for evil motions, preventing
-;; any evil motions short of instinctive ones. The popups for evil are not worth
-;; this, though there may be a configuration setting to increase the length of
-;; time before keys timeout.
-(use-package which-key :bind (:map help-map ("C-w" . which-key-show-keymap)))
-(use-package ace-window)
-
-(use-package hydra
-  :after (counsel which-key) ;; Untested whether this is necessary
-  :config
-  ;; Add opinionated counsel-hydra-heads to all hydras
-  (defun counsel-hydra-integrate (old-func &rest args)
-    "Function used to advise `counsel-hydra-heads' to work with
-blue and amranath hydras."
-    (hydra-keyboard-quit)
-    (apply old-func args)
-    (funcall-interactively hydra-curr-body-fn))
-  (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
-  (define-key hydra-base-map (kbd ".") 'counsel-hydra-heads)
-
-  ;; Load hydras and integrate with which-key
-  (load "my-hydras")
-  (load "which-key-hacks")
-  (my/defhydra 'hydra-window) ; Needs to run after hydra-buffer is defined
-  (my/defhydra 'hydra-buffer) ; Needs to run after hydra-window is defined
-  (add-hook 'ess-r-mode-hook
-            (lambda ()
-              (my/defhydra 'hydra-r)
-              (my/defhydra 'hydra-r-help)
-              (my/defhydra 'hydra-r-eval)
-              (my/defhydra 'hydra-r-debug))))
-
-(use-package general)
-
-(general-unbind help-map
-  "C-h" ; Enable which-key navigation of help-map bindings
-  "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
-
-(general-define-key
- :keymaps 'help-map
- "M" 'describe-minor-mode
- "s" 'describe-symbol)
-
-;; (use-package key-chord
-;;   :config
-;;   (key-chord-mode 1))
-
-(general-create-definer my-definer
-  :states '(motion insert emacs)
-  :prefix "SPC"
-  ;; :non-normal-prefix (general-chord "fd")
-  :non-normal-prefix "C-SPC")
-
-(defun org-index ()
-  (interactive)
-  (find-file "~/org/index.org"))
-
-(my-definer
-  "" nil
-  "SPC" 'counsel-M-x
-  "'" 'ivy-resume
-  "b" 'hydra-buffer/body
-  "c" 'my/comments-map
-  "f" 'my/files-map
-  ;; https://www.masteringemacs.org/article/complete-guide-mastering-eshell
-  "e" 'eshell ; Cross-platform shell that implements common programs (e.g., ls) in elisp
-  "o" 'org-index
-  "t" 'ansi-term
-  ;; https://www.masteringemacs.org/article/executing-shell-commands-emacs
-  "&" 'async-shell-command
-  "w" 'hydra-window/body)
-
-(general-define-key
- :prefix-command 'my/files-map
- "b" 'my/bookmarks-map
- "d" 'counsel-find-file
- "f" 'counsel-fzf
- "i" 'insert-file
- ;; Is jump just a variation of fzf?
- ;; "j" 'counsel-file-jump
- ;; Locate doesn't work out of the box on MacOS
- ;; "l" 'counsel-locate
- "m" 'counsel-recentf)
-
-(general-define-key
- :prefix-command 'my/bookmarks-map
- "d" 'bookmark-delete
- "D" 'counsel-bookmarked-directory
- "e" 'edit-bookmarks
- "j" 'counsel-bookmark ; TODO: Customize counsel-bookmark action
- ;; list to include delete, rename, and set
- "r" 'bookmark-rename
- "s" 'bookmark-set)
 
 (general-define-key
  :prefix-command 'my/elisp-map
@@ -530,23 +609,188 @@ blue and amranath hydras."
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda ()
-            (my-definer :keymaps 'local
+            (my-leader :keymaps 'local
               ;; "<backtab>" 'counsel-el ; counsel-assisted completion
               "m" 'my/elisp-map)))
 
+
+ ;;; Org-mode
+
+(defun org-summary-todo (n-done n-not-done)
+  "Switch entry to DONE when all subentries are done, to TODO otherwise."
+  (let (org-log-done org-log-states)   ; turn off logging
+    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
+
+(add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
+
+(my-leader "o" 'my/org-index)
+
+;; TODO: Investigate later:
+;; sparse trees (e.g., to hide finished tasks)
+;; drawers
+;; blocks
+;; links
+;; todo subsequences
+;; habits
+;; priorities
+;; cookies [%]
+;; tags
+;; properties
+;; column view
+;; details for dates and times, including clocking
+;; refile, archive, capture refile and templates
+;; working with attachments
+;; agenda onward
+;; diary
+
+;; TODO: Investigate projectile
+(use-package projectile
+  :general (my-leader "p" 'projectile-command-map))
+
+;; TODO: Learn about org-projectile and add bindings to spc-p instead of global
+;; (use-package org-projectile
+;;   :general (:keymaps
+;;          ;; Choose project for capture
+;;          "C-c n p" 'org-projectile-project-todo-completing-read
+;;          "C-c c" 'org-capture)
+;;   :config
+;;   (org-projectile-per-project)
+;;   ;; NOTE: If TODO.org doesn't exist for a project, org-agenda will prompt
+;;   ;; to remove them.
+;;   (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files))))
+;; Location of project-based TODOs
+;; (setq org-projectile-projects-file
+;;       (concat (file-name-as-directory org-directory) "projects.org"))
+;; Adds a TODO capture template activated by letter p (see org-capture)
+;; and replaces the default t(ask) template stored in ~/.notes
+;; Otherwise, you can use org-projectile-capture-for-current-project
+;; (push (org-projectile-project-todo-entry) org-capture-templates)
+
+;; Vimwiki link bindings for org-mode
+(evil-define-key 'normal org-mode-map
+  (kbd "DEL") 'org-mark-ring-goto
+  (kbd "RET") 'org-open-at-point)
+;; S-tab: global cycling
+;; tab: cycling at point
+
+(use-package evil-org
+  :after org
+  :init (add-hook 'org-mode-hook 'evil-org-mode))
+;; (add-hook 'evil-org-mode-hook (lambda () (evil-org-set-key-theme)))
+
+;; ;; Other org-mode bindings
 ;; (general-define-key
 ;;  :prefix-command 'my/org-map
-;;  )
+;;  "c" 'my/org-checkbox-map)
+;; (general-define-key
+;;  :prefix-command 'my/org-checkbox-map
+;;  ;; With prefix, toggle presence of checkbox
+;;  "t" 'org-toggle-checkbox
+;;  ;; When point is at list item, insert new item with checkbox
+;;  "RET" 'org-insert-todo-heading
+;;  "#" 'org-update-statistics-cookies)
 
-;; (add-hook 'org-mode-map
-;;           (lambda()
-;;             (my-definer :keymaps 'local
+;; (add-hook 'org-mode-hook
+;;           (lambda ()
+;;             (my-leader :keymaps 'local
 ;;               "m" 'my/org-map)))
 
-;; C-c l org-store-link
-;; C-c a org-agenda
-;; org-todo-keywords
-;; org-tags-alist
-;; C-c a a curr week agenda
-;; C-c a t global TODO
-;; org-agenda files (c-c [ or ])
+
+ ;;; Heading navigation
+;; outline-up-heading (c-c c-u)
+;; org-next-visible heading (c-c c-n/p)
+;; org-forward-heading-same-level (c-c c-f/b)
+
+ ;;; List navigation
+;; org-shiftup/down (S-arrow): jump to next list item on same level
+
+ ;;; Stucture (list/heading) editing
+ ;; org-meta-return (m-ret): insert heading or item at current level
+ ;;     org-insert-heading
+ ;; org-insert-heading-respect-content (c-ret): Insert heading at end of subtree
+ ;;     org-insert-heading-after-current
+ ;; org-insert-subheading: Insert subheading
+ ;; org-insert-todo-heading (m-s-ret): insert todo heading or checkbox item
+ ;; org-insert-todo-heading-respect-content (c-s-ret): Insert todo heading at end of subtree
+ ;; org-insert-todo-subheading
+
+ ;; org-ctrl-c-minus: Convert to list item or cycle list level through different list symbols. If a list is selected as region, remove list symbols.
+ ;; (S-arrow): cycle list level through list symbols; cycle header through keywords
+ ;; org-ctrl-c-star: Convert to headline or from headline to text
+ ;;     org-toggle-heading
+ ;; org-list-make-subtree (c-c c-*): Convert entire list to subtree (one-way conversion only)
+
+ ;; org-metaleft/right (M-arrow): Promote/indent / demote/dedent heading/list item
+ ;;     org-do-promote
+ ;;     NOTE: selection promotes/demotes everything with selection
+ ;; org-shiftmetaleft/right (S-M-arrow): Promote/indent / demote/dedent subtree/sublist
+ ;; org-shiftmetaup/down (S-M-arrow): move heading or list item up/down
+ ;;     The refernce manual is partially incorrect for the above key's desc
+ ;; org-metaup/down (M-arrow): move subtree/sublist up/down
+
+ ;; org-ctrl-c-ctrl-c (c-c c-c): Toggle item checkbox, etc. With
+ ;;     prefix, create checkbox. Note that there seems to be a bug,
+ ;;     where with point on the hyphen of the first list item, c-u c-c
+ ;;     c-c will insert checkboxes for other items at the top level,
+ ;;     but the behavior doesn't work for other levels.
+
+ ;; C-c ^: Sort list by the method selected from prompt
+
+ ;; org-mark-subtree (c-c @): Repeat to mark subtrees of same level
+ ;;     I was too lazy to bother with copy and paste commands
+
+ ;;; Links
+ ;; org-insert-link (c-c c-l): insert link, or edit the invisible link portion of a link with a description
+ ;;     NOTE: Backspace at beginning of displayed description or end, will remove start and end brackets,
+ ;;     which reveals the rest of the link's internals. Selected text becomes the description.
+ ;; org-open-at-point (c-c c-o): open link
+ ;; org-mark-ring-goto (c-c c-&)
+ ;; org-store-link: Auto-generate link. When called in Org file, the generated link points to a radio target at point, or else the current headline
+ ;;     For other files, the current line is used
+ ;; org-next-link (c-c c-x c-n)
+ ;; global insert and open allow org links in any emacs buffer. May be useful for inserting links to org docs within programming
+ ;;        language comments. These can be bound to global keybindings
+
+ ;;; TODO
+ ;; org-todo (c-c c-t): Select a TODO tag. If switching from TODO to DONE for a repeating task, update the timestamp by the amount of the repeater, and reset the keyword to TODO. In contrast, C-- 1 C-c C-t permanently finishes the repeating task. Repeating tasks are indicated as e.g. +5d, while alerts/reminders as e.g. -4m. If you miss several due dates, you may want to update the timestamp only once for all of these missed deadlines to a future date. This requires ++ instead of +. The .+ repeater likewise updates to a future date, but the new timestamp is relative to the completion time rather than the timestamp. Both deadlines and schedules can have repeaters.
+ ;; org-show-todo-tree
+ ;; org-todo-list: global todo, collected from all agenda files
+ ;; org-toggle-ordered-property: headings with this property can not be marked done until siblings on earlier lines are done
+ ;; I need to find a command for inserting repeating timestamps. Right now I have to manually add repeaters.
+
+ ;;; Indentation
+ ;; org-fill-paragraph: respects lists!
+
+ ;;; date and time
+ ;; org-time-stamp (c-c .): create or update existing timestamp
+ ;; org-deadline (c-c c-d): insert deadline keyword with timestamp
+ ;; org-schedule (c-c c-s): insert schedule
+ ;; org-check-deadlines (c-c / d): show past-due or do within org-deadline-warning-days
+ ;;      Reminders can be appended; e.g., <2004-02-29 -5d> uses a 5-day advance notice
+ ;;      Positives (+5m) indicate repeaters (repeating tasks). These must come before reminders.
+ ;; org-check-before-date (c-c / b): checks deadliens and scheduled items before date
+ ;; org-check-after-date (c-c / a)
+
+ ;;; capture
+ ;; org-capture: capture to org-default-notes-file
+
+ ;;; attachment
+ ;; org-attach (c-c c-a)
+
+ ;;; agenda
+ ;; org-agenda
+ ;;     NOTE: contextual "a" will show agenda for org-agenda-span
+
+ ;;; properties
+ ;; org-set-property-and-value: sets property block
+ ;; org-delete-property
+ ;; org-toggle-ordered-property: Note that this is not inherited, only affects direct children
+ ;; C-u c-u c-u c-t: change todo state, regardless of state blocking (like ordered property)
+
+ ;;; tags
+ ;; org-toggle-archive-tag: Won't tab-expand subtrees marked as archived but keeps it in file
+
+ ;; C-c a org-agenda
+ ;; C-c a a curr week agenda
+ ;; C-c a t global TODO
+ ;; org-agenda files (c-c [ or ])

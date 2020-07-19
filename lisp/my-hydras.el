@@ -10,36 +10,6 @@
   ("v" view-buffer)
   ("w" hydra-window/body :color blue))
 
-;; TODO: Set which-key-max-description-length to less than 1/2 window; otherwise buffer can't show
-;; TODO: See counsel-hydra-integrate below. Need to set before you define other hydras?
-(defhydra hydra-window ()
-  "Window"
-  ("-" evil-window-decrease-height)
-  ("+" evil-window-increase-height)
-  ("<" evil-window-decrease-width)
-  (">" evil-window-increase-width)
-  ("h" windmove-left)
-  ("j" windmove-down)
-  ("k" windmove-up)
-  ("l" windmove-right)
-  ("b" hydra-buffer/body :color blue)
-  ("v" my/split-window-right-move)
-  ("x" my/split-window-below-move)
-  ("a" ace-window)
-  ("s" ace-swap-window)
-  ("c" evil-window-delete)
-  ("d" ace-delete-window)
-  ("m" delete-other-windows :color blue)
-  ("M" my/delete-other-windows-and-buffers :color blue)
-  ("r" evil-window-rotate-downwards)
-  ("R" evil-window-rotate-upwards)
-  ("z" winner-undo)
-  ;; ("z" (progn
-  ;; 	 (winner-undo)
-  ;; 	 (setq this-command 'winner-undo))
-  ;;  "winner-undo") ;; Needed for winner-redo, it appears
-  ("Z" winner-redo))
-
 (defhydra hydra-r ()
   "R"
   ("SPC" ess-mark-function-or-para)

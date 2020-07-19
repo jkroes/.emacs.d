@@ -3,6 +3,21 @@
    ;; (quote
    ;;  (jupyter emacs-jupyter evil-mc evil-surround multiple-cursors key-chord company projectile counsel hercules company-tabnine 0x0 flx evil-escape ranger pkg aggressive-indent ess-R-data-view ess which-key use-package quelpa page-break-lines hydra help-fns+ helm-descbinds general evil-tutor dracula-theme ffcounsel command-log-mode ace-window)))
 
+;;; Install missing packages, load customizations, then load packages
+;; (let ((packages '(quelpa help-fns+ general)))
+;;   (dolist (pkg packages)
+;;     (unless (package-installed-p pkg)
+;;       (cond ((string= pkg "help-fns+")
+;;        (quelpa '(help-fns+ :fetcher wiki)))
+;;       (t (package-refresh-contents)
+;;          (package-install pkg)))))
+;;     ;; Not sure if customizations need loading prior to requiring packages...
+;;   (setq custom-file "~/.emacs.d/emacs-custom.el")
+;;   (load custom-file)
+;;   (dolist (pkg packages)
+;;     (require pkg)))
+
+
 (use-package jupyter
   :config
   (pcase system-type
@@ -43,6 +58,16 @@
                   (reusable-frames . nil))
                  ("\\*Help\\*" display-buffer-same-window)
                  ("\\*Apropos\\*" display-buffer-same-window)))
+
+
+;; (general-create-definer my-definer
+;;   :states '(motion insert emacs)
+;;   :prefix "SPC"
+;;   :non-normal-prefix (general-chord "fd"))
+;; https://sam217pa.github.io/2016/09/23/keybindings-strategies-in-emacs/
+;; (use-package key-chord
+;;   :config
+;;   (key-chord-mode 1))
 
 ;;; Further reading:
 
