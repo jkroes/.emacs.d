@@ -1,0 +1,19 @@
+* Org-mode Resources
+
+- [[https://orgmode.org/orgcard.txt][Cheat Sheet]]
+- Org-mode's Emacs menu item
+- [[info:org][Manual]]
+- [[https://orgmode.org/worg/][Community Wiki (Worg)]]
+  - [[https://orgmode.org/worg/org-tutorials/][Tutorials]]
+  - [[https://orgmode.org/worg/doc.html][Documentation for hooks, commands, options]]
+- [[https://orgmode.org/][Home page]]
+
+* An Exercise in (F)utility
+
+[[file:diary.org][Work Diary]]
+
+* Unorganized
+** Emacs
+If you see (DOS) on left of modeline, run
+revert-buffer-with-coding-system, and select utf-8-unix or
+something. Save the buffer. Then :%s/\r//.

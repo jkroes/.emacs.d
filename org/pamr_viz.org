@@ -1,0 +1,88 @@
+# 2020-06-29
+
+Fabio is creating a Shiny application to visualize the PAMR database.
+Maziar asked Rosemary and me to test the app.
+
+The first email contained 2020_0625_AMN_pest_app12.R and AMN_data_sets4.R.
+Fabio mentioned that "the input data set" can be loaded by selecting "one of
+the two options ... in the main script." One was a call to getURL and
+read.csv with input file air.csv. The other involved setwd and input file
+pamr_output.csv. These are the same input, but the AP website provides it
+via two different names and access points. There was a second missing file
+that Maziar later sent: screen_levels.csv.
+
+I initially ran the application without the input PAMR data and reached
+out to Maziar about the missing file. At the same time I reached out to Fabio. I
+asked about the version of R he was using.
+
+# 2020-06-30
+
+Maziar forwarded my question to Rosemary, who simply said the app should run. I
+pointed out that I was still missing the file I had asked for, and that it was
+visible in the screenshot she provided of RStudio. I asked where to find it, and
+she sent me the link:
+https://www.cdpr.ca.gov/docs/emon/airinit/pesticide_air_monitoring_database.htm
+
+Fabio replied back that the version shouldn't matter so long as I installed all
+of the packages and had all of the scripts in the right place. This is incorrect
+due to both forwards and backward compatibility issues, but I was able to run
+the application once I obtained the PAMR dataset.
+
+After testing the application, I sent the following revision suggestions to Fabio:
+
+    1. I appreciate the dynamic y-axis range based on the combination of AI and
+       location. I thought that was a really nice touch.
+
+    2. Shiny sets the current working directory to the application’s root folder.
+       This means a call to read.table(file = “parm_output.csv”) will work as
+       expected if parm_output.csv is in the same folder as the Shiny app. You can
+       then get rid of setwd, eliminating the need for the user to modify a path in
+       the script--no matter where the user runs the application. An action button
+       could also be used for users to upload their own data, rather than requiring
+       them to move it into the application folder.
+
+    3. The use of RCurl::getURL could be incorporated into a UI action button that
+       downloads the data if clicked.
+
+    4. Moving the graph below the sidepanel—you may have to change the Shiny object
+       from sidepanel to something else—will keep the graph fully visible for
+       smaller browser windows. When the window is resized, the graph changes size
+       to accommodate ti.
+
+    5. Currently changing the date values to dates outside of the bounds is
+       permitted, but it doesn’t change the graph or throw an error. Add minimum and
+       maximum values to the dataRangeInput elements. This limits the permitted
+       dates to values for which we have data. If the temporal bounds change based
+       on inputs such as site location and AI, reactive values will likely be
+       required.
+
+    6. Should “indeces” be spelled “indices?”
+
+    7. The ggplot theme of the graph is different for measured, acute, and chronic
+       indices (e.g., font and gridlines).
+
+    8. What is the difference between measured and acute data? In many cases, they
+       seem to generate identical graphs. I’m not familiar with the PAMR data,
+       though.
+
+    9. Add the output of sessionInfo() to the code so that users know the R version
+       and package versions used to test and run the application. Older versions of
+       R may not be forwards compatible, while future versions of R may not be
+       backwards compatible. In other words, older versions may not contain all of
+       the required objects/functions, while future versions may get rid of them or
+       rename them. Either case will prevent the application from functioning
+       exactly  as intended. Alternatively, you can embed R and its packages into
+       your application so that users do not have to install anything on their end.
+       This latter approach was what I used for the TGA evaluation Shiny application
+       I developed.
+
+Maziar asked Fabio to implement points 7 and 9, and mentioned that the app
+will be fully self-contained like the TGA evaluation Shiny app.
+
+# 2020-07-01
+
+According to Maziar, acute and measured are the same thing only b/c our samples
+are continuous over 24 hours, yielding a single average concentration, and acute
+is averge concentration of samples over a 24-hour period.
+
+Maziar recommends not using the FPT curl method of retrieving data to Fabio.
