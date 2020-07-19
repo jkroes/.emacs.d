@@ -1,0 +1,65 @@
+https://github.com/d12frosted/homebrew-emacs-plus#emacs-27-and-emacs-28-options
+    Installed Emacs 28 via homebrew using the options to include jansson (faster lsp json) and xwidgets
+    for opening browsers within emacs. I haven't managed to make xwidgets browser work yet. Issue 202 suggests
+    it might be Emacs 27-only as of July 2020. Try again some other time.
+
+homepage
+    overview
+        lsp-ivy: workspace functions
+    setup: 
+        installation: see use-package example
+        performance: Describes various steps to improve and test performance. This is the first page you should visit before and after
+                     installation, as json serialization needs to be included at compile time. Some steps are already configured in my
+                     init.el. The non-MS Python language server is noted as being particularly slow.
+                     lsp-diagnose
+                     Reporting performance issues
+        additional settings: See section on formatting, which is limited to tab spacing
+    settings:
+        *lsp-log* buffer
+        lsp-enable-snippet
+        lsp-auto-guess-root
+        lsp-session-file
+        lsp-eldoc-render-all
+        lsp-eldoc-enable-hover
+        lsp-enable-xref
+        lsp-diagnostic-package
+        lsp-enable-indentation
+        lsp-enable-on-type-formatting
+        lsp-before-save-edits
+        lsp-enable-imenu
+        lsp-imenu*
+        lsp-response-timeout
+        lsp-server-trace
+        lsp-semantic-highlighting
+        lsp-signature-auto-activate
+        lsp-signature-render-documentation
+    keybindings: start with s-l (s is cmd on macos)
+    faq:
+        servers generate their own error buffers
+        install yasnippet for completion?
+    troubleshooting:
+        *lsp-log*
+        lsp-describe-session shows project roots, started servers, and server capabilities
+
+lsp-find-references
+lsp-find-definition
+
+
+lsp signature render documentation: signature documentation in eldoc
+lsp eldoc enable hover: hover info
+lsp eldoc render all: all hover info or just symbol
+
+lsp ui doc alignment: window or frame (when lsp ui doc position is top or bottom)
+lsp ui doc include signature: signature/type in frame
+lsp ui doc position: top bottom or point
+lsp ui doc use childframe
+
+With yasnippet:
+Parameter completion works as follows:
+Autocompleting a function sometimes inserts it with all of its parmaeters
+and the ability to insert a value for one, then jump to the next, and so on.
+Not all functions do this. Those with two arguments do seem to.
+Currently in nvim-r/coc.nvim (neovim), a simple tab after the opening parenthesis
+will bring up a list of parameter names.
+In contrast, the default settings in emacs go as follows. For the first named argument in python, begin to type the letter and the param will show up to complete. Follow its values by a comma (space optional),then press tab. The completion will now include and be limited to a list of parameters. Note that improper syntax such as name=, (i.e., with no value) will halt parameter completion. As you add arguments, positional or named, the completion list shrinks. It may exclude unused parameters if you don't use signature order, though perhaps that can be tweaked. See e.g. os.fdopen().
+as you fill in named/positional parameters, your completion list shrinks.
