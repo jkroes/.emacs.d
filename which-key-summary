@@ -19,7 +19,7 @@ which-key-show-transient-maps
 which-key-persistent-popup: prevent which-key--hide-popup
 which-key-inhibit-regexps: Prevent which-key popup based on keypresses e.g., C-s when
 transient maps are shown (use a manual trigger instead when needed to enable and disable to
-			      allow yourself to type properly)
+                  allow yourself to type properly)
 which-key-inhibit: prevent which-key for the execution of a command via a let statement
 
 
@@ -36,7 +36,7 @@ which-key--show-popup: For side windows, ultimately calls display-buffer-side-wi
 which-key--curent-prefix: seems to be the current key sequence entered so far, but need to dig into the source
 code further to know for sure
 which-key--current-key-list: prefix as a list
-which-key--curent-key-string: prefix as a string 
+which-key--curent-key-string: prefix as a string
 
 which-key--get-bindings: Calls either which-key--get-keymap-bindings or which-key--get-current-bindings
 which-key--get-keymap-bindings: Convert keymap into association list w/ elements ("key" . "binding"),
@@ -58,4 +58,3 @@ which-key--create-buffer-and-show: ...Or else this is called
 
 Difference between which-key--show-keymap and which-key--create-buffer-and-show???
 The former seems to be involved with interactive commands the latter without
-

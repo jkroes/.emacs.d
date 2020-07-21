@@ -1,16 +1,5 @@
-(defhydra hydra-buffer ()
-  "Buffer"
-  ("B" counsel-buffer-or-recentf :color blue)
-  ("b" ivy-switch-buffer :color blue) ;; faster than counsel-switch-buffer b/c lack of preview
-  ("l" evil-switch-to-windows-last-buffer)
-  ("k" kill-buffer) ;; nil arg means kill current buffer (ivy auto-selects current buffer)
-  ("K" my/kill-other-buffers :color blue)
-  ("r" read-only-mode)
-  ("s" my/switch-to-scratch)
-  ("v" view-buffer)
-  ("w" hydra-window/body :color blue))
 
-(defhydra hydra-r ()
+(defhydra hydra-r (:color pink)
   "R"
   ("SPC" ess-mark-function-or-para)
   ("a" ess-cycle-assign) ;; See how electric functions work as hydras...
@@ -26,9 +15,9 @@
   ;; ess-indent-exp
   ;; ess-indent-new-comment-line
   ;; ess-complete-object-name
-  )
+  ("q" nil))
 
-(defhydra hydra-r-help () ;; ess-doc-map
+(defhydra hydra-r-help (:color pink) ; ess-doc-map
   "R-help"
   ("a" ess-display-help-apropos)
   ("e" hydra-r-eval/body :color blue)
@@ -39,9 +28,10 @@
   ("r" hydra-r/body :color blue)
   ("t" ess-display-demos)
   ("v" ess-display-vignettes)
-  ("w" ess-help-web-search))
+  ("w" ess-help-web-search)
+  ("q" nil))
 
-(defhydra hydra-r-eval () ;; ess-rutils-map and ess-extra-map
+(defhydra hydra-r-eval (:color pink) ; ess-rutils-map and ess-extra-map
   "R-eval"
   ("<C-return>" ess-eval-region-or-function-or-paragraph-and-step)
   ("RET" ess-eval-region-or-line-and-step)
@@ -58,8 +48,8 @@
   ("r" hydra-r/body :color blue)
   ("R" ess-rdired)
   ("u" ess-use-this-dir)
-  ("w" ess-change-directory))
-
+  ("w" ess-change-directory)
+  ("q" nil))
 
 ;; Note that several commands available in the inferior ess R
 ;; process while debugging are absent:
@@ -71,7 +61,7 @@
 ;; As such, it is best to debug from the inferior process where
 ;; the additional, built-in functionality is needed
 ;; TODO: Add commands here to ess-debug-minor-mode-map
-(defhydra hydra-r-debug () ;; ess-debug-minor-mode-map and ess-dev-map
+(defhydra hydra-r-debug (:color pink) ;; ess-debug-minor-mode-map and ess-dev-map
   "R-debug"
   ("c" ess-debug-command-continue)
   ("f" ess-debug-flag-for-debugging) ;; base:::debug()
@@ -87,7 +77,7 @@
   ;; ("u" ess-debug-command-up) ;; NOTE: currently broken. Use recover() from within debugging session (i.e. browse())
   ;; ess-debug-goto-input-event-marker
   ;; ess-debug-insert-in-forward-ring
-  )
+  ("q" nil))
 
 ;; Any hydras that reference each other need to wait to call my/defhydra
 ;; until after both hydras have been defined. This is a current limitation

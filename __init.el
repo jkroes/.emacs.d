@@ -17,6 +17,13 @@
 ;;   (dolist (pkg packages)
 ;;     (require pkg)))
 
+;; Further reading on customization, defer, demand:
+;; https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el
+;; https://menno.io/posts/use-package/
+;; https://jwiegley.github.io/use-package/keywords/#custom
+;; https://emacs.stackexchange.com/questions/10396/difference-between-init-and-config-in-use-package#:~:text=They%20are%20different%20if%20the,the%20package%20is%20actually%20loaded.&text=You%20have%20configured%20the%20package,an%20html%20file%20is%20visited.
+;; https://opensource.com/article/20/3/variables-emacs (see csetq discussion)
+
 
 (use-package jupyter
   :config

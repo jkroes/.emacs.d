@@ -70,8 +70,3 @@ when? can have values of before-init, after-init, or anything else for no profil
     ;;(ess-rdired)
     )
   (ess-force-buffer-current))
-
-(defun my/org-index ()
-  "Open org index file."
-  (interactive)
-  (find-file (concat (file-name-as-directory org-directory) "index.org")))
