@@ -11,7 +11,8 @@ Hydrus studies
 * Task List
 ** Short-term [0%]
 *** TODO Preliminary report
-**** TODO Convert to rmarkdown
+**** TODO Follow procedural documents to generate report data
+**** TODO Convert report to rmarkdown
 **** TODO Modularize through source() or child
 **** TODO Refactor ggplot2 code
 **** TODO Discussion and updates around chlorpyrifos?
@@ -74,68 +75,62 @@ E.g., "2018PrelimDraft"
 **** TODO Document ongoing projects and consolidate meeting notes and emails from Registration
 **** TODO SOP for Air Program-Registration data process, in particular ABNs and product transfers
 ** Long-term
-- Convert inventory guidelines to markdown and version control
-- Script rewrites
-  - Topics
-    - Unadjusted emissions
-      - Two scripts calculate unadjusted fumigant emissions differently,
-        one of which is used for adjusted emissions. Need to confirm that
-        scripts' results are the same for these fumigants, or else how
-        differences affect final inventory results and whether to rewrite.
-        See "D:\EmissionsCalcs.docx";
-        "D:\EmissionsCalculationAnalaysis.xlsx";
-        Compare_Unadjusted_Calcs.sas
-    - Adjusted emissions (A/VOC/Procedures/Adjusted emissions.docx)
-    - Errors in aggregated totals
-      - Seen in AI and site-AI totals, and in differences between mebr
-        and nonmber datasets. See Rmarkdown report, roadmap, and
-        procedural document for report.
+*** Convert inventory guidelines to markdown and version control
+*** Script rewrites
+**** Topics
+***** Unadjusted emissions
+****** Two scripts calculate unadjusted fumigant emissions differently,
+one of which is used for adjusted emissions. Need to confirm that
+scripts' results are the same for these fumigants, or else how
+differences affect final inventory results and whether to rewrite.
+See "D:\EmissionsCalcs.docx";
+"D:\EmissionsCalculationAnalaysis.xlsx";
+Compare_Unadjusted_Calcs.sas
+***** Adjusted emissions (A/VOC/Procedures/Adjusted emissions.docx)
+***** Errors in aggregated totals
+****** Seen in AI and site-AI totals, and in differences between mebr
+and nonmber datasets. See Rmarkdown report, roadmap, and
+procedural document for report.
 
-        In general, aggregation should be done as late as possible in
-        the data process to avoid loss of information and unnecessary
-        early splitting of a dataset into multiples, which increases
-        the risk of truncation and other i/o errors. Aggregation
-        across one group of factors should be done only once for each
-        dataset.
-- SOP for updating inventory inputs
-- Script to identify Focus-4 products
-- Update flowchart to reflect new inventory process, once finalized
-  - Add to inventory script git repo
-
-
-#### Miscellaneous
-
-    * Statewide calculations
-    * Organize archived historical files
-
-
-### Recurring
-
-    * TGA reviews
-      * Archive submissions to evalreports
-        * See procedural document on new archive process
-      * Keep a running list of products to add to each inventory run
-    * Focus 4 lists
-      * Record changes that should be added to the VOC inventory
-      * ADA conversion for each list
-      * IT ticket to post each list
-    * Product name and regno update letters from Brenna
-      * Add to product evaluation file to help check filename (CA regno) with
-        contents
-    * [ ] Add and populate bridge-indicator variable in EP database and tracking
-      sheet
-      * [ ] For information on past bridges, see evaluations, past tracking
-        sheets, and comment variables in the EP and tracking sheets
-    * Preliminary report
-    * Annual report
-      * Modify script
-      * Run report and check for issues
-      * Management edits
-      * Executive edits
-      * ADA conversion
-      * Public comment period
-      * Resolve public comments
-      * Modify script
-      * Run report and check for issues
-      * ADA conversion
-      * Publish report
+In general, aggregation should be done as late as possible in
+the data process to avoid loss of information and unnecessary
+early splitting of a dataset into multiples, which increases
+the risk of truncation and other i/o errors. Aggregation
+across one group of factors should be done only once for each
+dataset.
+*** SOP for updating inventory inputs
+*** Script to identify Focus-4 products
+*** Update flowchart to reflect new inventory process, once finalized
+**** Add to inventory script git repo
+** Miscellaneous
+*** Statewide calculations
+*** Organize archived historical files
+** Recurring
+*** TGA reviews
+**** Archive submissions to evalreports
+***** See procedural document on new archive process
+**** Keep a running list of products to add to each inventory run
+*** Focus 4 lists
+**** Record changes that should be added to the VOC inventory
+**** ADA conversion for each list
+**** IT ticket to post each list
+*** Product name and regno update letters from Brenna
+**** Add to product evaluation file to help check filename (CA regno) with
+contents
+*** Add and populate bridge-indicator variable in EP database and tracking
+sheet
+**** For information on past bridges, see evaluations, past tracking
+sheets, and comment variables in the EP and tracking sheets
+*** Preliminary report
+*** Annual report
+**** Modify script
+**** Run report and check for issues
+**** Management edits
+**** Executive edits
+**** ADA conversion
+**** Public comment period
+**** Resolve public comments
+**** Modify script
+**** Run report and check for issues
+**** ADA conversion
+**** Publish report

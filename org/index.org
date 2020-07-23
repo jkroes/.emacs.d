@@ -10,7 +10,8 @@
 
 * An Exercise in (F)utility
 
-[[file:diary.org][Work Diary]]
+- [[file:diary.org][Work Diary]]
+- [[file:WSL.org][WSL]]
 
 * Unorganized
 ** Emacs
