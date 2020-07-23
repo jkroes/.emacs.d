@@ -1,0 +1,11 @@
+* Mounting drvfs drives
+
+[[https://devblogs.microsoft.com/commandline/chmod-chown-wsl-improvements/][drvfs]]
+
+Mounting drives is easy, even if they're shared. Contrary to my expectations,
+use the drive letters on Windows (H:) rather than the UNC path
+(\\dprhq01\EMON_USERS\jkroes).
+#+begin_src sh
+sudo mount -t drvfs 'A:\VOC' /mnt/voc
+sudo mount -t drvfs 'H:' /mnt/h
+#+end_src
