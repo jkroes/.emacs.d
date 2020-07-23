@@ -100,6 +100,7 @@
 ;; Using Hack font instead
 (cond ((eq system-type 'gnu/linux)
        ;; Hack to open URLs from within WSL using browse-url-* commands
+       (set-frame-font "Hack 10" nil t)
        (when (string-match "Linux.*Microsoft.*Linux"
                            (shell-command-to-string "uname -a"))
          (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
@@ -115,7 +116,9 @@
                     "c:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/")
        ;; Use git-bash's find.exe for file jumping
        (setq find-program
-             "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe")))
+             "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe"))
+      ((eq system-type 'darwin)
+       (set-frame-font "Hack 12" nil t)))
 
 ;;; Color scheme (https://emacsthemes.com/)
 
@@ -521,27 +524,30 @@
 ;; org-insert-todo-heading-respect-content (c-s-ret): Insert todo heading at end of subtree
 ;; org-insert-subheading: Insert subheading
 ;; org-insert-todo-subheading
-(evil-define-key 'normal org-mode-map (kbd "DEL") 'org-mark-ring-goto)
-(general-define-key
- :states 'motion
- :keymaps 'org-mode-map
- "RET" 'org-open-at-point ; Open link at point
- "g" '(:ignore t :wk "Entry navigation")
- "gh" 'outline-previous-visible-heading
- "gl" 'outline-next-visible-heading
- "gk" 'org-backward-heading-same-level
- "gj" 'org-forward-heading-same-level
- "U" 'outline-up-heading ; Navigate up a heading level
- "M-h" 'org-metaleft ; Promote/dedent heading/list item
- "M-l" 'org-metaright ; Demote/indent heading/list item
- "M-H" 'org-shiftmetaleft ;; Like metaleft for subtrees/sublists
- "M-L" 'org-shiftmetaright
- "M-j" 'org-shiftmetadown ;; Move heading or list item down
- "M-k" 'org-shiftmetaup
- "M-J" 'org-metadown ;; Move subtree/sublist up/down
- "M-K" 'org-metaup
- ;; Respects lists when filling
- "M-q" 'org-fill-paragraph)
+(evil-define-key 'normal org-mode-map
+  (kbd "DEL") 'org-mark-ring-goto)
+(add-hook 'org-mode-hook
+          (lambda ()
+            (general-define-key
+            :states 'motion
+            :keymaps 'org-mode-map
+            "RET" 'org-open-at-point ; Open link at point
+            "g" '(:ignore t :wk "Entry navigation")
+            "gh" 'outline-previous-visible-heading
+            "gl" 'outline-next-visible-heading
+            "gk" 'org-backward-heading-same-level
+            "gj" 'org-forward-heading-same-level
+            "U" 'outline-up-heading ; Navigate up a heading level
+            "M-h" 'org-metaleft ; Promote/dedent heading/list item
+            "M-l" 'org-metaright ; Demote/indent heading/list item
+            "M-j" 'org-shiftmetadown ;; Move heading or list item down
+            "M-k" 'org-shiftmetaup
+            "M-H" 'org-shiftmetaleft ;; Like metaleft for subtrees/sublists
+            "M-L" 'org-shiftmetaright
+            "M-J" 'org-metadown ;; Move subtree/sublist up/down
+            "M-K" 'org-metaup
+            ;; Respects lists when filling
+            "M-q" 'org-fill-paragraph)))
 
 (general-define-key
  :prefix-command 'my/org-map
@@ -550,6 +556,7 @@
  ;; item. For cookies, update statistics.
  "SPC" 'org-ctrl-ctrl-c
  "." 'org-time-stamp ; Create or update existing timestamp
+ "," 'org-insert-structure-template ; E.g. src block
  "d" 'org-deadline ; Insert deadline keyword with timtestamp
  "s" 'org-schedule ; Insert schedule keyword with timestamp
  "!" 'org-time-stamp-inactive
@@ -598,6 +605,8 @@
 (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
 ;;;; TODO:
 ;; Find command to add repeating timers rather than editing manually
+;; Make RET convert plain text under cursor or selected to link. Currenlty it
+;; only follows existing links, so one-half vimwiki functionality
 ;;;;; Bind the following:
 ;; org-set-property-and-value: sets property block
 ;; org-delete-property
