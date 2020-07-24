@@ -1,0 +1,13 @@
+
+If you experience issues installing packages on Linux, ensure all the non-R
+dependencies are installed, and if they are then try installing without a lock
+file:
+
+```{r}
+install.packages(..., INSTALL_opts = '--no-lock')
+```
+In particular, xml2 often fails to install, crashing its reverse-dependency
+tidyverse.
+
+See also the commandline versions of e.g. install.packages:
+https://support.rstudio.com/hc/en-us/articles/200486518-Customizing-Package-Build-Options

@@ -143,7 +143,7 @@
 ;;; Debugging
 
 (use-package command-log-mode
-  :diminish t
+  :diminish command-log-mode
   ;; Auto-scroll buffer as commands are logged
   :hook (command-log-mode . (lambda ()
                               (set (make-local-variable 'window-point-insertion-type) t)))
@@ -283,10 +283,10 @@
 
 ;;; File browser
 
-(use-package ranger
-  :defer t
-  :general (my-leader "r" 'deer)
-  :config (ranger-override-dired-mode t))
+;; (use-package ranger
+;;   :defer t
+;;   :general (my-leader "r" 'deer)
+;;   :config (ranger-override-dired-mode t))
 
  ;;; Comments
 
@@ -421,23 +421,29 @@
 
 ;;; Fuzzy finder
 
-(use-package ivy :diminish t)
-(use-package smex)
-(use-package flx)
+;; Was having issues with history, sorting, filtering in ivy using smex (M-x)
+;; and/or flx (ivy in general), so I tried out prescient instead. The latter
+;; has a definite history file it can read and write to.
+;; (use-package smex)
+;; (use-package flx)
+;; TODO: Look into selectrum to replace ivy/counsel
+(use-package prescient)
+(use-package ivy-prescient)
+(use-package ivy :diminish ivy-mode)
 ;; Usage within minibuffer: C-h m
+;; Accept current candidate: C-j
+;; Accept current input: C-M-j
 (use-package counsel ;; Installs and loads ivy and swiper as dependencies
-  :diminish t
+  :diminish counsel-mode
   :general
   (my-leader
     "SPC" 'counsel-M-x
     "'" 'ivy-resume)
   (:keymaps 'my/files-map
-            "d" 'counsel-find-file
-            "f" 'counsel-fzf
-            ;; Is jump just a variation of fzf?
-            ;; "j" 'counsel-file-jump
-            ;; Locate doesn't work out of the box on MacOS
-            ;; "l" 'counsel-locate
+            ;; TODO: Add an action to change dir similar to C-u
+            "f" 'counsel-fzf ; C-u prompts for directory selection
+            ;; https://beyondgrep.com/feature-comparison/
+            "g" 'counsel-rg ; C-x C-d to change directory
             "m" 'counsel-recentf)
   (:keymaps 'my/bookmarks-map
             "D" 'counsel-bookmarked-directory
@@ -449,6 +455,8 @@
             ;; For counsel-find-file, RET should add dir to search path instead of pulling up dired
             [remap ivy-done] 'ivy-alt-done
             [remap ivy-alt-done] 'ivy-done)
+;; counsel-grep
+;; counsel-org-file
   :config
   (defhydra+ hydra-buffer ()
     ("b" ivy-switch-buffer :color blue) ; Faster than counsel-switch-buffer b/c lack of preview
@@ -458,6 +466,23 @@
 
 ;;; Org-mode
 
+(defun my/org-index ()
+  "Open org index file."
+  (interactive)
+  (find-file (concat (file-name-as-directory org-directory) "index.org")))
+
+;; TODO: Test the counsel-org functions
+;; TODO: Move some of these into my/org-map, since they're not useful
+;; outside org files
+(my-leader "o" '(:prefix-command my/global-org-map :wk "org-global"))
+(general-def my/global-org-map
+  :wk-full-keys nil
+  ;; Insert LaTeX-like symbols
+  "e" 'counsel-org-entity ; https://orgmode.org/manual/Special-Symbols.html
+  "i" 'my/org-index
+  "l" 'org-insert-link-global
+  "o" 'org-open-at-point-global)
+
 (defun org-summary-todo (n-done n-not-done)
   "Switch entry to DONE when all subentries are done, to TODO otherwise."
   (let (org-log-done org-log-states)   ; turn off logging
@@ -465,11 +490,6 @@
 
 (add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
 
-(defun my/org-index ()
-  "Open org index file."
-  (interactive)
-  (find-file (concat (file-name-as-directory org-directory) "index.org")))
-(my-leader "o" 'my/org-index)
 
 ;; TODO: Investigate later:
 ;; sparse trees (e.g., to hide finished tasks)
@@ -558,6 +578,10 @@
  "." 'org-time-stamp ; Create or update existing timestamp
  "," 'org-insert-structure-template ; E.g. src block
  "d" 'org-deadline ; Insert deadline keyword with timtestamp
+ "f" 'counsel-org-file ; Show attachments for current file
+ ;; Not clear what the diff is b/w counsel-org-goto and counsel-org-goto-all,
+ ;; except taht that latter produces more candidates
+ "g" 'counsel-org-goto-all
  "s" 'org-schedule ; Insert schedule keyword with timestamp
  "!" 'org-time-stamp-inactive
  "I" 'org-clock-in
@@ -570,12 +594,11 @@
  "-" 'org-ctrl-c-minus
  "A" 'org-toggle-archive-tag ; Tag subtrees as non-tab-expandable
  "a" 'org-attach
- ;; This may not be the same in org-mode as org-insert-link. For the latter,
- ;; insert link or edit invisible URL portion of existing link with a
+ ;; Insert link or edit invisible URL portion of existing link with a
  ;; description. Backspace at beginning or end of displayed description will
  ;; remove start or end brackets, revealing the invisble portion of the link.
  ;; Selected text when inserting becomes link description.
- "l" 'org-insert-link-global
+ "l" 'org-insert-link
  "n" 'org-next-link
  ;; When calling in org file, link points to the current headline of file. For
  ;; other files, points to current line.
@@ -600,7 +623,7 @@
  "J" 'org-shiftdown
  "K" 'org-shiftup
  ;; Capture to org-default-notes-file
- "c" 'org-capture)
+ "c" 'counsel-org-capture)
 
 (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
 ;;;; TODO:

@@ -1,0 +1,4 @@
+* Windows
+$HOME/.Renviron
+$HOME/.Rprofile
+R and Rtools have been installed to Documents

@@ -1,0 +1,12 @@
+
+# Anchors
+
+Anchors can be implicit or explicit
+
+```{r}
+## Implicit {#test}
+
+see the section via an [explicit](#test) link
+
+See the section called [Implicit]
+```

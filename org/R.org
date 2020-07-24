@@ -1,0 +1,23 @@
+* Topics
+- [[file:r_startup.org][R startup]]
+- [[file:r_rshiny.org][RShiny]]
+- [[file:r_rmarkdown.org][Rmarkdown]]
+- [[file:r_installation.org][Installation]]
+
+* Packages
+- [[file:r_ggplot2.org][ggplot2]]
+
+* Resources
+- [[https://www.r-project.org][R-Project]]
+    - [[https://www.r-project.org/help.html][Getting Help]]
+- [[https://cran.r-project.org/index.html][CRAN]]
+    - [[https://cran.r-project.org/manuals.html][Manuals]]
+    - [[https://cran.r-project.org/faqs.html][FAQ]]
+    - [[https://journal.r-project.org][R Joural]]
+    - [[https://cran.r-project.org/web/packages/index.html][Contributed Packages]]
+        - [[https://cran.r-project.org/web/views/][Packages by Topic]]
+
+* RCheat                                                            :ARCHIVE:
+To render cheatsheet, ~/Projects/cheatR/mkcheat.R -i RCheat.csv -t RCheat
+See RCheat.html
+** TODO Make fswatch work (fswatch -e ".*" -i '\\.csv$' ~/vimwiki)

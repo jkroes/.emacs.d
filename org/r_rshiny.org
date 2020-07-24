@@ -1,0 +1,76 @@
+* WSL
+
+shiny::runApp()'s launch.browser arg defaults to T during interactive use. This
+triggers use of options()$browser, which is xdg-open on WSL. So either you can
+set the option to something else in your site profile, or you can download
+xdg-open-wsl. Or you can prevent reliance on the default by setting the SHiny
+option shiny.launch.browser. See ?shinyOptions.
+
+TODO: Note that changing default-web-browser via xdg-settings failed, as did
+changing $BROWSER to anything, including wslview. I will need to investigate the
+relationship between $BROWSER, open, xdg-open, wslview, and update-alternatives
+–config x-www-browser.
+
+* Written Tutorial
+
+** Basics
+
+Make a directory dir/
+Create dir/app.R:
+    * load shiny
+    * define ui and server
+    * pass ui and server to shinyApp()
+To run app.R, call runApp(<path-to-dir>)
+
+** UI
+
+fluidPage() creates a web page that resizes with the browser window.
+
+Panels contain text, resources, wdigets, and an arglist of HTML elements created
+by calls to Shiny's HTML functions (p, span, br, h1, etc.).
+
+```{r, eval=F}
+ui <- fluidPage(
+    titlePanel(""),
+    sidebarLayout(
+        sidebarPanel(),
+        mainPanel()
+    )
+)
+```
+** Resources
+
+Shiny expects resources to be placed in dir/www/, including images and
+stylesheets. E.g., img(src="file.png") adds dir/www/file.png to whichever UI
+component contains the call (e.g., mainPanel()).
+
+** Widgets
+
+actionButton, checkboxGroupInput, checkboxInput, dateInput, dateRangeInput,
+fileInput, helpText, numericInput, radioButtons, selectInput, sliderInput,
+submitButton, and textInput.
+
+Common required args are a name and label. Additional args are widget-specific.
+
+** fluidrow and column
+
+fluidrow() represents a single row of various height. It contains one or more
+calls to column(width, ...), where ... determines which elements are contained
+in the column and thus the height of the fluidrow.
+
+* Reactives
+
+https://shiny.rstudio.com/tutorial/written-tutorial/lesson4/
+
+* More details
+
+Shiny runs app.R once.
+server() is run once for each new user.
+Reactives (render* functions) are run each time input changes.
+
+In other words, source scripts, load libraries, and read data outside of the
+server function to avoid repeated evaluation. Scripts and data are relative to
+dir/ (the directory containing app.R).
+
+* Resources
+- https://shiny.rstudio.com/

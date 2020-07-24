@@ -9,3 +9,20 @@ use the drive letters on Windows (H:) rather than the UNC path
 sudo mount -t drvfs 'A:\VOC' /mnt/voc
 sudo mount -t drvfs 'H:' /mnt/h
 #+end_src
+
+* Curl
+
+Curl does not work in WSL by default. Run the following code, extract
+the last certificate in cacert.pem, and copy it over to
+/etc/ssl/certs/ca-certificates.crt:
+
+```{sh, eval=F}
+echo quit| openssl s_client -showcerts -servername api.github.com -connect api.github.com:443 > cacert.pem
+```
+
+Alternatively, you might be able to alias curl as
+> curl -cacert /mnt/c/Program\ Files/Git/mingw64/ssl/certs/ca-bundle.crt
+
+As a last resort, run curl insecurely.
+
+[[https://unix.stackexchange.com/questions/451207/how-to-trust-self-signed-certificate-in-curl-command-line][Source]]

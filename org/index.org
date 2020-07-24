@@ -1,5 +1,4 @@
 * Org-mode Resources
-
 - [[https://orgmode.org/orgcard.txt][Cheat Sheet]]
 - Org-mode's Emacs menu item
 - [[info:org][Manual]]
@@ -9,9 +8,10 @@
 - [[https://orgmode.org/][Home page]]
 
 * An Exercise in (F)utility
-
 - [[file:diary.org][Work Diary]]
 - [[file:WSL.org][WSL]]
+- [[file:R.org][R]]
+
 
 * Unorganized
 ** Emacs
