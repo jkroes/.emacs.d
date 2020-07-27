@@ -187,7 +187,15 @@
  '(projectile-mode t nil (projectile))
  '(recentf-max-saved-items 100 nil nil "Affects number of candidates with ivy-use-virtual-buffers?")
  '(ring-bell-function 'ignore)
- '(safe-local-variable-values nil nil nil "Tangle init.org to init.el without prompting")
+ '(safe-local-eval-forms
+   '((add-hook 'write-file-hooks 'time-stamp)
+     (add-hook 'write-file-functions 'time-stamp)
+     (add-hook 'before-save-hook 'time-stamp nil t)
+     (add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
+     (add-hook 'after-save-hook
+               (lambda nil
+                 (org-babel-tangle))
+               nil t)))
  '(same-window-buffer-names '("*Help*"))
  '(scroll-bar-mode nil)
  '(scroll-conservatively 1000000 nil nil "Seems to prevent auto-recentering of point when scrolling")
