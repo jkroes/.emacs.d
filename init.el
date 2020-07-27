@@ -130,6 +130,16 @@
 
 (setq-default default-directory "~/.emacs.d")
 (setq-default fill-column 80)
+;; Default to auto-filling in all major modes
+(setq-default auto-fill-function 'do-auto-fill)
+(add-hook 'org-mode-hook 'turn-on-auto-fill)
+;; org-indent-mode indents nested lines and shows column 0 at the indented
+;; position, not at the start of the line. So technically there should be a fill
+;; line for each indented section. The text is still wrapping at fill-column
+;; amount of characters; however, it doesn't appear that way because fill-column
+;; doesn't adjusted the displayed indicator for indented org sections.
+(add-hook 'org-mode-hook (lambda () (display-fill-column-indicator-mode -1)))
+
 
 (add-to-list 'exec-path "/usr/local/bin")
 (setq python-shell-interpreter "python3")
