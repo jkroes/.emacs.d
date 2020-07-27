@@ -7,14 +7,70 @@
   - [[https://orgmode.org/worg/doc.html][Documentation for hooks, commands, options]]
 - [[https://orgmode.org/][Home page]]
 
-* An Exercise in (F)utility
-- [[file:diary.org][Work Diary]]
-- [[file:WSL.org][WSL]]
-- [[file:R.org][R]]
+* Projects
+** VOC
+*** Annual Inventory
+**** 2018
+**** 2019
+*** EP Database
+*** Script revisions
+**** TODO Create headers for each script and attach a hard/soft link to file
+*** Statewide Inventory
+*** TGA Evaluations
 
+* Notes
+
+
+* TODO Convert scripts to org-mode docs and find a way to track them in org-mode for deveopment
+Then you can tangle them into scripts for other users. I'm guessing you can
+configure org to be aware of project and then simply use projectile to keep
+track of projects that have org files. TODOs can be written directly in those
+files along with all of your comments. You could track changes via git in both
+the org file and in the exported/notes-stripped-out script.
+
+* An Exercise in (F)utility
+** Work Diary                                                  :ATTACH:
+:PROPERTIES:
+:ID:       c970ada4-6da4-47e0-a0bf-d4bdab70df5d
+:END:
+
+** Notes
+
+** Personal
+
+** [[file:WSL.org][WSL]]
+** [[file:R.org][R]]
+SPC m a F over heading opens attached dir in dired
+*** Shiny                                                          :ATTACH:
+:PROPERTIES:
+:ID:       4a6ab710-ca30-4111-bd1f-967718f7d9ea
+:END:
+When the file is copied, where is it stored? Is it better to use a link instead
+to an unstructure org directory where all org files live? Also, wouldn't a link
+show changes to the original file in real time? I can't edit stashed attachment
+files as part of a project. Perhaps this would work better for linking to org
+files?  See also spc m f. I think it shows you location if you're hovered over
+an attachedfile.
+Also M-x orgattachdir and check out the commands that show up.
+Also investigate spc m a z for synchronization with attachment dirs. What does
+this synchronize?
+org-attach-directory
+Check out sorce code for org-attach:
+http://web.mit.edu/Emacs/source/emacs/lisp/org/org-attach.el
+This solution looks interesting:
+https://emacs.stackexchange.com/questions/26412/human-readable-directory-tree-with-org-attach
+See org-manage and ScriptDevil/org-fstree https://blog.modelworks.ch/using-org-mode-to-keep-track-of-your-project-files/
+org-git-link:
+https://orgmode.org/worg/org-contrib/org-git-link.html
+https://orgmode.org/worg/org-tutorials/org-vcs.html
 
 * Unorganized
 ** Emacs
 If you see (DOS) on left of modeline, run
 revert-buffer-with-coding-system, and select utf-8-unix or
 something. Save the buffer. Then :%s/\r//.
+
+If you get the metahelp buffer when pressing C-h s, it's because the C- key was
+still depressed. E.g. holding the C- key results in C-h C-s. You don't have to
+release it. It doesn't seem to involve a timer, but rather a lazy C- finger that
+doesn't raise quickly enough.

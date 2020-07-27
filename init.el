@@ -293,10 +293,10 @@
 
 ;;; File browser
 
-;; (use-package ranger
-;;   :defer t
-;;   :general (my-leader "r" 'deer)
-;;   :config (ranger-override-dired-mode t))
+(use-package ranger
+  :defer t
+  :general (my-leader "r" 'deer)
+  :config (ranger-override-dired-mode t))
 
  ;;; Comments
 
@@ -474,32 +474,26 @@
   (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
         ivy-help-file "~/.emacs.d/ivy-help.org"))
 
+;;; Project management
+
+;; TODO: Investigate projectile
+;; https://docs.projectile.mx/projectile/index.html
+(use-package projectile
+  :general (my-leader "p" 'projectile-command-map))
+
+;; TODO: Investigate org-projectile source code (the docs are sparse)
+(use-package org-projectile
+  :config
+  (org-projectile-per-project) ; Per-project org files
+  ;; Add all org files contained in projectile directories to org-agenda-files
+  (setq org-agenda-files (append org-agenda-files projectile-known-projects))
+  ;; Adds a TODO capture template activated by letter p (see org-capture) that
+  ;; captures to <current-project>/TODO.org for org-capture or
+  ;; <selected-project>/TODO.org for org-projectile-todo-completing-read
+  ;; and replaces the default t(ask) template stored in ~/.notes normally
+  (push (org-projectile-project-todo-entry) org-capture-templates))
+
 ;;; Org-mode
-
-(defun my/org-index ()
-  "Open org index file."
-  (interactive)
-  (find-file (concat (file-name-as-directory org-directory) "index.org")))
-
-;; TODO: Test the counsel-org functions
-;; TODO: Move some of these into my/org-map, since they're not useful
-;; outside org files
-(my-leader "o" '(:prefix-command my/global-org-map :wk "org-global"))
-(general-def my/global-org-map
-  :wk-full-keys nil
-  ;; Insert LaTeX-like symbols
-  "e" 'counsel-org-entity ; https://orgmode.org/manual/Special-Symbols.html
-  "i" 'my/org-index
-  "l" 'org-insert-link-global
-  "o" 'org-open-at-point-global)
-
-(defun org-summary-todo (n-done n-not-done)
-  "Switch entry to DONE when all subentries are done, to TODO otherwise."
-  (let (org-log-done org-log-states)   ; turn off logging
-    (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
-
-(add-hook 'org-after-todo-statistics-hook 'org-summary-todo)
-
 
 ;; TODO: Investigate later:
 ;; sparse trees (e.g., to hide finished tasks)
@@ -519,29 +513,46 @@
 ;; agenda onward
 ;; diary
 
-;; TODO: Investigate projectile
-(use-package projectile
-  :general (my-leader "p" 'projectile-command-map))
+;;;; TODO:
+;; Find command to add repeating timers rather than editing manually
+;; Make RET convert plain text under cursor or selected to link. Currenlty it
+;; only follows existing links, so one-half vimwiki functionality
+;;;;; Bind the following:
+;; org-set-property-and-value: sets property block
+;; org-delete-property
+;; C-u c-u c-u c-t: change todo state, regardless of state blocking (like
+;; ordered property)
+;; org-check-deadlines (c-c / d): show past-due or do within
+;;      org-deadline-warning-days Reminders can be appended; e.g., <2004-02-29
+;;      -5d> uses a 5-day advance notice Positives (+5m) indicate repeaters
+;;      (repeating tasks). These must come before reminders.
+;; org-check-before-date (c-c / b): checks deadliens and scheduled items before
+;; date
+;; org-check-after-date (c-c / a)
+;; https://www.spacemacs.org/layers/+emacs/org/README.html
 
-;; TODO: Learn about org-projectile and add bindings to spc-p instead of global
-;; (use-package org-projectile
-;;   :general (:keymaps
-;;          ;; Choose project for capture
-;;          "C-c n p" 'org-projectile-project-todo-completing-read
-;;          "C-c c" 'org-capture)
-;;   :config
-;;   (org-projectile-per-project)
-;;   ;; NOTE: If TODO.org doesn't exist for a project, org-agenda will prompt
-;;   ;; to remove them.
-;;   (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files))))
-;; Location of project-based TODOs
-;; (setq org-projectile-projects-file
-;;       (concat (file-name-as-directory org-directory) "projects.org"))
-;; Adds a TODO capture template activated by letter p (see org-capture)
-;; and replaces the default t(ask) template stored in ~/.notes
-;; Otherwise, you can use org-projectile-capture-for-current-project
-;; (push (org-projectile-project-todo-entry) org-capture-templates)
+(load "my-org-functions.el")
+(add-hook 'org-after-todo-statistics-hook 'my/org-summary-todo)
 
+(my-leader "o" '(:prefix-command my/global-org-map :wk "org-global"))
+(general-def my/global-org-map
+  :wk-full-keys nil
+  ;; Insert LaTeX-like symbols
+  "a" 'org-agenda ; Dispatcher
+  "e" 'counsel-org-entity ; https://orgmode.org/manual/Special-Symbols.html
+  "i" 'my/org-index
+  "l" 'org-insert-link-global
+  "o" 'org-open-at-point-global
+  ;; Capture to org-default-notes-file
+  "c" 'counsel-org-capture
+  ;; org-projectile-capture-for-current-project
+  ;; NOTE: May not list all projects known by org-agenda since it relies on
+  ;; projectile-relevant-known-projects and org-projectile-projects-file
+  "p" 'org-projectile-project-todo-completing-read)
+
+;; For some reason, this doesn't work if added to general-define-key below
+(evil-define-key 'normal org-mode-map
+  (kbd "DEL") 'org-mark-ring-goto)
 ;;;; Existing bindings that I didn't change:
 ;; tab (org-cycle)
 ;; S-tab (global-org-cyc
@@ -554,20 +565,20 @@
 ;; org-insert-todo-heading-respect-content (c-s-ret): Insert todo heading at end of subtree
 ;; org-insert-subheading: Insert subheading
 ;; org-insert-todo-subheading
-(evil-define-key 'normal org-mode-map
-  (kbd "DEL") 'org-mark-ring-goto)
 (add-hook 'org-mode-hook
           (lambda ()
             (general-define-key
             :states 'motion
             :keymaps 'org-mode-map
-            "RET" 'org-open-at-point ; Open link at point
+            "RET" 'my/org-open-at-point-in-emacs
             "g" '(:ignore t :wk "Entry navigation")
             "gh" 'outline-previous-visible-heading
             "gl" 'outline-next-visible-heading
             "gk" 'org-backward-heading-same-level
-            "gj" 'org-forward-heading-same-level
+            "gj" 'org-forward-heading-same-level)
             "U" 'outline-up-heading ; Navigate up a heading level
+            (general-define-key
+             :states '(motion insert)
             "M-h" 'org-metaleft ; Promote/dedent heading/list item
             "M-l" 'org-metaright ; Demote/indent heading/list item
             "M-j" 'org-shiftmetadown ;; Move heading or list item down
@@ -631,28 +642,9 @@
  "L" 'org-shiftright
  ;; Move between list items of the same level
  "J" 'org-shiftdown
- "K" 'org-shiftup
- ;; Capture to org-default-notes-file
- "c" 'counsel-org-capture)
+ "K" 'org-shiftup)
 
 (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
-;;;; TODO:
-;; Find command to add repeating timers rather than editing manually
-;; Make RET convert plain text under cursor or selected to link. Currenlty it
-;; only follows existing links, so one-half vimwiki functionality
-;;;;; Bind the following:
-;; org-set-property-and-value: sets property block
-;; org-delete-property
-;; C-u c-u c-u c-t: change todo state, regardless of state blocking (like
-;; ordered property)
-;; org-check-deadlines (c-c / d): show past-due or do within
-;;      org-deadline-warning-days Reminders can be appended; e.g., <2004-02-29
-;;      -5d> uses a 5-day advance notice Positives (+5m) indicate repeaters
-;;      (repeating tasks). These must come before reminders.
-;; org-check-before-date (c-c / b): checks deadliens and scheduled items before
-;; date
-;; org-check-after-date (c-c / a)
-;; https://www.spacemacs.org/layers/+emacs/org/README.html
 
 ;;; REPLs/Programming
 

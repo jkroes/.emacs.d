@@ -39,6 +39,7 @@
  '(custom-safe-themes
    '("0f0a885f4ce5b6f97e33c7483bfe4515220e9cbd9ab3ca798e0972f665f8ee4d" "830877f4aab227556548dc0a28bf395d0abe0e3a0ab95455731c9ea5ab5fe4e1" "7f1d414afda803f3244c6fb4c2c64bea44dac040ed3731ec9d75275b9e831fe5" "51ec7bfa54adf5fff5d466248ea6431097f5a18224788d0bd7eb1257a4f7b773" "2809bcb77ad21312897b541134981282dc455ccd7c14d74cc333b6e549b824f3" "dcdd1471fde79899ae47152d090e3551b889edf4b46f00df36d653adc2bf550d" "37f32706ffc6d7d021adf6b4d2a84eae7e0cfb7871cd39e21eaddc77c52bf4a7" "332fcf3c7208aca9fab65d54203f78a242482e7fd65f5725a2482c20b1730732" "35b0b0e531731e270708ddb342dc2e576a31fb298dcbc56a206596a43afac54f" "274fa62b00d732d093fc3f120aca1b31a6bb484492f31081c1814a858e25c72e" default))
  '(delete-by-moving-to-trash t)
+ '(display-buffer-base-action '((display-buffer-reuse-window display-buffer-same-window)))
  '(eldoc-echo-area-use-multiline-p t nil nil "May not have an effect. Test on longer function signatures sometime.")
  '(electric-layout-mode t nil nil "Compare behavior with and without in ess-R. Without this, newlines within {} or () inserts two newlines between them, indents the first and moves cursor to it. Setting this seems to interfere with that behavior, which is controlled by ess-roxy-newline-and-indent. This is because ess-r-mode sets electric-layout-rules to insert a newline after {, but doesn't enable electric-layout-mode. Must be an oversight. If setting this globally, disable it in R to keep the desired behavior. ")
  '(electric-pair-mode t nil nil "Nice default behavior. Delete delimiter pair when deleting opening paren of empty pair (electric-pair-delete-adjacent-pairs). Skips over closing delim when you try to insert over an existing delim (electric-pair-skip-self). Inserts singles to preserve balance (electric-pair-preserve-balance). Insertion around active region, with point after whichever delim you typed--opening or closing. Example of cool defaults: In lisp comments, ` inserts `'.")
@@ -137,12 +138,15 @@
  '(ns-command-modifier 'ctrl)
  '(ns-control-modifier 'super)
  '(org-M-RET-may-split-line '((default)))
- '(org-agenda-files nil)
  '(org-agenda-include-diary t)
+ '(org-agenda-restore-windows-after-quit t)
  '(org-agenda-todo-ignore-scheduled 'future)
+ '(org-agenda-window-setup 'current-window)
+ '(org-attach-dir-relative t)
  '(org-attach-method 'cp)
  '(org-capture-bookmark nil)
  '(org-catch-invisible-edits 'show)
+ '(org-cycle-separator-lines -1)
  '(org-default-notes-file "~/.emacs.d/org/.notes")
  '(org-enforce-todo-checkbox-dependencies t)
  '(org-enforce-todo-dependencies t)
@@ -183,6 +187,7 @@
  '(projectile-mode t nil (projectile))
  '(recentf-max-saved-items 100 nil nil "Affects number of candidates with ivy-use-virtual-buffers?")
  '(ring-bell-function 'ignore)
+ '(same-window-buffer-names '("*Help*"))
  '(scroll-bar-mode nil)
  '(scroll-conservatively 1000000 nil nil "Seems to prevent auto-recentering of point when scrolling")
  '(show-paren-highlight-openparen nil)
@@ -195,6 +200,7 @@
  '(tab-width 4)
  '(term-default-bg-color "#002b36")
  '(term-default-fg-color "#839496")
+ '(text-mode-hook '(text-mode-hook-identify))
  '(tool-bar-mode nil)
  '(use-package-verbose t)
  '(vc-annotate-background nil)
@@ -219,6 +225,10 @@
      (340 . "#2c879008c736")
      (360 . "#268bd2")))
  '(vc-annotate-very-old-color nil)
+ '(vc-follow-symlinks t nil nil "I want to follow symlinks to the actual file even if it is
+version-controlled. I don't know what benefit settings this to nil confers. I
+simply wanted to avoid the prompt in org-mode, where I've set the default file
+attachment method to be a symbolic link.")
  '(visible-bell nil)
  '(weechat-color-list
    '(unspecified "#002b36" "#073642" "#a7020a" "#dc322f" "#5b7300" "#859900" "#866300" "#b58900" "#0061a8" "#268bd2" "#a00559" "#d33682" "#007d76" "#2aa198" "#839496" "#657b83"))
