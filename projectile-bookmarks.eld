@@ -1,1 +1,1 @@
-("~/.emacs.d/" "~/" "~/.config/nvim/" "~/Projects/RShinyApp/")
+("~/.emacs.d/" "~/" "~/.config/fish/" "~/temp/" "~/.config/nvim/" "~/Projects/RShinyApp/")
