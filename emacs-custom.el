@@ -187,6 +187,7 @@
  '(projectile-mode t nil (projectile))
  '(recentf-max-saved-items 100 nil nil "Affects number of candidates with ivy-use-virtual-buffers?")
  '(ring-bell-function 'ignore)
+ '(safe-local-variable-values nil nil nil "Tangle init.org to init.el without prompting")
  '(same-window-buffer-names '("*Help*"))
  '(scroll-bar-mode nil)
  '(scroll-conservatively 1000000 nil nil "Seems to prevent auto-recentering of point when scrolling")
