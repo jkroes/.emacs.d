@@ -7,44 +7,15 @@
   - [[https://orgmode.org/worg/doc.html][Documentation for hooks, commands, options]]
 - [[https://orgmode.org/][Home page]]
 
-* Projects
-** VOC
-*** Annual Inventory
-**** 2018
-**** 2019
-*** EP Database
-*** Script revisions
-**** TODO Create headers for each script and attach a hard/soft link to file
-*** Statewide Inventory
-*** TGA Evaluations
-
-* Notes
-
-
-* TODO Convert scripts to org-mode docs and find a way to track them in org-mode for deveopment
-Then you can tangle them into scripts for other users. I'm guessing you can
-configure org to be aware of project and then simply use projectile to keep
-track of projects that have org files. TODOs can be written directly in those
-files along with all of your comments. You could track changes via git in both
-the org file and in the exported/notes-stripped-out script.
-
-* An Exercise in (F)utility
-** Work Diary                                                  :ATTACH:
+* Work Log                                                           :ATTACH:
 :PROPERTIES:
-:ID:       c970ada4-6da4-47e0-a0bf-d4bdab70df5d
+:ID:       b4cc1df0-5d8a-41ed-b9d2-f2aac0a34b82
 :END:
-
-** Notes
-
-** Personal
-
+* An Exercise in (F)utility
 ** [[file:WSL.org][WSL]]
 ** [[file:R.org][R]]
 SPC m a F over heading opens attached dir in dired
-*** Shiny                                                          :ATTACH:
-:PROPERTIES:
-:ID:       4a6ab710-ca30-4111-bd1f-967718f7d9ea
-:END:
+*** Shiny
 When the file is copied, where is it stored? Is it better to use a link instead
 to an unstructure org directory where all org files live? Also, wouldn't a link
 show changes to the original file in real time? I can't edit stashed attachment

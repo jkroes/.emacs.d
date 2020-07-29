@@ -143,6 +143,7 @@
  '(org-agenda-todo-ignore-scheduled 'future)
  '(org-agenda-window-setup 'current-window)
  '(org-attach-dir-relative t)
+ '(org-attach-id-dir "~/.emacs.d/org/data/")
  '(org-attach-method 'cp)
  '(org-capture-bookmark nil)
  '(org-catch-invisible-edits 'show)

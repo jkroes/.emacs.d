@@ -1,13 +1,41 @@
 * Project Diary
 NOTE: Attachments are stored in D:/work_diary/
 ** Annual reviews
-[[file:2020_review.org][2020 Review]]
-
+*** 2020 Review                                                    :ATTACH:
+:PROPERTIES:
+:ID:       86557cec-5a38-445e-850b-249dfa3c9a70
+:END:
 ** Shiny
-[[file:pamr_viz.org][PAMR visualization]]
-[[file:shiny_tga.org][TGA evaluations]]
-Hydrus studies
+*** Air Monitoring Network                                         :ATTACH:
+:PROPERTIES:
+:ID:       24b96dcf-fce4-41ea-8f23-f6a459759570
+:END:
+*** TGA Evaluations                                                :ATTACH:
+:PROPERTIES:
+:ID:       7b3f0438-8bdc-4314-97ca-df5aa673e949
+:END:
+*** Hydrus Studies
+** VOC
+*** Annual Inventory
+**** 2018
+:PROPERTIES:
+:DIR:      ../../../../../../../mnt/d/em/voc/18VOC/
+:END:
+**** 2019
+:PROPERTIES:
+:DIR:      ../../../../../../../mnt/d/em/VOC/19VOC/
+:END:
+*** EP Database
+*** Script revisions
+**** TODO Create headers for each script and attach a hard/soft link to file
+*** Statewide Inventory
+:PROPERTIES:
+:DIR:      ../../../../../../../mnt/d/_Statewide/
+:END:
+*** TGA Evaluations
 
+* Notes
+* Meetings
 * Task List
 ** Short-term [0%]
 *** TODO Preliminary report

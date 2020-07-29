@@ -1,4 +1,0 @@
-* [[elisp:(org-projectile-open-project ".emacs.d")][.emacs.d]] [/]
-:PROPERTIES:
-:CATEGORY: .emacs.d
-:END:

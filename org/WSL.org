@@ -4,7 +4,9 @@
 
 Mounting drives is easy, even if they're shared. Contrary to my expectations,
 use the drive letters on Windows (H:) rather than the UNC path
-(\\dprhq01\EMON_USERS\jkroes).
+(\\dprhq01\EMON_USERS\jkroes). Note that this may have to be run every time you
+open a new shell or disconnect from the network.
+
 #+begin_src sh
 sudo mount -t drvfs 'A:\VOC' /mnt/voc
 sudo mount -t drvfs 'H:' /mnt/h
