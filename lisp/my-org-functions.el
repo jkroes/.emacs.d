@@ -8,6 +8,13 @@
   (let (org-log-done org-log-states)   ; turn off logging
     (org-todo (if (= n-not-done 0) "DONE" "TODO"))))
 
+(defun my/org-attach-reveal-in-emacs ()
+  "Show the attachment directory of the current outline node in dired.
+Will create an attachment and folder if it doesn't exist yet.
+Respects `org-attach-preferred-new-method'."
+  (interactive)
+  (deer (org-attach-dir-get-create)))
+
 (defun my/org-open-at-point (&optional arg)
   "Modified to distinguish between headings with attached directories and
 files, and to open directories as normal for the original
@@ -65,7 +72,7 @@ attachments with the ID property)."
                      (org-attach-open)))
                (message "Opening attachment-dir")
                (if (equal arg '(4))
-                   (org-attach-reveal-in-emacs)
+                   (my/org-attach-reveal-in-emacs)
                  (org-attach-reveal))))
             (`(,links . ,links-end)
              (dolist (link (if (stringp links) (list links) links))
