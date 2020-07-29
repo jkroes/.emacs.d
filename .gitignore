@@ -1,7 +1,10 @@
 \#*\#
 \.#*
 *~
-elpa
+# Ignore all elpa contents (but not the dir itself, in case...
+/elpa/*
+# ... there are manually pinned packages)
+!/elpa/which-key-20200702.219/
 quelpa
 .mc-list.el
 bookmarks

@@ -213,6 +213,7 @@ https://emacsthemes.com
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package which-key
+    :pin manual ; Issue 257
     :diminish which-key-mode
     :demand t ; Ensure popup is visible for all buffers on startup
     ;; TODO: Fix indentation of keywords like (:keymaps ...):
