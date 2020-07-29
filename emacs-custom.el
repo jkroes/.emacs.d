@@ -19,6 +19,8 @@
  '(command-log-mode-key-binding-open-log nil)
  '(command-log-mode-open-log-turns-on-mode nil)
  '(command-log-mode-window-size 50)
+ '(company-box-doc-enable t)
+ '(company-box-enable-icon t)
  '(company-frontends
    '(company-pseudo-tooltip-unless-just-one-frontend company-preview-if-just-one-frontend) nil nil "Rm company-echo-metadata-frontend to speed up candidate navigation")
  '(company-global-modes '(python-mode ess-r-mode emacs-lisp-mode))

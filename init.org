@@ -11,7 +11,7 @@
 [x] Remove trailing whitespace on write
 [x] nerdcommenter
 [] Enable manual indentation? See https://www.pement.org/emacs_tabs.htm#nothing for an
-   explanation and note that a better option may be to improve a mode's autoindentation.
+explanation and note that a better option may be to improve a mode's autoindentation.
 [] Fix tab. Currently it doesn't tab at all. Indentation seems to be forced in lisp mode.
 [] undotree
 [] vim-clap
@@ -21,25 +21,25 @@
 [] R (polymode and ess; note polymode has its own website similar to lsp-mode)
 [] python (emacs-jupyter?)
 [x] Replicate coc.nvim
-    [x] Floating help next to completion items: company-box!
-    [x] Callable help: lsp-ui-doc-glance and company-show-doc-buffer
-    [x] Scrollable help: custom lisp function
+[x] Floating help next to completion items: company-box!
+[x] Callable help: lsp-ui-doc-glance and company-show-doc-buffer
+[x] Scrollable help: custom lisp function
 [x] Fuzzy file finder that searches all subdirs? See counsel-fzf
 [] Make graphical emacs not started from Terminal use $PATH in exec-path
-   See https://github.com/purcell/exec-path-from-shell
+See https://github.com/purcell/exec-path-from-shell
 [] Ensure page breaks are enabled such that ^H isn't visible in help(?) docs
 [] mode-line-format customization?
 [x] Highlight parens (see show-paren-mode and evil-highlight-closing-paren-at-point states)
 [x] Customize background,foreground face for show-paren-mode
-    [] Does evil-highlight-closing-paren-at-point affect this?
+[] Does evil-highlight-closing-paren-at-point affect this?
 [] Improve company selected completion item face for this theme (it's barely visible)
-   NOTE: Appears to only affect the WSL version of emacs...
+NOTE: Appears to only affect the WSL version of emacs...
 [] Update plugins and __init.el
 [] Review ivy/counsel/swiper changelog, wiki, and external website to see what's changed
-   and what I missed the first time I started using emacs. E.g., I bound both fzf and
-   jump to my files hydra, even though they are presumably similar commands.
+and what I missed the first time I started using emacs. E.g., I bound both fzf and
+jump to my files hydra, even though they are presumably similar commands.
 [] counsel-el is deprecated. (Try running the command for suggested fix).
-   Change the binding at the bottom of init.el
+Change the binding at the bottom of init.el
 
 * Installation
 
@@ -361,7 +361,7 @@ See the README for examples, evil usage, and tips
         (unless (featurep 'counsel) (require 'counsel))
         (counsel-imenu))))
 #+END_SRC
-* Completion / LSP extension
+* Completion / LSP
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;; (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
@@ -387,11 +387,24 @@ See the README for examples, evil usage, and tips
   ;; completion items, similar to coc.nvim, when used with lsp-mode.
   (use-package company-box
     :diminish company-box-mode
-    :hook (company-mode . company-box-mode))
+    :hook
+    (company-mode . company-box-mode)
+    ;; When ess-eldoc-mode is enabled, it vanishes the company completion menu, at
+    ;; least with company-box enabled. I could customize this, but I have a
+    ;; feeling it may have been useful with lsp-mode. Did it affect lsp-based
+    ;; company completion? TODO: Test this if you ever reenable lsp-mode for ess-r
+    (ess-r-mode . (lambda () (setq ess-eldoc-mode -1))))
 
   (use-package lsp-mode
     :hook ((python-mode . lsp)
-           (ess-r-mode . lsp)
+           ;; TODO: Currently the VOC inventory .Rmd report is crashing lsp-r
+           ;; Not all Rmd files are affected. Could it be
+           ;; the size of the file, the latex, lsp-mode, or the language server
+           ;; casuing the issue?
+           ;; NOTE: Without lsp-mode, to get full completion you will need to
+           ;; evaluate the libraries in an iess-r buffer, and possibly any
+           ;; objects you want completed
+           ;; (ess-r-mode . lsp)
            (lsp-mode . lsp-enable-which-key-integration))
     :commands lsp
     :config
@@ -694,6 +707,7 @@ See the README for examples, evil usage, and tips
   (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
 #+END_SRC
 * Programming languages
+** elisp
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (general-define-key
@@ -710,19 +724,17 @@ See the README for examples, evil usage, and tips
 
   ;; "<backtab>" 'counsel-el ; counsel-assisted completion
   (my-leader :keymaps 'emacs-lisp-mode-map "m" 'my/elisp-map)
+#+END_SRC
 
-  ;; (use-package markdown-mode)
-  ;; (use-package poly-markdown
-  ;;   :mode (("\\md" . poly-markdown-mode)))
-  ;; (use-package poly-R
-  ;;   :mode (("\\.Rmd" . poly-markdown+R-mode)))
-  ;; (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode))
-  ;; (add-to-list 'auto-mode-alist '("\\.Rmd" . poly-markdown+r-mode))
-  ;; https://github.com/polymode/polymode/issues/92
-  (use-package poly-markdown)
+** R(markdown)
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package poly-markdown
+    :mode (("\\.md" . poly-markdown-mode)))
   ;; NOTE: ess-r configuration and bindings are available inside chunks, where R-mode is active
   ;; I have bound polymode-export (render) to SPC-m-e-k
-  (use-package poly-R)
+  (use-package poly-R
+    :mode (("\\.Rmd" . poly-markdown+R-mode)))
 
   (use-package ess
     :hook (ess-r-mode . config-ess-r-mode)
