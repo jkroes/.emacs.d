@@ -730,12 +730,14 @@ See the README for examples, evil usage, and tips
 ** R(markdown)
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package poly-markdown
-    :mode (("\\.md" . poly-markdown-mode)))
+  (use-package poly-markdown)
   ;; NOTE: ess-r configuration and bindings are available inside chunks, where R-mode is active
   ;; I have bound polymode-export (render) to SPC-m-e-k
   (use-package poly-R
-    :mode (("\\.Rmd" . poly-markdown+R-mode)))
+    :after hydra
+    :config
+    (defhydra+ hydra-r-eval()
+    ("k" polymode-export)))
 
   (use-package ess
     :hook (ess-r-mode . config-ess-r-mode)
