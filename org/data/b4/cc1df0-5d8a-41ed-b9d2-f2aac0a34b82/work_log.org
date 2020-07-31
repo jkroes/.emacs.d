@@ -33,6 +33,10 @@ NOTE: Attachments are stored in D:/work_diary/
 :DIR:      ../../../../../../../mnt/d/_Statewide/
 :END:
 *** TGA Evaluations
+*** Training (2020)                                                :ATTACH:
+:PROPERTIES:
+:ID:       9463d369-5f20-46bb-a474-a9b5b0a3b416
+:END:
 
 * Notes
 * Meetings
