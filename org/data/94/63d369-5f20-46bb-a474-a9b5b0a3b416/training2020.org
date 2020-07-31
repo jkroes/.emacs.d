@@ -45,3 +45,19 @@
 - Appendix C: CSF Analysis and legacy methods
 ** Torac rejection
 ** RShiny
+
+* Post-meeting Notes
+
+Yvan has concerns about laboratory procedures and statistical validation. In
+particular, he mentioned that with ecological data he would usually look at
+multiple graphs and run statistical tests to validate his data. The use of a
+single graph concerns/confuses him. I pointed out that we do average triplicate
+runs together, but that we don't currently vet the laboratories or confirm
+they're following the procedures aside from clues on the submission forms and
+thermograms.
+
+** TODO Search for historical documents/memos related to TGA methodology development for Yvan
+*** Maziar recommends we wait on trying to get into statistical methodology and stick with arithmetic mean of replicates for now
+** TODO Recuit Rosemary to help with guideline revisions
+*** TODO Rosemary pointed out that multiple images listed an initial mass that didn't match the mass listed on the example thermograms
+*** TODO Some thermograms list temperature toward the top-left, which should be pointed out as a potential verification of lab procedures

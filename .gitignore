@@ -13,3 +13,5 @@ smex-items*
 .lsp-session-v1
 .tutor
 init.el
+# Find a way to combine different versions of this file on each OS
+projectile-bookmarks.eld
