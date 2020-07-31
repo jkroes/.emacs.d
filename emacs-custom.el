@@ -272,6 +272,7 @@ attachment method to be a symbolic link.")
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(markdown-comment-face ((t (:foreground "#586e75" :strike-through nil))))
  '(nobreak-space ((t nil)))
  '(show-paren-match ((t (:background "dark red" :foreground "White" :weight bold))))
  '(whitespace-tab ((t (:foreground "#636363" :inverse-video t)))))
