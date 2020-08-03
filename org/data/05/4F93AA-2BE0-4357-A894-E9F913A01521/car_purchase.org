@@ -1,0 +1,22 @@
+* Used car websites
+** National
+https://www.cargurus.com
+https://www.autotempest.com
+https://www.autolist.com
+https://www.carsdirect.com
+https://www.autotrader.com
+https://www.kbb.com
+https://www.carvana.com/
+https://www.carmax.com
+https://www.carfax.com
+https://www.auto.com
+** Local
+https://www.folsomautomall.com
+
+
+* Resources
+[[https://cars.usnews.com/cars-trucks/rankings/used/hybrid-cars-1][Hybrid rankings]]
+[[https://www.carcomplaints.com/][CarComplaints]] (recalls, issues, etc., by model and year)
+[[https://vinrcl.safercar.gov/vin/][Recall by VIN]]
+[[https://www.moneyunder30.com/best-car-insurance-for-young-adults][Insurance]]
+[[https://www.nerdwallet.com/insurance/compare-car-insurance-rates][Avg insurance rates]]
