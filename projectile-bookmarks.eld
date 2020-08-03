@@ -1,1 +1,0 @@
-("~/.emacs.d/" "~/" "/mnt/d/EM/VOC/19VOC/" "/mnt/d/em/voc/19VOC/" "/mnt/d/EM/VOC/19VOC/SASFiles_060120/" "~/.config/fish/" "~/.config/nvim/")

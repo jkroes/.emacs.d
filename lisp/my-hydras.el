@@ -40,7 +40,6 @@
   ("E" ess-dirs)
   ("f" ess-load-file)
   ("i" inferior-ess-reload)
-  ;; ("k" polymode-export)
   ;; ("P" ess-request-a-process) ;; Display selected iESS process and buffer
   ("p" ess-switch-process) ;; Switch process attached to script (current process buffer auto-displays if new,
   ;; but any script evaluation will auto-display attached process buffer if not already visible
