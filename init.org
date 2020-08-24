@@ -416,7 +416,7 @@ See the README for examples, evil usage, and tips
            ;; objects you want completed
            ;; (ess-r-mode . lsp)
            (lsp-mode . lsp-enable-which-key-integration))
-    :commands lsp
+    ;; :commands lsp
     :config
     (setq read-process-output-max (* 1024 1024)
           lsp-prefer-capf t
@@ -716,6 +716,7 @@ See the README for examples, evil usage, and tips
 
   (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
 #+END_SRC
+
 * Programming languages
 ** elisp
 
