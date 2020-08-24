@@ -596,14 +596,24 @@ See the README for examples, evil usage, and tips
   (add-hook 'org-after-todo-statistics-hook 'my/org-summary-todo)
 
   (my-leader "o" '(:prefix-command my/global-org-map :wk "org-global"))
+  (defun my/org-programming ()
+    (interactive)
+    (my/org-file org-directory "programming.org"))
+  (defun my/org-home ()
+    (interactive)
+    (my/org-file org-directory "home.org"))
   (general-def my/global-org-map
     :wk-full-keys nil
     ;; Insert LaTeX-like symbols
     "a" 'org-agenda ; Dispatcher
     "e" 'counsel-org-entity ; https://orgmode.org/manual/Special-Symbols.html
-    "i" 'my/org-index
+    ;; "i" 'my/org-index
     "l" 'org-insert-link-global
-    "o" 'org-open-at-point-global
+    ;; "o" 'org-open-at-point-global
+    "o" '(:ignore t :wk "org-files")
+    ;; "ow" '
+    "op" 'my/org-programming
+    "oh" 'my/org-home
     ;; Capture to org-default-notes-file
     "c" 'counsel-org-capture
     ;; org-projectile-capture-for-current-project
