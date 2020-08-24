@@ -261,7 +261,10 @@ attachment method to be a symbolic link.")
  '(which-key-sort-order 'which-key-key-order-alpha)
  '(which-key-sort-uppercase-first nil)
  '(whitespace-display-mappings '((tab-mark 9 [124 9] [92 9])))
- '(whitespace-style '(face trailing tabs tab-mark))
+ ;; In order to show lines that were constructed with auto-fill and that need
+ ;; conversion to a single line for visual-line-mode (e.g., org-mode files)
+ ;; '(whitespace-display-mappings '((tab-mark 9 [124 9] [92 9]) (newline-mark 10 [172 10])))
+ '(whitespace-style '(face trailing tabs tab-mark newline-mark))
  '(winner-mode t)
  '(xterm-color-names
    ["#073642" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#eee8d5"])

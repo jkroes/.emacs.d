@@ -145,9 +145,14 @@ https://emacsthemes.com
   (setq-default fill-column 80)
   ;; Default to auto-filling in all major modes
   (setq-default auto-fill-function 'do-auto-fill)
-  (add-hook 'org-mode-hook 'turn-on-auto-fill)
   ;; Don't hard wrap Rmarkdown report text, since we're exporting to Word
   (add-hook 'markdown-mode-hook (lambda ()
+                                  (auto-fill-mode -1)
+                                  (visual-line-mode)))
+  ;; (add-hook 'org-mode-hook 'turn-on-auto-fill)
+  ;; Don't hard wrap org-mode because it requires you to emphasize (bold, italic,
+  ;; underline) otherwise contiguous text on different lines separately.
+  (add-hook 'org-mode-hook (lambda ()
                                   (auto-fill-mode -1)
                                   (visual-line-mode)))
   ;; org-indent-mode indents nested lines and shows column 0 at the indented
