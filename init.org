@@ -102,6 +102,18 @@ Use Git for Windows and git-bash's find if not running in WSL.
 Set executable paths.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
+  ;; (defun convert-line-endings-to-unix (orig-fun &rest args)
+  ;;   (if (string-match "dos$" (symbol-name buffer-file-coding-system))
+  ;;       (progn
+  ;;         ;; revert-buffer-with-coding-system changes the encoding used to read
+  ;;         ;; the file but doesn't convert the underlying data. This is why
+  ;;         ;; specifying *-unix on a *-dos file will show ^R (carriage return). In
+  ;;         ;; a *-dos file this is part of the line separator, but in *-unix it is
+  ;;         ;; an extra character.
+  ;;         (set-buffer-file-coding-system 'utf-8-unix)
+  ;;         (apply orig-fun args))
+  ;;     (apply orig-fun args)))
+  ;; (advice-add 'save-buffer :around 'convert-line-endings-to-unix)
   (cond ((eq system-type 'gnu/linux)
          (set-frame-font "Hack 10" nil t)
          (when (string-match "Linux.*Microsoft.*Linux"
@@ -130,7 +142,6 @@ NOTE: Ligatures are not enabled for Firacode. See
 https://github.com/tonsky/FiraCode/wiki/Emacs-instructions. Instead I am using
 the Hack font.
 * Color scheme
-
 https://emacsthemes.com
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -142,20 +153,44 @@ https://emacsthemes.com
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq-default default-directory "~/.emacs.d")
+#+END_SRC
+
+* Line wrapping
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;;; Sources
+  ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Continuation-Lines.html#Continuation-Lines
+  ;; https://www.gnu.org/software/emacs/manual/html_node/efaq/Turning-on-auto_002dfill-by-default.html
+
+  ;;; Explanation
+  ;; By default, Emacs soft wraps long lines at the right window edge--even if it
+  ;; splits the word. To avoid word-splitting, use visual-line-mode. To hard wrap
+  ;; lines, use auto-fill-mode. To truncate long lines, use
+  ;; toggle-truncate-lines.
+
+  ;; Default to wrapping at lines at column 80 in all modes
   (setq-default fill-column 80)
-  ;; Default to auto-filling in all major modes
   (setq-default auto-fill-function 'do-auto-fill)
+
+  ;; Some major modes need auto-fill turned on b/c they ignore the default
   (add-hook 'org-mode-hook 'turn-on-auto-fill)
-  ;; Don't hard wrap Rmarkdown report text, since we're exporting to Word
-  (add-hook 'markdown-mode-hook (lambda ()
-                                  (auto-fill-mode -1)
-                                  (visual-line-mode)))
   ;; org-indent-mode indents nested lines and shows column 0 at the indented
   ;; position, not at the start of the line. So technically there should be a fill
   ;; line for each indented section. The text is still wrapping at fill-column
   ;; amount of characters; however, it doesn't appear that way because fill-column
   ;; doesn't adjusted the displayed indicator for indented org sections.
   (add-hook 'org-mode-hook (lambda () (display-fill-column-indicator-mode -1)))
+
+
+  ;; Don't hard wrap Rmarkdown report text, since we're exporting to Word
+  (add-hook 'markdown-mode-hook (lambda ()
+                                  (turn-off-auto-fill) ; (auto-fill-mode -1)
+                                  (visual-line-mode)))
+
+  ;; Fish shell in ansi-term
+  ;; https://www.spacemacs.org/layers/+tools/shell/README.html
+  (add-hook 'term-mode-hook (lambda ()
+                              (turn-off-auto-fill)
+                              (toggle-truncate-lines 1)))
 #+END_SRC
 * Customization file
 
@@ -741,7 +776,7 @@ See the README for examples, evil usage, and tips
     :after hydra
     :config
     (defhydra+ hydra-r-eval()
-    ("k" polymode-export)))
+    ("k" polymode-export :color blue)))
 
   (use-package ess
     :hook (ess-r-mode . config-ess-r-mode)
@@ -754,7 +789,7 @@ See the README for examples, evil usage, and tips
 
     (defun config-ess-r-mode ()
       (ess-set-style 'RStudio)
-      (setq-local ess-indent-offset 4) ; RStudio style uses a value of 2
+      ;; (setq-local ess-indent-offset 4) ; RStudio style uses a value of 2
 
       (defun show-company-doc-as-ess-help ()
         "Show ess help if available, else show company help"
