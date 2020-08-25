@@ -159,6 +159,7 @@ Aside from the factors above, geometry of your empire is important, because line
 ***** Strategy
 ****** Loyalty attack
 Increase the loyalty of any nearby cities through any means (esp. Bread and Circuses project)
+- I think this is mainly used to decrease loyalty in other cities, right?
 Grow your nearby cities' population.
 Settle new nearby cities.
 Target civs with lower Ages than you / strive toward a better Age.
