@@ -1,7 +1,7 @@
-(defun my/org-index ()
-  "Open org index file."
+(defun my/org-file (dir file)
+  "Open org file."
   (interactive)
-  (find-file (concat (file-name-as-directory org-directory) "index.org")))
+  (find-file (concat (file-name-as-directory dir) file)))
 
 (defun my/org-summary-todo (n-done n-not-done)
   "Switch entry to DONE when all subentries are done, to TODO otherwise."

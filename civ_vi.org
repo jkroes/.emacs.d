@@ -1,0 +1,248 @@
+* Governors
+
+* Districts
+
+* Buildings
+
+* Sources
+https://civilization.fandom.com/wiki/Civilization_VI
+https://civilization.fandom.com/wiki/Category:Game_concepts_(Civ6)
+
+* Cities
+
+Composed of a City Center and Districts.
+
+** Settling
+Can be founded on any terrain feature aside from Oasis.
+
+City Centers must be separated by 3 tiles.
+
+The default yield of a settled city is 2 food and 1 production. Settling removes tile features and resources, keeping a copy of any strategic or luxury resource. Plains (Hills) are the only base terrain that improve the yield of a city (2,2). Note that removal of a feature or bonus resource is not the same as harvesting in that it does not grant a lump sum of food or production.
+
+The City Center is always worked and does not require one population to work it.
+
+Settler Lens shows valid tiles for settling, housing bonus of each tile, Loyalty pressure, and potential disasters. Loyalty pressure shown is only that for an empty tile and does not take into account Population of a settled City and other loyalty factors such as happiness.
+
+** Citizens
+
+** Population / Growth
+Determined by food, housing, amenities, and loyalty.
+
+Trackable in each city via the Citizen growth section of the City Details tab.
+*** Food
+**** Mechanics
+Citizens consume 2 food per turn. Excess food contributes to an increase in population, and deficits a decrease. Presumably growth scales with the degree of excess? Both take time to fill or deplete the current food reserve or basket. Decrease in population would result from a loss of one of the sources below. In one case, growth can lead to loss. Specifically, a surplus of 1 food leads to 1 new citizen and there are no workable tiles that provide at least 1 additional food (for a total of 2; i.e., zero growth after the new citizen). If the food surplus never changed, this cycle of birth and death could presumably continue forever as the food basket alternately fills and empties.
+**** Sources
+Grassland tiles contribute 2 food, deserts and snow 0, and other tiles 1.
+
+Floodplains and oasis features contribute 3 additional food, marsh and rainforest 1.
+
+Many bonus and luxury resources offer between 1 and 2 additional food to the tile they are on.
+
+Natural wonders tiles may contain food, or boost food yield of adjacent tiles.
+
+Farms provide +1 food, a max of +4 after Feudalism, and a max of +7 after Replaceable Parts. This depends on the number of adjacent farms. Fishing boats, pastures, plantations, and seasteads also provide food after various techs are researched.
+
+Magnus and Liang can also boost food in cities, tiles, and trade routes.
+
+Religious pantheons: Fertility Rites, Goddess of the Hunt, Goddess of Festivals.
+Religious belief: Feed the World.
+
+City center buildings: granary, water mill.
+Holy site buildings: Gurdwara.
+Harbor buildings: Lighthouse, Seaport.
+
+Domestic trade routes grant +1 food, and additional food to the city of origin based on the districts at the destination city: campus (+1); holy site, entertainment complex, and theater square (+2).
+
+Policy cards:
+Collectivization (+4 from domestic trade routes)
+Arsenal of Democracy (+2 to international trade routes between allies' cities)
+
+Wonders: Huey Teocalli (lake tiles), Petra (desert), St Basil's Cathedral (tundra), Temple of Artemis (fixed yield)
+*** Housing
+**** Mechanics
+Adds a growth multiplier that is always 1 or less. More housing than necessary confers no bonuses, but not maintaining adequate excess housing reduces growth.
+
+2 housing above population: normal growth
+1: -50%
+0 to -4: -75%
+-5 or less: -100% growth
+
+Unlike food, decreasing housing never reduces population. It does set an upper limit on population in that your population will never reach more than 5 greater than its maximum housing at any previous time in a city's history. Thus, _housing can be temporarily_increased_
+**** Sources
+Initial housing depends on water access of a settled title, visible in the Setter lens: 5 by river, 3 on coast, 2 elsewhere.
+
+Buildings: palace (Capital), granary, sewers, barracks (encampment), university (campus), lighthouse (harbor)
+
+Improvements: farm, pasture, plantation, fishing boat, camp, seastead
+
+Districts: aqueduct, neighborhood, dam
+
+Policy cards: Insulae (classical), Civil Prestige (medieval), Medina Quarter (medieval), New Deal (modern), Collectivism (modern). The terms of how housing provided is specific to each policy.
+
+Wonders: Angkor Wat (+1 all cities), Great Bath (3), Hanging Gardens (2), Temple of Artmemis (3)
+
+Transient: city-state (Mohenjo-Daro), government, governor. _Most useful for strategic burts of growth due to ephemeral nature._
+*** Amenities
+**** Mechanics
+The first two citizens require no amenities. The third requires 1. Each subsequent two require 1. E.g., 11-12 population requires (11-3)/2+1=5 amenities.
+
+The balance between required and available amenities determines a city's satisfaction:
+Ecsatic (3 surplus amenities): +10% non-food yields, +20% growth
+Happy (1-2): +5%, +10%
+Content (0): No bonuses
+Displeasaed (1-2 amenities less than required): -5%, -15%
+Unhappy (3-4): -10%, -30%
+Unrest (5-6): -30%, -100%
+Revolt: -60%, -100%
+
+Unrest and revolt both result in rebel units that pillage and attack your city
+
+The city status report (see list of reports) shows how many amenitites you have out of what is needed to be content. So e.g., a city of 10 shows x/4 to indicate you need 4 amenities to avoid negative growth modifiers.
+**** Sources (positive)
+Luxury resources: The first copy of each luxury resource provides +1 amenity to 4 cities, and subsequent copies do nothing and should often be traded away for ones you do not possess. Certain unique luxuries provide an amenity to up to 6 cities (from Zanzibar city-state or certain Great People)
+
+Districts: Entertainment Complex, Water Park, Neighborhood (Shopping Mall building). Local for some buildings and civ-wide for others.
+
+Wonders: Alhambra, Colosseum (to city centers within 6 tiles), Estadio do Maracana (to all cities), Golden Gate Bridge, Great Bath, Huey Teocalli (per lake tile), Temple of Artemis (per camp, pasture, and plantation within 4 tiles)
+
+Governors: Liang
+
+Other: policy cards, Great People, religious beliefs, National Parks, etc.
+Policy cards: Republican Legacy, Retainers
+**** Sources (negative)
+War weariness and bankruptcy
+*** Loyalty
+**** Mechanics / Sources
+Loyal (76-100): no penalties
+Wavering Loyalty (51-75): -25% population growth, all yields
+Disloyal (26-50): -75% growth, -50% all yields
+Unrest (1-25): no growth or yields
+Revolt (0): City breaks away from empire as a Free City
+
+Each city has a Loyalty tab that shows a breakdown. The Loyalty lens shows arrows around each city with color for source and thickness of arrow indicating relative amount of pressure. Or is the City Details tab? Or both.
+
+Free Cities display the flag of the civ with the greatest loyalty pressure each turn. Accepting a Free City's petition to join your civ incurs no penalties.
+***** Nearby cities (Population, Distance, and Ages)
+See for a breakdown of the math at the Loyalty page of fandom.
+
+In essence, distance of nearby cities (up to 9 tiles away), population of each city, and civ's age factor (dark, normal, golden) affect loyalty pressure from your civ and other civs on a given city. Cities exert their own pressure at 0 tiles away (i.e., 100%). Capitals exert pressure twice: once using the age factor and once assuming a Normal Age. Pressure for each city is added, domestic and foreign cities are lumped together, then domestic and foreign pressure are combined into net pressure. Net pressure is bounded between -20 and 20.
+***** Happiness
+Ecstatic (+6), Happy (+3), Content (0), Displeased (-3), Unrest (-6)
+***** Governors
+Any governor as of assignment, not establishment in a city: +8
+
+Amani:
++2 with Prestige title when established in another city within 9 tiles
+-2 with Emissary title when established in a foreign city within 9 tiles
+
+Victor: +4 with Garrison Commander title when established in another city within 8 titles
+***** Policy cards
+Limitanei, Praetorium, Communications Office, Colonial Offices
+***** Buildings
+Monument (+1), Government Plaza (+8), Audience Chamber (-2 if a city has no Governor)
+***** Wonders
+Colosseum (+2 for city centers within 6 tiles)
+***** Projects
+Bread and Circuses (entertainment complex, water park districts) can be increase the loyalty pressure of each citizen in a city.
+***** Religion
++-3 depending on whether a city follows your religion
+***** Miscellaneous
+-5 if city is occupied (negated by garrisoning a unit)
+??? if city is conquered. Difference b/w conquered and occupied?
+-4 city is facing starvation (e.g., after farms are pillaged)
++10 for Free Cities
++20 for City-states
+From Great Admirals in coastal cities
+Secret Societies game mode: Owls of Minerva, Voidsinger cultist unit
+Aside from the factors above, geometry of your empire is important, because linear city chains can be surrounded by multiple cities. Dense, circular empires' cities are safest.
+***** Strategy
+****** Loyalty attack
+Increase the loyalty of any nearby cities through any means (esp. Bread and Circuses project)
+- I think this is mainly used to decrease loyalty in other cities, right?
+Grow your nearby cities' population.
+Settle new nearby cities.
+Target civs with lower Ages than you / strive toward a better Age.
+Use spies to neutralize Governor or Foment Unrest missions.
+Amani with the Emissary title.
+Convert the target city to your religion.
+Use the Move Capital project if you are playing as Dido.
+Hallyu Policy Card plus Rock Bands with the Indie promotion, performing concerts in target city.
+Secret Societies: Voidsinger Cultist unit
+******* Conquest
+Conquer cities with highest pressure
+Pillage farms and other food-producing improvements
+Pillage improvements over luxury resources (???Does this remove copy of luxury resources from civ??? Test it.)
+Maintain a garrison in conquered cities
+*** Wonders
+Hanging Gardens (+15%)
+*** Pantheon
+Fertility Rites (+10%)
+*** Governor
+Magnus with Surplus Logistics title (+20%)
+
+
+* Wonders
+* Resources
+* Units
+* Culture
+* Science
+* Eureka Moments
+* Governments
+* Inspirations
+* Diplomacy
+* Agendas
+* Great People / Great Work
+* Religion
+* Trading
+* City-states
+* Civilizations
+* Victory
+
+
+
+* Science Victory
+
+** Summary
+
+Traverse the science tree, construct a spaceport, build and launch space projects, and complete an Exoplanet Expedition.
+
+** Requirements
+
+High science output, late-game production, spies to prevent theft of research, sabotage of construction projects, and neutralization of governors.
+
+** Relevant civs
+
+*** Korea
+
+Extra culture and science for governor promotions; unique science district (Seowon) that costs half the production of the Campus, provides a base science bonus of 4 that decreases by 1 for all adjacent districts, can only be built on hills, recieves no adjaceny bonuses from terrain, and confers a +1 adjacency bonus to farms (food) and mines (science). The base science bonus is affected by policies such as Natural Philosophy that affect "adjacency" bonuses. Korea's Seowon is less effective in Gathering Storm due to the new +2 bonus for Geothermal Fissue and Reef tiles, which appear in abundance on the Primordial map.
+
+Cities should have at least one hill for the Seowon with surrounding tiles around it reserved for farms and mines.
+
+Use of Governors should focus on promotions rather than number of cities.
+
+The Hwacha can be researched early and potentially used successfully in a surprise war against your neighbors.
+
+** Golden Age dedications
+
+Heartbeat of Steam
+
+** Governors
+
+Pingala: Additional science and culture generation in a city, population boosts to science, double Great People points, and 30% boost to space-program production.
+
+Magnus: Increases yields for harvesting terrain resources and features, increases city growth, and increases production.
+
+** Wonders
+
+Casa de Contratacion: Governor titles/promotions.
+
+* Uncategorized thoughts
+District placement should consider what terrain is requqjired by wonders that also require the district
+Types of improvements, benefits over each era, and in combination with what?
+inspirations, eurekas, and era achievement reqs (e.g., first to found govt)
+explanation of policies: e.g., limes--which defensive buildings count?
+city-states: e.g., granada provides alcazar building, which provides tourism
+Improvements outside of 3-tile range: any benefit?
+alliances: e.g. cultural allows building away from your other cities
+strategizing around golden era dedications: e.g. buying units with faithWon

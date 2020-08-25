@@ -45,3 +45,21 @@ If you get the metahelp buffer when pressing C-h s, it's because the C- key was
 still depressed. E.g. holding the C- key results in C-h C-s. You don't have to
 release it. It doesn't seem to involve a timer, but rather a lazy C- finger that
 doesn't raise quickly enough.
+
+* Personal
+** TODO Buying a car                                                :ATTACH:
+:PROPERTIES:
+:ID:       054F93AA-2BE0-4357-A894-E9F913A01521
+:END:
+** Civ VI                                                           :ATTACH:
+:PROPERTIES:
+:ID:       73DAF95E-3E3F-4243-91EB-78205ED3D31E
+:END:
+** Home cleaning                                                    :ATTACH:
+:PROPERTIES:
+:ID:       BE936F0A-3F99-42B2-BF03-8C37E4A296F5
+:END:
+** Voting in Sacramento                                             :ATTACH:
+:PROPERTIES:
+:ID:       4579B4AE-EE34-4B7B-9F94-F2B4FE770DBE
+:END:

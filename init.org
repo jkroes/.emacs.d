@@ -171,15 +171,18 @@ https://emacsthemes.com
   (setq-default fill-column 80)
   (setq-default auto-fill-function 'do-auto-fill)
 
-  ;; Some major modes need auto-fill turned on b/c they ignore the default
-  (add-hook 'org-mode-hook 'turn-on-auto-fill)
+  ;; Don't hard wrap org-mode because it requires you to emphasize (bold, italic,
+  ;; underline) otherwise contiguous text on different lines separately.
+  ;;
   ;; org-indent-mode indents nested lines and shows column 0 at the indented
   ;; position, not at the start of the line. So technically there should be a fill
   ;; line for each indented section. The text is still wrapping at fill-column
   ;; amount of characters; however, it doesn't appear that way because fill-column
   ;; doesn't adjusted the displayed indicator for indented org sections.
-  (add-hook 'org-mode-hook (lambda () (display-fill-column-indicator-mode -1)))
-
+  (add-hook 'org-mode-hook (lambda ()
+                                  (auto-fill-mode -1)
+                                  (display-fill-column-indicator-mode -1)
+                                  (visual-line-mode)))
 
   ;; Don't hard wrap Rmarkdown report text, since we're exporting to Word
   (add-hook 'markdown-mode-hook (lambda ()
@@ -446,7 +449,7 @@ See the README for examples, evil usage, and tips
            ;; objects you want completed
            ;; (ess-r-mode . lsp)
            (lsp-mode . lsp-enable-which-key-integration))
-    :commands lsp
+    ;; :commands lsp
     :config
     (setq read-process-output-max (* 1024 1024)
           lsp-prefer-capf t
@@ -626,14 +629,24 @@ See the README for examples, evil usage, and tips
   (add-hook 'org-after-todo-statistics-hook 'my/org-summary-todo)
 
   (my-leader "o" '(:prefix-command my/global-org-map :wk "org-global"))
+  (defun my/org-programming ()
+    (interactive)
+    (my/org-file org-directory "programming.org"))
+  (defun my/org-home ()
+    (interactive)
+    (my/org-file org-directory "home.org"))
   (general-def my/global-org-map
     :wk-full-keys nil
     ;; Insert LaTeX-like symbols
     "a" 'org-agenda ; Dispatcher
     "e" 'counsel-org-entity ; https://orgmode.org/manual/Special-Symbols.html
-    "i" 'my/org-index
+    ;; "i" 'my/org-index
     "l" 'org-insert-link-global
-    "o" 'org-open-at-point-global
+    ;; "o" 'org-open-at-point-global
+    "o" '(:ignore t :wk "org-files")
+    ;; "ow" '
+    "op" 'my/org-programming
+    "oh" 'my/org-home
     ;; Capture to org-default-notes-file
     "c" 'counsel-org-capture
     ;; org-projectile-capture-for-current-project
@@ -746,6 +759,7 @@ See the README for examples, evil usage, and tips
 
   (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
 #+END_SRC
+
 * Programming languages
 ** elisp
 
