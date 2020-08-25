@@ -19,7 +19,7 @@
  '(command-log-mode-key-binding-open-log nil)
  '(command-log-mode-open-log-turns-on-mode nil)
  '(command-log-mode-window-size 50)
- '(company-box-doc-enable t)
+ '(company-box-doc-enable nil nil nil "R docs sometimes need a prompt to choose between the same names from different packages. It is annoying as shit.")
  '(company-box-enable-icon t)
  '(company-frontends
    '(company-pseudo-tooltip-unless-just-one-frontend company-preview-if-just-one-frontend) nil nil "Rm company-echo-metadata-frontend to speed up candidate navigation")
@@ -145,7 +145,7 @@
  '(org-agenda-todo-ignore-scheduled 'future)
  '(org-agenda-window-setup 'current-window)
  '(org-attach-dir-relative t)
- '(org-attach-id-dir "~/.emacs.d/org/data/")
+ '(org-attach-id-dir "/mnt/d/org-data/")
  '(org-attach-method 'cp)
  '(org-capture-bookmark nil)
  '(org-catch-invisible-edits 'show)
