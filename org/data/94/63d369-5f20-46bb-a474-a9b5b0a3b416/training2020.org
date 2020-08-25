@@ -1,8 +1,9 @@
 * TGA Evaluations (7/31/20)
 ** SAS
-- Did SAS Univeristy work?
 - Studying SAS resources
-- Oracle database access
+*** Oracle database access
+*** Did SAS Univeristy work?
+Couldn't be installed by IT due to licensing issues.
 ** Evaluation guidelines
 - Difference between EP, rog, and tog
   - Appendix A
@@ -43,11 +44,7 @@
   - Figure 5: Just an example of 55C test and total runtime
   - Figure 7: What is thermal decomposition?
 - Appendix C: CSF Analysis and legacy methods
-** Torac rejection
-** RShiny
-
 * Post-meeting Notes
-
 Yvan has concerns about laboratory procedures and statistical validation. In
 particular, he mentioned that with ecological data he would usually look at
 multiple graphs and run statistical tests to validate his data. The use of a
@@ -57,7 +54,58 @@ they're following the procedures aside from clues on the submission forms and
 thermograms.
 
 ** TODO Search for historical documents/memos related to TGA methodology development for Yvan
-*** Maziar recommends we wait on trying to get into statistical methodology and stick with arithmetic mean of replicates for now
+Maziar recommends we wait on trying to get into statistical methodology and stick with arithmetic mean of replicates for now
 ** TODO Recuit Rosemary to help with guideline revisions
 *** TODO Rosemary pointed out that multiple images listed an initial mass that didn't match the mass listed on the example thermograms
 *** TODO Some thermograms list temperature toward the top-left, which should be pointed out as a potential verification of lab procedures
+* TGA Evaluations (8/4/20)
+- Discussed the guidelines and thermogram examples.
+
+** TODO Yvan and Rosemary will need to run some example TGAs when possible
+* Steps 1-2 (8/18/20)
+- SAS and Oracle are up and running. Rosemary O'Neal and Maziar transferred
+  their SAS licenses.
+- Beginning training on how to build the EP database.
+  - Sent them the following evaluations:
+    - Cyclaniliprole 50SL Insecticide
+    - Stimulate Yield Enhancer (existing record)
+    - Loyant CA
+    - Gibbmaxx
+    - Bexar Insecticide
+    - Torac CA Insecticide
+    - Vacciplant (existing record)
+    - Stargus
+    - MBI-110EP
+    - Amplitude
+    - Amplitude ST
+    - Ascernity
+    - Gatten
+    - ProcellaCor EC
+    - Sunergist EBR
+    - Trivapro Fungicide
+  - I noted that normally pending products would be checked, but that I was
+    sending them all product (new and updates to pending/existing products)
+    evaluations of interest
+- They are aware that the procedural changes and changes to SAS scripts related
+  to filenames have not been documented and are only present in 19VOC. They will
+  continue working with 11.2019 and 18VOC data as the basis for recreating 2019
+  SJV report.
+- Asked them to CC each other on emails to me and send me their completed files.
+* 8/19/2
+- Points of confusion for Yvan:
+  - EPA Reg No on eval form, CA_regno and voc_regno in workbook
+    - Need to distinguish between fully and partially completed values for
+      columns when explaining purposes of columns. Part of the confusion
+      involved not being clear when I was saying what a column should contain
+      vs. what it will contain. E.g., voc_regno is the first two components of
+      regno when a product is registered, but sometimes pending federal products
+      only have a firm no. Also there may be typos that further confuse
+      incomplete vs. wrong info.
+    - Number of records in tracker and how to "filter" them to check if an
+      evaluation is a new product. I realized I had told them some of the
+      evaluations were new but not which ones. I corrected this.
+    - He was unaware what the CDPR product label database was. I referenced it,
+      but he hadn't asked about it yet.
+    - Whether review date was registration date or evaluation form date.
+  - Relationship between Column A (prodno) and Columns N thru P. Specifically
+    whether missing prodno is associated with "Not Found" for the latter.
