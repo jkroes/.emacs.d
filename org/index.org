@@ -47,10 +47,15 @@ release it. It doesn't seem to involve a timer, but rather a lazy C- finger that
 doesn't raise quickly enough.
 
 * Personal
-** TODO Buying a car                                                :ATTACH:
+:PROPERTIES:
+:ID:       d23b9dbe-dcd0-4c1d-9ab4-ec4f0587af6b
+:END:
+** DONE Buying a car                                                :ATTACH:
+CLOSED: [2020-10-03 Sat 12:06]
 :PROPERTIES:
 :ID:       054F93AA-2BE0-4357-A894-E9F913A01521
 :END:
+**
 ** Civ VI                                                           :ATTACH:
 :PROPERTIES:
 :ID:       73DAF95E-3E3F-4243-91EB-78205ED3D31E
@@ -62,4 +67,8 @@ doesn't raise quickly enough.
 ** Voting in Sacramento                                             :ATTACH:
 :PROPERTIES:
 :ID:       4579B4AE-EE34-4B7B-9F94-F2B4FE770DBE
+:END:
+** Housing                                                          :ATTACH:
+:PROPERTIES:
+:ID:       e953aecb-6604-453b-a018-c2c7ffcaf040
 :END:

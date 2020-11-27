@@ -1,0 +1,7 @@
+* Features I Want
+- Unfurnished bedroom
+- Kitchen
+  - Space for gear
+  - Fridge space for food
+  - Ability to use space to cook often
+- Parking

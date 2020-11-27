@@ -4,13 +4,20 @@ According to https://howto.vote/vote/en/ca.html, I should be mailed a ballot by 
 
 Presumably ballots are accepted within 17 days after Election Day, but does that mean a Presidential Election could potentially be flipped after 17 days?
 
-My voting history with Sacramento County can be viewed at https://pollingplacelookupen.saccounty.net/LookupPollingPlace_VoterRegLookup.aspx. I was eligible to vote after 3/25/2010, but my registered history goes back only to Nov 8 2016. I may have voted in SBC prior to this.
+My voting history with Sacramento County can be viewed at:
+https://pollingplacelookupen.saccounty.net/Language/EN
+
+
+I was eligible to vote after 3/25/2010, but my registered history goes back only to Nov 8 2016. I may have voted in SBC prior to this.
 
 * TODO Match your indicated election choices against election results, and do a writeup.
 Results of past elections in Sacramento can be viewed at https://elections.saccounty.net/ElectionInformation/Pages/ResultsPrevElect.aspx.
 
 * TODO Find a copy of your signature in my voter registration record. For the ballot to count, it must match my ballot signature. I do not have a consistent signature.
-According to https://pollingplacelookupen.saccounty.net/LookupPollingPlace_VoterRegLookup.aspx, my 3/3/20 Primary ballot was "challenged." They "Vote by Mail REason" says "Contact Office." But the FAQ (https://elections.saccounty.net/VotebyMail/Pages/SAC_VRE_DF_Vote_Absentee.aspx) claims they will send me a Signature Verification Statement to complete if the signature if the reason a ballot is challeneged. They may have tried reaching me, and I had moved or lost the mail. Or some other clerical error on their end.
+According to my Sacramento County voting history, my 3/3/20 Primary ballot was "challenged." They "Vote by Mail REason" says "Contact Office." But the FAQ (https://elections.saccounty.net/VotebyMail/Pages/SAC_VRE_DF_Vote_Absentee.aspx) claims they will send me a Signature Verification Statement to complete if the signature if the reason a ballot is challeneged. They may have tried reaching me, and I had moved or lost the mail. Or some other clerical error on their end.
+
+Update: The link changed to the one currently listed for voter history, the webpage has been restructred, and it says my ballot for 3/3/20 was accepted.
+
 ** TODO Find who to contact
 The link above lists the following contact information: https://www.saccounty.net/ContactUs/Pages/default.aspx
 
