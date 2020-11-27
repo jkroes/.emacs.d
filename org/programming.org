@@ -7,15 +7,10 @@
   - [[https://orgmode.org/worg/doc.html][Documentation for hooks, commands, options]]
 - [[https://orgmode.org/][Home page]]
 
-* Work Log                                                           :ATTACH:
-:PROPERTIES:
-:ID:       e923bed6-a276-43e2-b518-c6326adabdc6
-:END:
-* An Exercise in (F)utility
-** [[file:WSL.org][WSL]]
-** [[file:R.org][R]]
+* [[file:WSL.org][WSL]]
+* [[file:R.org][R]]
 SPC m a F over heading opens attached dir in dired
-*** Shiny
+** Shiny
 When the file is copied, where is it stored? Is it better to use a link instead
 to an unstructure org directory where all org files live? Also, wouldn't a link
 show changes to the original file in real time? I can't edit stashed attachment
@@ -45,21 +40,3 @@ If you get the metahelp buffer when pressing C-h s, it's because the C- key was
 still depressed. E.g. holding the C- key results in C-h C-s. You don't have to
 release it. It doesn't seem to involve a timer, but rather a lazy C- finger that
 doesn't raise quickly enough.
-
-* Personal
-** TODO Buying a car                                                :ATTACH:
-:PROPERTIES:
-:ID:       054F93AA-2BE0-4357-A894-E9F913A01521
-:END:
-** Civ VI                                                           :ATTACH:
-:PROPERTIES:
-:ID:       73DAF95E-3E3F-4243-91EB-78205ED3D31E
-:END:
-** Home cleaning                                                    :ATTACH:
-:PROPERTIES:
-:ID:       BE936F0A-3F99-42B2-BF03-8C37E4A296F5
-:END:
-** Voting in Sacramento                                             :ATTACH:
-:PROPERTIES:
-:ID:       4579B4AE-EE34-4B7B-9F94-F2B4FE770DBE
-:END:

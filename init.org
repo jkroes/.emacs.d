@@ -102,18 +102,6 @@ Use Git for Windows and git-bash's find if not running in WSL.
 Set executable paths.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;; (defun convert-line-endings-to-unix (orig-fun &rest args)
-  ;;   (if (string-match "dos$" (symbol-name buffer-file-coding-system))
-  ;;       (progn
-  ;;         ;; revert-buffer-with-coding-system changes the encoding used to read
-  ;;         ;; the file but doesn't convert the underlying data. This is why
-  ;;         ;; specifying *-unix on a *-dos file will show ^R (carriage return). In
-  ;;         ;; a *-dos file this is part of the line separator, but in *-unix it is
-  ;;         ;; an extra character.
-  ;;         (set-buffer-file-coding-system 'utf-8-unix)
-  ;;         (apply orig-fun args))
-  ;;     (apply orig-fun args)))
-  ;; (advice-add 'save-buffer :around 'convert-line-endings-to-unix)
   (cond ((eq system-type 'gnu/linux)
          (set-frame-font "Hack 10" nil t)
          (when (string-match "Linux.*Microsoft.*Linux"
@@ -154,7 +142,6 @@ https://emacsthemes.com
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq-default default-directory "~/.emacs.d")
 #+END_SRC
-
 * Line wrapping
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;;; Sources
@@ -364,7 +351,7 @@ hydra
       ("d" ace-delete-window)))
 #+END_SRC
 * File browser
-
+** TODO Ranger launches in ansi-term but opens files in nano(?). Find a way to integrate it so you can open files in the buffer occupied by ansi-term/ranger instead, then replace deer.
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package ranger
     :defer t
@@ -505,7 +492,8 @@ See the README for examples, evil usage, and tips
             markdown-mode
             fundamental-mode
             lua-mode
-            org-mode)
+            org-mode
+            SAS-mode)
           evil-insert-state-modes
           '(inferior-ess-r-mode))
     (defhydra+ hydra-window ()
@@ -586,6 +574,56 @@ See the README for examples, evil usage, and tips
     ;; and replaces the default t(ask) template stored in ~/.notes normally
     (push (org-projectile-project-todo-entry) org-capture-templates))
 #+END_SRC
+* Terminal
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;; Modified ansi-term to avoid read-from-minibuffer prompt
+  (setq explicit-shell-file-name "/usr/bin/fish")
+
+  ;; TODO: Throws an error on window. Commenting out in the meantime.
+
+  ;; (defun ansi-term (program &optional new-buffer-name)
+  ;;   "Start a terminal-emulator in a new buffer.
+  ;; This is almost the same as `term' apart from always creating a new buffer,
+  ;; and `C-x' being marked as a `term-escape-char'."
+  ;; (interactive (list (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
+
+  ;;   ;; Pick the name of the new buffer.
+  ;;   (setq term-ansi-buffer-name
+  ;;     (if new-buffer-name
+  ;;         new-buffer-name
+  ;;       (if term-ansi-buffer-base-name
+  ;;           (if (eq term-ansi-buffer-base-name t)
+  ;;           (file-name-nondirectory program)
+  ;;         term-ansi-buffer-base-name)
+  ;;         "ansi-term")))
+
+  ;;   (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
+
+  ;;   ;; In order to have more than one term active at a time
+  ;;   ;; I'd like to have the term names have the *term-ansi-term<?>* form,
+  ;;   ;; for now they have the *term-ansi-term*<?> form but we'll see...
+
+  ;;   (setq term-ansi-buffer-name (generate-new-buffer-name term-ansi-buffer-name))
+  ;;   (setq term-ansi-buffer-name (term-ansi-make-term term-ansi-buffer-name program))
+
+  ;;   (set-buffer term-ansi-buffer-name)
+  ;;   (term-mode)
+  ;;   (term-char-mode)
+
+  ;;   ;; Historical baggage.  A call to term-set-escape-char used to not
+  ;;   ;; undo any previous call to t-s-e-c.  Because of this, ansi-term
+  ;;   ;; ended up with both C-x and C-c as escape chars.  Who knows what
+  ;;   ;; the original intention was, but people could have become used to
+  ;;   ;; either.   (Bug#12842)
+  ;;   (let (term-escape-char)
+  ;;     ;; I wanna have find-file on C-x C-f -mm
+  ;;     ;; your mileage may definitely vary, maybe it's better to put this in your
+  ;;     ;; .emacs ...
+  ;;     (term-set-escape-char ?\C-x))
+
+  ;;   (switch-to-buffer term-ansi-buffer-name))
+#+END_SRC
+
 * Organization and notes
 
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -635,6 +673,10 @@ See the README for examples, evil usage, and tips
   (defun my/org-home ()
     (interactive)
     (my/org-file org-directory "home.org"))
+  (defun my/org-work ()
+    (interactive)
+    (my/org-file "/mnt/d/org" "work_diary.org"))
+  (setq org-agenda-files (append org-agenda-files "mnt/d/org"))
   (general-def my/global-org-map
     :wk-full-keys nil
     ;; Insert LaTeX-like symbols
@@ -647,6 +689,7 @@ See the README for examples, evil usage, and tips
     ;; "ow" '
     "op" 'my/org-programming
     "oh" 'my/org-home
+    "ow" 'my/org-work
     ;; Capture to org-default-notes-file
     "c" 'counsel-org-capture
     ;; org-projectile-capture-for-current-project
@@ -759,10 +802,8 @@ See the README for examples, evil usage, and tips
 
   (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
 #+END_SRC
-
 * Programming languages
 ** elisp
-
 #+BEGIN_SRC emacs-lisp :tangle yes
   (general-define-key
    :prefix-command 'my/elisp-map
@@ -779,7 +820,33 @@ See the README for examples, evil usage, and tips
   ;; "<backtab>" 'counsel-el ; counsel-assisted completion
   (my-leader :keymaps 'emacs-lisp-mode-map "m" 'my/elisp-map)
 #+END_SRC
+** TODO Figure out coding systems in emacs
+Only highlight tabs in unix. Insert literal tabs in dos. Ensure files in /mnt/ directories or at least SAS are dos by default. Find a way to highlight mixed line endings in emacs so that you can fix the file to conform with either dos or unix.
+Search for "whitespace" in emacs-custom to find related options and faces
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;; (defun convert-line-endings-to-unix (orig-fun &rest args)
+  ;;   (if (string-match "dos$" (symbol-name buffer-file-coding-system))
+  ;;       (progn
+  ;;         ;; revert-buffer-with-coding-system changes the encoding used to read
+  ;;         ;; the file but doesn't convert the underlying data. This is why
+  ;;         ;; specifying *-unix on a *-dos file will show ^R (carriage return). In
+  ;;         ;; a *-dos file this is part of the line separator, but in *-unix it is
+  ;;         ;; an extra character.
+  ;;         (set-buffer-file-coding-system 'utf-8-unix)
+  ;;         (apply orig-fun args))
+  ;;     (apply orig-fun args)))
+  ;; (advice-add 'save-buffer :around 'convert-line-endings-to-unix)
 
+  ;; (if (string-match "dos$" (symbol-name buffer-file-coding-system))
+  ;;     (progn
+  ;;       (t))
+  ;;   (face-remap-add-relative 'whitespace-tab
+  ;;                            :foreground "#636363"
+  ;;                            :inverse-video t))
+  ;; '(whitespace-display-mappings '((tab-mark 9 [124 9] [92 9])))
+  ;; '(whitespace-style '(face trailing tabs tab-mark newline-mark))
+
+#+END_SRC
 ** R(markdown)
 
 #+BEGIN_SRC emacs-lisp :tangle yes

@@ -145,8 +145,6 @@
  '(org-agenda-todo-ignore-scheduled 'future)
  '(org-agenda-window-setup 'current-window)
  '(org-attach-dir-relative t)
- '(org-attach-id-dir "/mnt/d/org-data/")
- '(org-attach-method 'cp)
  '(org-capture-bookmark nil)
  '(org-catch-invisible-edits 'show)
  '(org-cycle-separator-lines -1)
@@ -171,6 +169,7 @@
  '(org-pretty-entities-include-sub-superscripts nil)
  '(org-projectile-projects-file "projects.org")
  '(org-return-follows-link t)
+ '(org-src-window-setup 'current-window)
  '(org-startup-folded nil)
  '(org-startup-indented t)
  '(org-todo-keyword-faces
@@ -261,9 +260,6 @@ attachment method to be a symbolic link.")
  '(which-key-sort-order 'which-key-key-order-alpha)
  '(which-key-sort-uppercase-first nil)
  '(whitespace-display-mappings '((tab-mark 9 [124 9] [92 9])))
- ;; In order to show lines that were constructed with auto-fill and that need
- ;; conversion to a single line for visual-line-mode (e.g., org-mode files)
- ;; '(whitespace-display-mappings '((tab-mark 9 [124 9] [92 9]) (newline-mark 10 [172 10])))
  '(whitespace-style '(face trailing tabs tab-mark newline-mark))
  '(winner-mode t)
  '(xterm-color-names
