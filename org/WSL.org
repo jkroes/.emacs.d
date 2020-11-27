@@ -28,3 +28,10 @@ Alternatively, you might be able to alias curl as
 As a last resort, run curl insecurely.
 
 [[https://unix.stackexchange.com/questions/451207/how-to-trust-self-signed-certificate-in-curl-command-line][Source]]
+
+** flextable
+The R package flextable's dev version (install_github) requires pandoc 2. To get
+this you need to run curl -L --ouput <name>.deb
+https://github.com/jgm/pandoc/releases/download/2.10.1/pandoc-2.10.1-1-amd64.deb
+
+The -L is needed because of redirection.

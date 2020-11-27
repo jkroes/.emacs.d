@@ -7,15 +7,10 @@
   - [[https://orgmode.org/worg/doc.html][Documentation for hooks, commands, options]]
 - [[https://orgmode.org/][Home page]]
 
-* Work Log                                                           :ATTACH:
-:PROPERTIES:
-:ID:       b4cc1df0-5d8a-41ed-b9d2-f2aac0a34b82
-:END:
-* An Exercise in (F)utility
-** [[file:WSL.org][WSL]]
-** [[file:R.org][R]]
+* [[file:WSL.org][WSL]]
+* [[file:R.org][R]]
 SPC m a F over heading opens attached dir in dired
-*** Shiny
+** Shiny
 When the file is copied, where is it stored? Is it better to use a link instead
 to an unstructure org directory where all org files live? Also, wouldn't a link
 show changes to the original file in real time? I can't edit stashed attachment

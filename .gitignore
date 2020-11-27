@@ -15,3 +15,5 @@ smex-items*
 init.el
 # Find a way to combine different versions of this file on each OS
 projectile-bookmarks.eld
+eshell/
+var/prescient-save.el
