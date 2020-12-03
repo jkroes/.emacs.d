@@ -93,21 +93,7 @@ Calls to my/defhydra should follow calls to defhydra."
            ;; with which-key paging commands currently
            (concat "Exit " (symbol-name name))))))))
 
-
 ;; Hide implicit hydra commands from which-key
 (push '((nil . "hydra--digit-argument") . t) which-key-replacement-alist)
 (push '((nil . "hydra--negative-argument") . t) which-key-replacement-alist)
 (push '((nil . "hydra--universal-argument") . t) which-key-replacement-alist)
-
-;; Hide which-key popup for certain transient maps
-(defun disable-transient-map-temporarily (orig-fun &rest args)
-  (if which-key-show-transient-maps
-      (progn
-        (setq which-key-show-transient-maps nil)
-        (apply orig-fun args)
-        (setq which-key-show-transient-maps t))
-    (apply orig-fun args)))
-;; TODO: Add any other commands. Read up on advice and see if you need to
-;; improve this ad-hoc advice above.
-(advice-add 'evil-search-forward :around 'disable-transient-map-temporarily)
-(advice-add 'evil-search-backward :around 'disable-transient-map-temporarily)

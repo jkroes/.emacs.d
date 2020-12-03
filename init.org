@@ -41,167 +41,121 @@ jump to my files hydra, even though they are presumably similar commands.
 [] counsel-el is deprecated. (Try running the command for suggested fix).
 Change the binding at the bottom of init.el
 
-* Installation
+* installation
+** emacs
+*** [[info:efaq#Installing Emacs][From source]]
+To get the latest version, install from alpha.gnu.org/gnu/emacs/pretest. If installing .xz instead of .gz, drop the -g flag.
 
-[[info:efaq#Installing Emacs][Installing Emacs from source on Linux]]. To get the latest version, install from
-alpha.gnu.org/gnu/emacs/pretest. If installing .xz instead of .gz, drop the -g
-flag.
-[[https://github.com/source-foundry/Hack#quick-installation][Installing Hack font on Linux]]
-* package.el
-
-Load my lisp functions, including my/init-maybe-profile. When called with one of
-two arguments, benchmark-init/show-durations-* can be called to show startup
-times for each file loaded.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq load-path (cons "~/.emacs.d/lisp" load-path))
-  (load "my-functions.el")
-  (my/init-maybe-profile)
-#+END_SRC
-* use-package
-
-Bootstrap use-package and benchmark-init. Ensure used packages are always
-installed. Install dependencies needed by :diminish and :bind keywords of
-use-package function.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package)
-    ;; Needs to come after loading my-functions.el
-    (package-install 'benchmark-init))
-  (eval-when-compile
-    (require 'use-package))
-  (require 'diminish)
-  (require 'bind-key)
-  (require 'use-package-ensure)
-  (setq use-package-always-ensure t)
+*** [[https://launchpad.net/~kelleyk/+archive/ubuntu/emacs][Ubuntu]]
+#+BEGIN_SRC sh :tangle yes
+  sudo add-apt-repository ppa:kelleyk/emacs
+  sudo apt-get update
 #+END_SRC
 
-NOTE: Bug prevents use of :custom:
-https://github.com/jwiegley/use-package/issues/702. It's not clear if this was
-fixed by
-https://github.com/jwiegley/use-package/commit/b9f1fe64ee11cf99d84857d51ac74da36a0b744c
-See also https://github.com/jwiegley/use-package/issues/517 Read through the
-thread and links of 702. The fix may not be a fix after all.  What does seem
-to work absolutely is to use custom-set-variables instead of :custom, set
-custom-file to a garbage file, then never load custom-file. That way the
-custom-file won't interfere with your init file custom-set-variable blocks.
-This suggests that it may have been fixed:
-https://github.com/jwiegley/use-package/pull/850
-https://github.com/jwiegley/use-package/commits/master (notice b9f1fe6 above
-here) I may have to download the latest version from GitHub, since the
-commits are relatively new and likely not on elpa or melpa yet.
-* OS-specific configuration
+** hack font
+*** [[https://github.com/source-foundry/Hack#quick-installation][Manual]]
 
-Open links from host Windows OS when using WSL. Reduce the font size due to
-larger text rendering in MobaXterm/WSL.
-
-Use Git for Windows and git-bash's find if not running in WSL.
-
-Set executable paths.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (cond ((eq system-type 'gnu/linux)
-         (set-frame-font "Hack 10" nil t)
-         (when (string-match "Linux.*Microsoft.*Linux"
-                             (shell-command-to-string "uname -a"))
-           (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
-                 browse-url-generic-args '("/c" "start" "")
-                 browse-url-browser-function 'browse-url-generic)))
-        ((eq system-type 'windows-nt)
-         ;; (setq explicit-shell-file-name "C:/Windows/System32/bash.exe"
-         ;;        shell-file-name explicit-shell-file-name))
-         ;; To configure locate:
-         ;; Open Git's bash.exe; mkdir /usr/var;
-         ;; updatedb --localpaths='/c/ /d/ /h/'
-         (add-to-list 'exec-path
-                      "c:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/")
-         (setq find-program
-               "C:/Users/jkroes/AppData/Local/Programs/Git/usr/bin/find.exe"))
-        ((eq system-type 'darwin)
-         (set-frame-font "Hack 12" nil t))
-        ((memq system-type '(gnu/linux darwin))
-         (add-to-list 'exec-path "/usr/local/bin")
-         (setq python-shell-interpreter "python3")))
+*** Ubuntu
+#+BEGIN_SRC sh :tangle yes
+  sudo apt-get update
+  sudo apt-get install fonts-hack
 #+END_SRC
 
-NOTE: Ligatures are not enabled for Firacode. See
-https://github.com/tonsky/FiraCode/wiki/Emacs-instructions. Instead I am using
-the Hack font.
-* Color scheme
-https://emacsthemes.com
-
+** ripgrep
+* package manager
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;; (add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-  (use-package solarized-theme)
-  ;; (use-package dracula-theme)
+  ;; https://github.com/raxod502/straight.el#getting-started
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+
+  ;; https://github.com/raxod502/straight.el#integration-with-use-package
+  ;; https://github.com/raxod502/straight.el#integration-with-use-package-1
+  (straight-use-package 'use-package)
+  (setq straight-use-package-by-default t)
+
+  ;; https://github.com/jwiegley/use-package#diminishing-and-delighting-minor-modes
+  (use-package diminish)
+
+  ;; Seems like it may be included with use-package
+  ;; (require 'bind-key)
 #+END_SRC
-* Miscellaneous settings
 
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (setq-default default-directory "~/.emacs.d")
-#+END_SRC
-* Line wrapping
-#+BEGIN_SRC emacs-lisp :tangle yes
-  ;;; Sources
-  ;; https://www.gnu.org/software/emacs/manual/html_node/emacs/Continuation-Lines.html#Continuation-Lines
-  ;; https://www.gnu.org/software/emacs/manual/html_node/efaq/Turning-on-auto_002dfill-by-default.html
-
-  ;;; Explanation
-  ;; By default, Emacs soft wraps long lines at the right window edge--even if it
-  ;; splits the word. To avoid word-splitting, use visual-line-mode. To hard wrap
-  ;; lines, use auto-fill-mode. To truncate long lines, use
-  ;; toggle-truncate-lines.
-
-  ;; Default to wrapping at lines at column 80 in all modes
-  (setq-default fill-column 80)
-  (setq-default auto-fill-function 'do-auto-fill)
-
-  ;; Don't hard wrap org-mode because it requires you to emphasize (bold, italic,
-  ;; underline) otherwise contiguous text on different lines separately.
-  ;;
-  ;; org-indent-mode indents nested lines and shows column 0 at the indented
-  ;; position, not at the start of the line. So technically there should be a fill
-  ;; line for each indented section. The text is still wrapping at fill-column
-  ;; amount of characters; however, it doesn't appear that way because fill-column
-  ;; doesn't adjusted the displayed indicator for indented org sections.
-  (add-hook 'org-mode-hook (lambda ()
-                                  (auto-fill-mode -1)
-                                  (display-fill-column-indicator-mode -1)
-                                  (visual-line-mode)))
-
-  ;; Don't hard wrap Rmarkdown report text, since we're exporting to Word
-  (add-hook 'markdown-mode-hook (lambda ()
-                                  (turn-off-auto-fill) ; (auto-fill-mode -1)
-                                  (visual-line-mode)))
-
-  ;; Fish shell in ansi-term
-  ;; https://www.spacemacs.org/layers/+tools/shell/README.html
-  (add-hook 'term-mode-hook (lambda ()
-                              (turn-off-auto-fill)
-                              (toggle-truncate-lines 1)))
-#+END_SRC
-* Customization file
+* miscellaneous
+NOTE: Bug prevents use of :custom: https://github.com/jwiegley/use-package/issues/702. It's not clear if this was fixed by https://github.com/jwiegley/use-package/commit/b9f1fe64ee11cf99d84857d51ac74da36a0b744c. See also https://github.com/jwiegley/use-package/issues/517 Read through the thread and links of 702. The fix may not be a fix after all.  What does seem to work absolutely is to use custom-set-variables instead of :custom, set custom-file to a garbage file, then never load custom-file. That way the custom-file won't interfere with your init file custom-set-variable blocks. This suggests that it may have been fixed: https://github.com/jwiegley/use-package/pull/850 and https://github.com/jwiegley/use-package/commits/master (notice b9f1fe6 above
+here). I may have to download the latest version from GitHub, since the commits are relatively new and likely not on elpa or melpa yet.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (setq custom-file "~/.emacs.d/emacs-custom.el")
-  (setq-default org-directory "~/.emacs.d/org") ; my/org-index fails if org-directory doesn't exist (before org loads)
   (load custom-file)
+
+  (setq load-path (cons "~/.emacs.d/lisp" load-path))
+
+  (setq-default default-directory "~/.emacs.d")
+
+  ;; https://emacsthemes.com
+  (use-package solarized-theme)
+  (load-theme 'solarized-dark t)
+
+  (set-frame-font "Hack 10" nil t)
+
+  ;; Open links from host Windows OS when using WSL.
+  (when (string-match "Linux.*Microsoft.*Linux"
+                      (shell-command-to-string "uname -a"))
+    (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
+          browse-url-generic-args '("/c" "start" "")
+          browse-url-browser-function 'browse-url-generic))
+
+  ;; (add-to-list 'exec-path "/usr/local/bin")
+  ;; (setq python-shell-interpreter "python3")))
+
 #+END_SRC
-* Command log
+
+** line wrapping
+1. Default behavior is soft wrapping and word-splitting at the right window edge.
+2. visual-line-mode soft wraps at right window edge and avoids word splitting.
+3. auto-fill-mode hard wraps at fill-column, which can be displayed via display-fill-column-indicator-mode.
+4. toggle-truncate-lines truncates lines instead of wrapping.
+
+Numerous modes should not hard-wrap: org-mode to avoid having to format each line where text with formatting (e.g., bolding) runs across multiple lines; Rmarkdown, since some output formats (e.g., Word) do not hard-wrap paragraph blocks; and terminals.
+
+org-indent-mode indents nested lines and shows column 0 at the indented position, not at the start of the line. So technically there should be a fill line for each indented section. The text is still wrapping at fill-column amount of characters; however, it doesn't appear that way because fill-column doesn't adjust the displayed indicator for indented org sections. Thus, even if soft wrapping were enabled, you would want to disable the fill indiciator.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package command-log-mode
-    :diminish command-log-mode
-    ;; Auto-scroll buffer as commands are logged
-    :hook (command-log-mode . (lambda ()
-                                (set (make-local-variable 'window-point-insertion-type) t)))
-    :config (global-command-log-mode))
-#+END_SRC
-* Key mapping
-** General
+  ;; Default to hard wrapping at lines at column 80 in all modes
+  (setq-default auto-fill-function 'do-auto-fill)
+  (setq-default fill-column 120)
 
+  (defun no-auto (&optional wrap-mode)
+      "Disable auto fill and indicator for specific modes"
+    (turn-off-auto-fill) ; (auto-fill-mode -1)
+    (display-fill-column-indicator-mode -1)
+    (if wrap-mode
+        (funcall wrap-mode)))
+
+  (add-hook 'org-mode-hook (lambda () (no-auto 'visual-line-mode)))
+  (add-hook 'markdown-mode-hook (lambda () (no-auto 'visual-line-mode)))
+  (add-hook 'term-mode-hook (lambda () (no-auto) (toggle-truncate-lines 1))) ; Fish shell in ansi-term
+  (add-hook 'custom-mode-hook (lambda () (no-auto)))
+#+END_SRC
+
+*** Sources
+  1. https://www.gnu.org/software/emacs/manual/html_node/emacs/Continuation-Lines.html#Continuation-Lines
+  2. https://www.gnu.org/software/emacs/manual/html_node/efaq/Turning-on-auto_002dfill-by-default.html
+
+*** TODO Investigate how auto-fill-mode interacts with auto-fill-function and which modes set values other than 'do-auto-fill
+*** TODO Rewrite no-auto for term-mode-hook
+
+* general
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package general
     :config
@@ -209,162 +163,199 @@ https://emacsthemes.com
       :states '(motion insert emacs)
       :prefix "SPC"
       :non-normal-prefix "C-SPC")
+
+    ;; Top-level mappings
     (my-leader
       "" nil ; Unbinding the prefix itself prevents errors about binding to non-prefix keys somehow
-      ;; https://www.masteringemacs.org/article/executing-shell-commands-emacs
       "." 'clm/toggle-command-log-buffer
       "&" 'async-shell-command
-      ;; https://www.masteringemacs.org/article/complete-guide-mastering-eshell
-      ;; Cross-platform shell that implements common programs (e.g., ls) in elisp
       "e" 'eshell
       "f" '(:prefix-command my/files-map :wk "files")
-      ;; "fi" 'insert-file
       "t" 'ansi-term)
+
+    ;; Files
     (general-def my/files-map
       :wk-full-keys nil ; Allows for consistent wk replacement text during cyclical map navigation
       "b" '(:prefix-command my/bookmarks-map :wk "bookmarks")
       "i" 'insert-file)
+
+    ;; Bookmarks
     (general-def my/bookmarks-map
       :wk-full-keys nil
       "d" 'bookmark-delete
-      "e" 'edit-bookmark:w
+      "e" 'edit-bookmark
       ;; For each map referencing `my/files-map' we need `:wk' "files"
       "f" '(my/files-map :wk "files")
       "r" 'bookmark-rename
       "s" 'bookmark-set)
+
+    ;; Help
     (general-unbind help-map "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
     (general-def help-map
       "M" 'describe-minor-mode
-      "s" 'describe-symbol))
+      "s" 'counsel-describe-symbol))
 #+END_SRC
 
-** Which-key
+** TODO Configure buffer/window of output from async-shell-command
+** TODO Play around with bookmarks sometime. How can they be used in addition to fzf, ripgrep (rg), and other search commands?
+Possibly b/c the latter tend to operate in the current directory, while bookmarks can jump directories.
+
+* which-key
+which-key is the only package in .emacs.d/elpa / not installed by straight.el. I reverted to an earlier version due to issue 257, which prevented renaming which-key entries properly.
+
+This package, like hydra, is demanded to make its functions and variables available to other packages in their :init and :config
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package which-key
-    :pin manual ; Issue 257
     :diminish which-key-mode
-    :demand t ; Ensure popup is visible for all buffers on startup
-    ;; TODO: Fix indentation of keywords like (:keymaps ...):
-    ;; https://github.com/noctuid/general.el#use-package-keywords
+    :demand t
     :general (:keymaps 'help-map
                        "C-h" nil ; Enable which-key navigation of help-map bindings
                        "C-w" 'which-key-show-keymap)
     :config
-    (which-key-mode)
-    ;; Modifications to diplay hydras
-    (load "which-key-hacks"))
+    (defun disable-transient-map-temporarily (orig-fun &rest args)
+      "Hide which-key popup for certain transient maps"
+      (if which-key-show-transient-maps
+          (progn
+            (setq which-key-show-transient-maps nil)
+            (apply orig-fun args)
+            (setq which-key-show-transient-maps t))
+        (apply orig-fun args))))
 #+END_SRC
 
-** Hydra
+* hydra
+To enable which-key paging, hydras must be pink. Otherwise you can still page to find what you want, but this will exit the hydra. You will have to reenter all prefix keys again to reach the desired binding.
 
-To enable which-key paging, hydras must be pink. Otherwise ou can still page to
-find what you want, but this will exit the hydra. You will have to reenter all
-prefix keys again to reach the desired binding.
+For a given hydra, defhydra needs to be evaluated prior to all defhydra+. The use-package declaration where a hydra is defined must thus be loaded before the package that extends a hydra, assuming all the hydras are defined within ~:config~. Some of use-package's keywords imply ~:defer t~, so [[https://github.com/jwiegley/use-package#loading-packages-in-sequence][loading order]] of packages is not guaranteed without using (1) ~:after <pkg-list>~ or (2) ~:demand t~ combined with the desired order of use-package declarations. This works if you know that all of these packages will be loaded; however, it prevents the scenario where only some packages load and skip hydra-related code altogether if hydra hasn't loaded, or skip ~defhydra+~ declarations in a loading package when the hydra declaration is in an unloaded package. Another option is to simply split out the hydra definitions from the use-package declarations. Or we can specify the order in ~:config~ of hydra, using ~with-eval-after-load~. Or we can figure out a way to make everything autoload?
 
-If which-key is not loaded at the time hydra is loaded and its :config run,
-hydra will fail to load because of missing variables/functions from
-which-key. which-key can be forced to load by using :demand t or by switching to
-an R file, which loads lsp-mode, which in turn loads which-key (probably via
-reference to a which-key autoloaded function). If hydra's loading has been
-deferred, then SPC m (hydra-r/body) will not work. I believe that
-use-package/general create autoloads for bindings via the :bind and :general
-keywords. If you instead run SPC b ('hydra-buffer/body), which should be such an
-autoload, then hydra will load, and SPC m will work. Alternativley, you can use
-:commands hydra-r/body to create an autoload that triggers when SPC m is
-pressed. However, at this point, hydra is loading after ess-r-mode, which needs
-my/defhydra to be present. If it's not, the hydra activates but the hydra heads
-won't have the desired names in which-key.
+
+Any hydras that reference each other need to wait to call my/defhydra until after both hydras have been defined. This is a current limitation of my/defhydra that may be remedied in the future. Also, the name of the function should be changed, if I can't figure out a way to use my/defhydra as advice for defhydra at some point.
+
+Apparently hydras can be defined in the ~:init~ of ~(use-package hydra)~, which makes no sense to me. ~defhydra~ isn't available before hydra loads, so how can we use it right away?
+
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package hydra
+    ;:commands hydra-r/body
     :demand t
-    :after which-key
-    :commands hydra-r/body
+    :hook (ess-r-mode . ess-r-mode-hydras)
     :general
     (my-leader
       "b" 'hydra-buffer/body
       "w" 'hydra-window/body)
-    ;; Add opinionated counsel-hydra-heads to all hydras
+    ;; Add opinionated counsel-hydra-heads to all hydras (see :config)
     (:keymaps 'hydra-base-map "." 'counsel-hydra-heads)
     :config
-    (defun counsel-hydra-integrate (old-func &rest args)
-      "Function used to advise `counsel-hydra-heads' to work with
-   blue and amranath hydras."
-      (hydra-keyboard-quit)
-      (apply old-func args)
-      (funcall-interactively hydra-curr-body-fn))
-    (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
-    (defhydra hydra-window (:color pink)
-      "Window"
-      ("h" windmove-left)
-      ("j" windmove-down)
-      ("k" windmove-up)
-      ("l" windmove-right)
-      ("b" hydra-buffer/body :color blue)
-      ("v" my/split-window-right-move)
-      ("x" my/split-window-below-move)
-      ("m" delete-other-windows :color blue)
-      ("M" my/delete-other-windows-and-buffers :color blue)
-      ("q" nil))
-    (defhydra hydra-buffer (:color pink)
-      "Buffer"
-      ("k" kill-buffer) ;; nil arg means kill current buffer (ivy auto-selects current buffer)
-      ("K" my/kill-other-buffers :color blue)
-      ("r" read-only-mode)
-      ("s" my/switch-to-scratch)
-      ("v" view-buffer)
-      ("w" hydra-window/body :color blue)
-      ("q" nil))
-    ;; Load hydras and integrate with which-key
+    ;; Display hydras in which-key
+    (with-eval-after-load "which-key"
+      (load "which-key-hacks"))
+
+    ;; Modify the function provided by counsel to search through hydras
+    (with-eval-after-load "counsel"
+      (defun counsel-hydra-integrate (old-func &rest args)
+        "Function used to advise `counsel-hydra-heads' to work with blue and amranath hydras."
+        (hydra-keyboard-quit)
+        (apply old-func args)
+        (funcall-interactively hydra-curr-body-fn))
+      (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate))
+
     (load "my-hydras")
-    (add-hook 'after-init-hook
-              (lambda ()
-                (my/defhydra 'hydra-window)
-                (my/defhydra 'hydra-buffer))))
+    (my/defhydra 'hydra-window) ; Requires my-hydras.el, which-key-hacks.el
+    (my/defhydra 'hydra-buffer)
+    (defun ess-r-mode-hydras ()
+      "Hook for ess-r-mode. The functions used as hydra heads do not exist until an ess-r-mode buffer exists, so
+    my/defhydra must be called after that buffer is created."
+      (my/defhydra 'hydra-r)
+      (my/defhydra 'hydra-r-help)
+      (my/defhydra 'hydra-r-eval)
+      (my/defhydra 'hydra-r-debug)))
 #+END_SRC
 
-*** TODO my/defhydra deferral
-my/defhydra should only run after all defhydra/dehydra+ blocks have been
-evaluated. Place my/defhydra calls within with-eval-after-load for all packages
-whose configuration includes defhydra/defhydra+ statements relevant to a given
-hydra
-* Windows management
-
+* vim emulation
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (with-eval-after-load "hydra"
-    (winner-mode)
-    (defhydra+ hydra-window()
-      ("z" winner-undo)
-      ;; ("z" (progn
-      ;;     (winner-undo)
-      ;;     (setq this-command 'winner-undo))
-      ;;  "winner-undo") ; Needed for winner-redo, it appears
-      ("Z" winner-redo)))
+  (use-package undo-fu) ; Required for undo/redo operations
 
-  (use-package ace-window
-    :after hydra
+  (use-package evil-tutor :after evil
+    :general (:keymaps 'help-map "T" 'evil-tutor-start))
+
+  (use-package evil-escape
+    :after evil
+    :diminish evil-escape-mode
+    :config (evil-escape-mode))
+
+  ;; (use-package evil-surround :after evil)
+
+  (use-package evil
     :config
-    (defhydra+ hydra-window ()
-      ("a" ace-window)
-      ("s" ace-swap-window)
-      ("d" ace-delete-window)))
+    ;; (defalias 'evil-insert-state 'evil-emacs-state)    ; Alternative to disabling insert-state bindings
+    (setq evil-normal-state-modes
+          '(lisp-interaction-mode                         ; *scratch*
+            emacs-lisp-mode
+            python-mode
+            ess-r-mode
+            markdown-mode
+            fundamental-mode
+            lua-mode
+            org-mode
+            SAS-mode)
+          evil-insert-state-modes
+          '(inferior-ess-r-mode))
+    (with-eval-after-load "which-key"
+      (advice-add 'evil-search-forward :around 'disable-transient-map-temporarily)
+      (advice-add 'evil-search-backward :around 'disable-transient-map-temporarily))
+    (evil-mode))
 #+END_SRC
-* File browser
-** TODO Ranger launches in ansi-term but opens files in nano(?). Find a way to integrate it so you can open files in the buffer occupied by ansi-term/ranger instead, then replace deer.
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package ranger
-    :defer t
-    :general (my-leader "r" 'deer)
-    :config (ranger-override-dired-mode t))
-#+END_SRC
-* Comments
 
+* Fuzzy UI
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;; Was having issues with history, sorting, filtering in ivy using smex (M-x)
+  ;; and/or flx (ivy in general), so I tried out prescient instead. The latter
+  ;; has a definite history file it can read and write to.
+  ;; (use-package smex)
+  ;; (use-package flx)
+  ;; TODO: Look into selectrum to replace ivy/counsel
+  (use-package prescient)
+  (use-package ivy-prescient)
+  (use-package ivy :diminish ivy-mode)
+  ;; Usage within minibuffer: C-h m
+  ;; Accept current candidate: C-j
+  ;; Accept current input: C-M-j
+  (use-package counsel ;; Installs and loads ivy and swiper as dependencies
+    :diminish counsel-mode
+    :demand t
+    :general
+    (my-leader
+      "SPC" 'counsel-M-x
+      "'" 'ivy-resume)
+    (:keymaps 'my/files-map
+              ;; TODO: Add an action to change dir similar to C-u
+              "f" 'counsel-fzf ; C-u prompts for directory selection
+              ;; https://beyondgrep.com/feature-comparison/
+              "g" 'counsel-rg ; C-x C-d to change directory
+              "m" 'counsel-recentf)
+    (:keymaps 'my/bookmarks-map
+              "D" 'counsel-bookmarked-directory
+              ;; TODO: Customize counsel-bookmark action list to include delete, rename, and set
+              "j" 'counsel-bookmark)
+    (:keymaps 'ivy-minibuffer-map
+              "M-m"  'ivy-mark
+              "M-u"  'ivy-unmark
+              ;; For counsel-find-file, RET should add dir to search path instead of pulling up dired
+              [remap ivy-done] 'ivy-alt-done
+              [remap ivy-alt-done] 'ivy-done)
+  ;; counsel-grep
+  ;; counsel-org-file
+    :config
+    (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
+          ivy-help-file "~/.emacs.d/ivy-help.org"))
+#+END_SRC
+
+* Comments
 See the README for examples, evil usage, and tips
 
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package evil-nerd-commenter
-    :after evil
+    :after (:all evil counsel)
     :general (my-leader
                "c" '(:ignore t :wk "comments")
                "cc" 'evilnc-comment-or-uncomment-lines
@@ -391,172 +382,10 @@ See the README for examples, evil usage, and tips
         (unless (featurep 'counsel) (require 'counsel))
         (counsel-imenu))))
 #+END_SRC
-* Completion / LSP
 
+* org
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;; (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
-  ;; (use-package lsp-treemacs :commands lsp-treemacs-error-list)
-  ;; (use-package dap-mode)
-  ;; (require 'dap-python)
-  ;; Testing out for parameter completion in lsp...
-  ;; (use-package yasnippet
-  ;;   :hook ((python-mode . yas-minor-mode)
-  ;;          (ess-r-mode . yas-minor-mode)))
 
-  (use-package company
-    :general
-    (:keymaps 'company-mode-map
-              "<tab>" 'company-indent-or-complete-common)
-    (:keymaps 'company-active-map
-              "M-n"  nil
-              "M-p"  nil
-              "C-n"  'company-select-next
-              "C-p"  'company-select-previous))
-
-  ;; Provides custom icons and popup documentation to the right of
-  ;; completion items, similar to coc.nvim, when used with lsp-mode.
-  (use-package company-box
-    :diminish company-box-mode
-    :hook
-    (company-mode . company-box-mode)
-    ;; When ess-eldoc-mode is enabled, it vanishes the company completion menu, at
-    ;; least with company-box enabled. I could customize this, but I have a
-    ;; feeling it may have been useful with lsp-mode. Did it affect lsp-based
-    ;; company completion? TODO: Test this if you ever reenable lsp-mode for ess-r
-    (ess-r-mode . (lambda () (setq ess-eldoc-mode -1))))
-
-  (use-package lsp-mode
-    :hook ((python-mode . lsp)
-           ;; TODO: Currently the VOC inventory .Rmd report is crashing lsp-r
-           ;; Not all Rmd files are affected. Could it be
-           ;; the size of the file, the latex, lsp-mode, or the language server
-           ;; casuing the issue?
-           ;; NOTE: Without lsp-mode, to get full completion you will need to
-           ;; evaluate the libraries in an iess-r buffer, and possibly any
-           ;; objects you want completed
-           ;; (ess-r-mode . lsp)
-           (lsp-mode . lsp-enable-which-key-integration))
-    ;; :commands lsp
-    :config
-    (setq read-process-output-max (* 1024 1024)
-          lsp-prefer-capf t
-          lsp-idle-delay 0.500))
-
-  (use-package lsp-ui
-    :commands lsp-ui-mode
-    :config
-    (defun scroll-down-lsp-ui ()
-      "Enable scrolling documentation child frames when using lsp-ui-doc-glance"
-      (interactive)
-      (if (lsp-ui-doc--frame-visible-p)
-          (let ((kmap (make-sparse-keymap)))
-            (define-key kmap (kbd "q")
-              '(lambda ()
-                 (interactive)
-                 (lsp-ui-doc-unfocus-frame)
-                 (setq overriding-terminal-local-map nil)
-                 (setq which-key-show-transient-maps t)))
-            (setq which-key-show-transient-maps nil)
-            (setq overriding-terminal-local-map kmap)
-            (lsp-ui-doc-focus-frame)))
-      (evil-scroll-page-down 1))
-    (general-define-key
-     :states '(motion insert emacs)
-     "C-f" 'scroll-down-lsp-ui)
-    ;; Disable underlines in lsp-ui-doc child frames
-    (custom-set-faces '(nobreak-space ((t nil)))))
-#+END_SRC
-
-** TODO Finish setting up lsp package extensions,
-** TODO Test DAP for R and Python
-* Vim emulation
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package evil-tutor :after evil
-    :general (:keymaps 'help-map "T" 'evil-tutor-start))
-
-  (use-package evil-escape
-    :after evil
-    :diminish evil-escape-mode
-    :config (evil-escape-mode))
-
-  ;; (use-package evil-surround :after evil)
-
-  (use-package evil
-    :config
-    ;; (defalias 'evil-insert-state 'evil-emacs-state)    ; Alternative to disabling insert-state bindings
-    (setq evil-normal-state-modes
-          '(lisp-interaction-mode                         ; *scratch*
-            emacs-lisp-mode
-            python-mode
-            ess-r-mode
-            markdown-mode
-            fundamental-mode
-            lua-mode
-            org-mode
-            SAS-mode)
-          evil-insert-state-modes
-          '(inferior-ess-r-mode))
-    (defhydra+ hydra-window ()
-      ("-" evil-window-decrease-height)
-      ("+" evil-window-increase-height)
-      ("<" evil-window-decrease-width)
-      (">" evil-window-increase-width)
-      ("c" evil-window-delete)
-      ("r" evil-window-rotate-downwards)
-      ("R" evil-window-rotate-upwards))
-    (defhydra+ hydra-buffer ()
-      ("l" evil-switch-to-windows-last-buffer))
-    (evil-mode))
-#+END_SRC
-* Fuzzy finder
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  ;; Was having issues with history, sorting, filtering in ivy using smex (M-x)
-  ;; and/or flx (ivy in general), so I tried out prescient instead. The latter
-  ;; has a definite history file it can read and write to.
-  ;; (use-package smex)
-  ;; (use-package flx)
-  ;; TODO: Look into selectrum to replace ivy/counsel
-  (use-package prescient)
-  (use-package ivy-prescient)
-  (use-package ivy :diminish ivy-mode)
-  ;; Usage within minibuffer: C-h m
-  ;; Accept current candidate: C-j
-  ;; Accept current input: C-M-j
-  (use-package counsel ;; Installs and loads ivy and swiper as dependencies
-    :diminish counsel-mode
-    :general
-    (my-leader
-      "SPC" 'counsel-M-x
-      "'" 'ivy-resume)
-    (:keymaps 'my/files-map
-              ;; TODO: Add an action to change dir similar to C-u
-              "f" 'counsel-fzf ; C-u prompts for directory selection
-              ;; https://beyondgrep.com/feature-comparison/
-              "g" 'counsel-rg ; C-x C-d to change directory
-              "m" 'counsel-recentf)
-    (:keymaps 'my/bookmarks-map
-              "D" 'counsel-bookmarked-directory
-              ;; TODO: Customize counsel-bookmark action list to include delete, rename, and set
-              "j" 'counsel-bookmark)
-    (:keymaps 'ivy-minibuffer-map
-              "M-m"  'ivy-mark
-              "M-u"  'ivy-unmark
-              ;; For counsel-find-file, RET should add dir to search path instead of pulling up dired
-              [remap ivy-done] 'ivy-alt-done
-              [remap ivy-alt-done] 'ivy-done)
-  ;; counsel-grep
-  ;; counsel-org-file
-    :config
-    (defhydra+ hydra-buffer ()
-      ("b" ivy-switch-buffer :color blue) ; Faster than counsel-switch-buffer b/c lack of preview
-      ("B" counsel-buffer-or-recentf :color blue))
-    (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
-          ivy-help-file "~/.emacs.d/ivy-help.org"))
-#+END_SRC
-* Project manager
-
-#+BEGIN_SRC emacs-lisp :tangle yes
   ;; TODO: Investigate projectile
   ;; https://docs.projectile.mx/projectile/index.html
   (use-package projectile
@@ -573,60 +402,19 @@ See the README for examples, evil usage, and tips
     ;; <selected-project>/TODO.org for org-projectile-todo-completing-read
     ;; and replaces the default t(ask) template stored in ~/.notes normally
     (push (org-projectile-project-todo-entry) org-capture-templates))
-#+END_SRC
-* Terminal
-#+BEGIN_SRC emacs-lisp :tangle yes
-  ;; Modified ansi-term to avoid read-from-minibuffer prompt
-  (setq explicit-shell-file-name "/usr/bin/fish")
 
-  ;; TODO: Throws an error on window. Commenting out in the meantime.
 
-  ;; (defun ansi-term (program &optional new-buffer-name)
-  ;;   "Start a terminal-emulator in a new buffer.
-  ;; This is almost the same as `term' apart from always creating a new buffer,
-  ;; and `C-x' being marked as a `term-escape-char'."
-  ;; (interactive (list (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
+  (use-package async)
+  (use-package popup)
+;; Installed from source per Wiki instructions
+(use-package helm)
 
-  ;;   ;; Pick the name of the new buffer.
-  ;;   (setq term-ansi-buffer-name
-  ;;     (if new-buffer-name
-  ;;         new-buffer-name
-  ;;       (if term-ansi-buffer-base-name
-  ;;           (if (eq term-ansi-buffer-base-name t)
-  ;;           (file-name-nondirectory program)
-  ;;         term-ansi-buffer-base-name)
-  ;;         "ansi-term")))
 
-  ;;   (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
+  (use-package dash)
+  (use-package f)
+  (use-package s)
+  (use-package helm-org-rifle)
 
-  ;;   ;; In order to have more than one term active at a time
-  ;;   ;; I'd like to have the term names have the *term-ansi-term<?>* form,
-  ;;   ;; for now they have the *term-ansi-term*<?> form but we'll see...
-
-  ;;   (setq term-ansi-buffer-name (generate-new-buffer-name term-ansi-buffer-name))
-  ;;   (setq term-ansi-buffer-name (term-ansi-make-term term-ansi-buffer-name program))
-
-  ;;   (set-buffer term-ansi-buffer-name)
-  ;;   (term-mode)
-  ;;   (term-char-mode)
-
-  ;;   ;; Historical baggage.  A call to term-set-escape-char used to not
-  ;;   ;; undo any previous call to t-s-e-c.  Because of this, ansi-term
-  ;;   ;; ended up with both C-x and C-c as escape chars.  Who knows what
-  ;;   ;; the original intention was, but people could have become used to
-  ;;   ;; either.   (Bug#12842)
-  ;;   (let (term-escape-char)
-  ;;     ;; I wanna have find-file on C-x C-f -mm
-  ;;     ;; your mileage may definitely vary, maybe it's better to put this in your
-  ;;     ;; .emacs ...
-  ;;     (term-set-escape-char ?\C-x))
-
-  ;;   (switch-to-buffer term-ansi-buffer-name))
-#+END_SRC
-
-* Organization and notes
-
-#+BEGIN_SRC emacs-lisp :tangle yes
   ;; TODO: Investigate later:
   ;; sparse trees (e.g., to hide finished tasks)
   ;; drawers
@@ -682,7 +470,6 @@ See the README for examples, evil usage, and tips
     ;; Insert LaTeX-like symbols
     "a" 'org-agenda ; Dispatcher
     "e" 'counsel-org-entity ; https://orgmode.org/manual/Special-Symbols.html
-    ;; "i" 'my/org-index
     "l" 'org-insert-link-global
     ;; "o" 'org-open-at-point-global
     "o" '(:ignore t :wk "org-files")
@@ -802,8 +589,105 @@ See the README for examples, evil usage, and tips
 
   (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
 #+END_SRC
-* Programming languages
-** elisp
+
+* Company
+When used with lsp-mode, company-box provides custom icons and popup documentation to the right of completion items, similar to coc.nvim.
+
+For the love of God, global-company-mode is being modified outside of the custom system, but I cannot fucking figure out where from! I had to ditch it in favor of individual mode activation in :hook. I also couldn't override universal company box mode ~:hook (company-mode . company-box-mode)~, so I switched that to a per-mode setting.
+
+I disabled ess-r-mode's use of company-box, because the latter would prompt for resolution between objects of the same name in different packages, which was extremely aggravating when using the tidyverse.
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package company
+    :init
+    (defun mode-specific-C-h ()
+      "Programming language-specific help for company-active-map"
+      (interactive)
+      (pcase major-mode
+        ('ess-r-mode (show-company-doc-as-ess-help))
+        (_ (company-show-doc-buffer))))
+
+    (defun show-company-doc-as-ess-help ()
+      "Show ess help if available, else show company help"
+      (interactive)
+      (let* ((selected (nth company-selection company-candidates))
+             (obj-help (ess-display-help-on-object selected)))
+        (unless obj-help
+          (company-show-doc-buffer))))
+    :hook
+    (emacs-lisp-mode . company-mode)
+    (ess-r-mode . company-mode)
+    :general
+    (:keymaps 'company-mode-map
+              "<tab>" 'company-indent-or-complete-common)
+    (:keymaps 'company-active-map
+              "C-h" 'mode-specific-C-h
+              "M-n"  nil
+              "M-p"  nil
+              "C-n"  'company-select-next
+              "C-p"  'company-select-previous))
+
+  (use-package company-box
+    :diminish company-box-mode
+    :hook
+    ;;When ess-eldoc-mode is enabled, it vanishes the company completion menu, at least with company-box enabled.
+    ;; Did it affect lsp-based company completion? Test this if you ever reenable lsp-mode for ess-r.
+    ;;(ess-r-mode . (lambda () (setq ess-eldoc-mode -1)))
+    (emacs-lisp-mode . company-box-mode))
+#+end_src
+
+* LSP
+The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could be the size of the file, latex, lsp-mode itself, the R language server, or something else. Note that without lsp-mode, to get full completion you will need to evaluate the loaded libraries in an iess-r buffer, as well as any objects you want completed. Test whether this has been fixed by issue 1383 sometime.
+
+#+BEGIN_SRC emacs-lisp :tangle no
+  ;; (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+  ;; (use-package lsp-treemacs :commands lsp-treemacs-error-list)
+  ;; (use-package dap-mode)
+  ;; (require 'dap-python)
+  ;; Testing out for parameter completion in lsp...
+  ;; (use-package yasnippet
+  ;;   :hook ((python-mode . yas-minor-mode)
+  ;;          (ess-r-mode . yas-minor-mode)))
+
+  (use-package lsp-mode
+    :hook ((python-mode . lsp)
+           ;; (ess-r-mode . lsp)
+           (lsp-mode . lsp-enable-which-key-integration))
+    ;; :commands lsp
+    :config
+    (setq read-process-output-max (* 1024 1024)
+          lsp-prefer-capf t
+          lsp-idle-delay 0.500))
+
+  (use-package lsp-ui
+    :commands lsp-ui-mode
+    :config
+    (defun scroll-down-lsp-ui ()
+      "Enable scrolling documentation child frames when using lsp-ui-doc-glance"
+      (interactive)
+      (if (lsp-ui-doc--frame-visible-p)
+          (let ((kmap (make-sparse-keymap)))
+            (define-key kmap (kbd "q")
+              '(lambda ()
+                 (interactive)
+                 (lsp-ui-doc-unfocus-frame)
+                 (setq overriding-terminal-local-map nil)
+                 (setq which-key-show-transient-maps t)))
+            (setq which-key-show-transient-maps nil)
+            (setq overriding-terminal-local-map kmap)
+            (lsp-ui-doc-focus-frame)))
+      (evil-scroll-page-down 1))
+    (general-define-key
+     :states '(motion insert emacs)
+     "C-f" 'scroll-down-lsp-ui)
+    ;; Disable underlines in lsp-ui-doc child frames
+    (custom-set-faces '(nobreak-space ((t nil)))))
+#+END_SRC
+
+** TODO Finish setting up lsp package extensions,
+** TODO Test DAP for R and Python
+
+* elisp
 #+BEGIN_SRC emacs-lisp :tangle yes
   (general-define-key
    :prefix-command 'my/elisp-map
@@ -820,74 +704,19 @@ See the README for examples, evil usage, and tips
   ;; "<backtab>" 'counsel-el ; counsel-assisted completion
   (my-leader :keymaps 'emacs-lisp-mode-map "m" 'my/elisp-map)
 #+END_SRC
-** TODO Figure out coding systems in emacs
-Only highlight tabs in unix. Insert literal tabs in dos. Ensure files in /mnt/ directories or at least SAS are dos by default. Find a way to highlight mixed line endings in emacs so that you can fix the file to conform with either dos or unix.
-Search for "whitespace" in emacs-custom to find related options and faces
-#+BEGIN_SRC emacs-lisp :tangle yes
-  ;; (defun convert-line-endings-to-unix (orig-fun &rest args)
-  ;;   (if (string-match "dos$" (symbol-name buffer-file-coding-system))
-  ;;       (progn
-  ;;         ;; revert-buffer-with-coding-system changes the encoding used to read
-  ;;         ;; the file but doesn't convert the underlying data. This is why
-  ;;         ;; specifying *-unix on a *-dos file will show ^R (carriage return). In
-  ;;         ;; a *-dos file this is part of the line separator, but in *-unix it is
-  ;;         ;; an extra character.
-  ;;         (set-buffer-file-coding-system 'utf-8-unix)
-  ;;         (apply orig-fun args))
-  ;;     (apply orig-fun args)))
-  ;; (advice-add 'save-buffer :around 'convert-line-endings-to-unix)
 
-  ;; (if (string-match "dos$" (symbol-name buffer-file-coding-system))
-  ;;     (progn
-  ;;       (t))
-  ;;   (face-remap-add-relative 'whitespace-tab
-  ;;                            :foreground "#636363"
-  ;;                            :inverse-video t))
-  ;; '(whitespace-display-mappings '((tab-mark 9 [124 9] [92 9])))
-  ;; '(whitespace-style '(face trailing tabs tab-mark newline-mark))
-
-#+END_SRC
-** R(markdown)
+* R(markdown)
+  Major-mode binding (i.e., ~(my-leader :keymaps 'ess-r-mode-map "m" 'hydra-r/body)~) is more efficient than buffer-local binding (i.e., ~(my-leader :keymaps 'local "m" 'hydra-r/body)~) in the body of a hook (i.e., ~config-ess-r-mode~).
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package poly-markdown)
-  ;; NOTE: ess-r configuration and bindings are available inside chunks, where R-mode is active
-  ;; I have bound polymode-export (render) to SPC-m-e-k
-  (use-package poly-R
-    :after hydra
-    :config
-    (defhydra+ hydra-r-eval()
-    ("k" polymode-export :color blue)))
-
   (use-package ess
+    :general
+    (my-leader :keymaps 'ess-r-mode-map "m" 'hydra-r/body)
     :hook (ess-r-mode . config-ess-r-mode)
-    :config
-    ;; Prevent window displaying company documentation buffer from vanishing when
-    ;; invoking a binding not in company--electric-commands
-    ;; (defun forget-saved-window-config ()
-    ;;   (setq company--electric-saved-window-configuration nil))
-    ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
-
+    :init
     (defun config-ess-r-mode ()
       (ess-set-style 'RStudio)
       ;; (setq-local ess-indent-offset 4) ; RStudio style uses a value of 2
-
-      (defun show-company-doc-as-ess-help ()
-        "Show ess help if available, else show company help"
-        (interactive)
-        (let* ((selected (nth company-selection company-candidates))
-               (obj-help (ess-display-help-on-object selected)))
-          (unless obj-help
-            (company-show-doc-buffer))))
-
-      (defun mode-specific-C-h ()
-        "Mode-specific C-h for company-active-map"
-        (interactive)
-        (pcase major-mode
-          ('ess-r-mode (show-company-doc-as-ess-help))
-          (_ (company-show-doc-buffer))))
-
-      (define-key company-active-map (kbd "C-h") 'mode-specific-C-h)
 
       ;; Rely on electric-pair-mode instead of skeleton
       (local-set-key (kbd "{") 'self-insert-command)
@@ -895,22 +724,14 @@ Search for "whitespace" in emacs-custom to find related options and faces
 
       ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
       ;; if electric-layout-mode is enabled (it is not by default)
-      (setq-local electric-layout-rules nil)
-      )
-    (add-hook 'ess-r-mode-hook
-              (lambda ()
-                (my/defhydra 'hydra-r)
-                (my/defhydra 'hydra-r-help)
-                (my/defhydra 'hydra-r-eval)
-                (my/defhydra 'hydra-r-debug)))
+      (setq-local electric-layout-rules nil))
+    :config
+    ;; Prevent window displaying company documentation buffer from vanishing when invoking a binding not in company--electric-commands
+    ;; (defun forget-saved-window-config ()
+    ;;   (setq company--electric-saved-window-configuration nil))
+    ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
 
-    ;; Major-mode binding is more efficient than buffer-local binding in a hook. E.g.
-    ;; (my-leader :keymaps 'local "m" 'hydra-r/body)
-    ;; in def of `config-ess-r-mode'
-    (my-leader :keymaps 'ess-r-mode-map "m" 'hydra-r/body)
-
-    ;; Override Windows' help_type option of "html", to open help
-    ;; in help buffer, not browser (see contents of .Rprofile)
+    ;; Override Windows' help_type option of "html", to open help in help buffer, not browser (see contents of .Rprofile)
     (pcase system-type
       ('windows-nt
        ;; iESS searches the paths listed in the variable exec-path for inferior-ess-r-program
@@ -924,9 +745,21 @@ Search for "whitespace" in emacs-custom to find related options and faces
        ;; you need to notify R of the executable's directory
        (setenv "RSTUDIO_PANDOC" "C:/Users/jkroes/AppData/Local/Pandoc"))
       ('darwin (setenv "R_PROFILE_USER" "~/.emacs.d/.Rprofile")))
+
     (setq ess-nuke-trailing-whitespace-p t
           ;; ess-S-quit-kill-buffers-p 'ask
           inhibit-field-text-motion nil)) ; prompt acts as beginning of line if prompt is read-only
+
+  (use-package poly-markdown)
+  ;; NOTE: ess-r configuration and bindings are available inside chunks, where R-mode is active
+  ;; I have bound polymode-export (render) to SPC-m-e-k
+  (use-package poly-R)
+#+END_SRC
+
+* Terminal
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;; Modified ansi-term to avoid read-from-minibuffer prompt
+  (setq explicit-shell-file-name "/usr/bin/fish")
 
   (defun clear-shell ()
     (interactive)
@@ -936,9 +769,53 @@ Search for "whitespace" in emacs-custom to find related options and faces
       (setq comint-buffer-maximum-size old-max)))
 
   (global-set-key  (kbd "\C-x c") 'clear-shell)
-#+END_SRC
-* Random packages
 
+  ;; TODO: Throws an error on window. Commenting out in the meantime.
+
+  ;; (defun ansi-term (program &optional new-buffer-name)
+  ;;   "Start a terminal-emulator in a new buffer.
+  ;; This is almost the same as `term' apart from always creating a new buffer,
+  ;; and `C-x' being marked as a `term-escape-char'."
+  ;; (interactive (list (or explicit-shell-file-name (getenv "ESHELL") shell-file-name)))
+
+  ;;   ;; Pick the name of the new buffer.
+  ;;   (setq term-ansi-buffer-name
+  ;;     (if new-buffer-name
+  ;;         new-buffer-name
+  ;;       (if term-ansi-buffer-base-name
+  ;;           (if (eq term-ansi-buffer-base-name t)
+  ;;           (file-name-nondirectory program)
+  ;;         term-ansi-buffer-base-name)
+  ;;         "ansi-term")))
+
+  ;;   (setq term-ansi-buffer-name (concat "*" term-ansi-buffer-name "*"))
+
+  ;;   ;; In order to have more than one term active at a time
+  ;;   ;; I'd like to have the term names have the *term-ansi-term<?>* form,
+  ;;   ;; for now they have the *term-ansi-term*<?> form but we'll see...
+
+  ;;   (setq term-ansi-buffer-name (generate-new-buffer-name term-ansi-buffer-name))
+  ;;   (setq term-ansi-buffer-name (term-ansi-make-term term-ansi-buffer-name program))
+
+  ;;   (set-buffer term-ansi-buffer-name)
+  ;;   (term-mode)
+  ;;   (term-char-mode)
+
+  ;;   ;; Historical baggage.  A call to term-set-escape-char used to not
+  ;;   ;; undo any previous call to t-s-e-c.  Because of this, ansi-term
+  ;;   ;; ended up with both C-x and C-c as escape chars.  Who knows what
+  ;;   ;; the original intention was, but people could have become used to
+  ;;   ;; either.   (Bug#12842)
+  ;;   (let (term-escape-char)
+  ;;     ;; I wanna have find-file on C-x C-f -mm
+  ;;     ;; your mileage may definitely vary, maybe it's better to put this in your
+  ;;     ;; .emacs ...
+  ;;     (term-set-escape-char ?\C-x))
+
+  ;;   (switch-to-buffer term-ansi-buffer-name))
+#+END_SRC
+
+* Random packages
 #+BEGIN_SRC emacs-lisp :tangle yes
   (use-package page-break-lines)
   ;; (use-package osx-browse)
@@ -948,9 +825,35 @@ Search for "whitespace" in emacs-custom to find related options and faces
   ;; Turning off lua-electric-flag via setq-local in a hook
                                           ; (use-package lua-mode)
                                           ; (use-package jupyter)
-#+END_SRC
-* Local Variables
+  (use-package ranger
+    :general (my-leader "r" 'deer)
+    :config (ranger-override-dired-mode t))
 
+  (use-package command-log-mode
+    :diminish command-log-mode
+    ;; Auto-scroll buffer as commands are logged
+    :hook (command-log-mode . (lambda ()
+                                (set (make-local-variable 'window-point-insertion-type) t)))
+    :config (global-command-log-mode))
+
+  (use-package ace-window)
+#+END_SRC
+
+** TODO Ranger launches in ansi-term but opens files in nano(?). Find a way to integrate it so you can open files in the buffer occupied by ansi-term/ranger instead, then replace deer.
+
+* Hacks
+I started experiencing constant messages about a missing function, something
+about org and timer. straight.el mentioned org-related issues, and this issue
+arose once I switched to straight. Probably related somehow. No idea how this
+fixes it, but the messages disappeared.
+Solution from https://github.com/seagle0128/.emacs.d/issues/129.
+NOTE: Issue disappeared recently.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  ;; (org-reload)
+#+END_SRC
+
+* Local Variables
 # Local Variables:
 # eval: (add-hook 'after-save-hook (lambda ()(org-babel-tangle)) nil t)
 # End:

@@ -1,12 +1,12 @@
 https://github.com/d12frosted/homebrew-emacs-plus#emacs-27-and-emacs-28-options
     Installed Emacs 28 via homebrew using the options to include jansson (faster lsp json) and xwidgets
     for opening browsers within emacs. I haven't managed to make xwidgets browser work yet. Issue 202 suggests
-    it might be Emacs 27-only as of July 2020. Try again some other time.
+    it might be Emacs 27-only as of July 2020. Try again some other time. See system-configuration-options.
 
 homepage
     overview
         lsp-ivy: workspace functions
-    setup: 
+    setup:
         installation: see use-package example
         performance: Describes various steps to improve and test performance. This is the first page you should visit before and after
                      installation, as json serialization needs to be included at compile time. Some steps are already configured in my

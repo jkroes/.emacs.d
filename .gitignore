@@ -17,3 +17,9 @@ init.el
 projectile-bookmarks.eld
 eshell/
 var/prescient-save.el
+# Emacs creates this weird file
+2
+straight/
+# No idea what created these files
+init.sh
+init.emacs_lisp

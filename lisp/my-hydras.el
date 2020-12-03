@@ -1,3 +1,120 @@
+;;; Functions
+
+(defun my/kill-other-buffers ()
+  "Kill other buffers."
+  (interactive)
+  (mapc 'kill-buffer
+        (delq (current-buffer)
+              (buffer-list))))
+
+(defun my/switch-to-scratch ()
+  "Switch buffer to *Scratch*."
+  (interactive)
+  (switch-to-buffer "*scratch*"))
+
+;; Consistent evil-vsplit-window-right
+(defun my/split-window-right-move ()
+  "Split window vertically and move to new window."
+  (interactive)
+  (split-window-right)
+  (windmove-right))
+
+;; Consistent with evil-split-window-below
+(defun my/split-window-below-move ()
+  "Split window horizontally and move to new window."
+  (interactive)
+  (split-window-below)
+  (windmove-down))
+
+(defun my/delete-other-windows-and-buffers ()
+  "Delete other windows and buffers."
+  (interactive)
+  (defun select-kill-window-and-buffer (window)
+    (select-window window)
+    (kill-buffer-and-window))
+  (let ((other-windows
+         (delq (selected-window)
+               (window-list (window-frame (selected-window)))))
+        (kill-buffer-query-functions ;; Disable prompt to end process buffers
+         (delq 'process-kill-buffer-query-function kill-buffer-query-functions)))
+    (mapc 'select-kill-window-and-buffer other-windows)))
+
+(defun my/start-r ()
+  "Start an R process."
+  (interactive)
+  (save-selected-window
+    (run-ess-r)
+    ;;(ess-rdired)
+    )
+  (ess-force-buffer-current))
+
+;;; Windows
+
+(defhydra hydra-window (:color pink)
+  "Window"
+  ("h" windmove-left)
+  ("j" windmove-down)
+  ("k" windmove-up)
+  ("l" windmove-right)
+  ("b" hydra-buffer/body :color blue)
+  ("v" my/split-window-right-move)
+  ("x" my/split-window-below-move)
+  ("m" delete-other-windows :color blue)
+  ("M" my/delete-other-windows-and-buffers :color blue)
+  ("z" winner-undo)
+  ;; ("z" (progn
+  ;;     (winner-undo)
+  ;;     (setq this-command 'winner-undo))
+  ;;  "winner-undo") ; Needed for winner-redo, it appears
+  ("Z" winner-redo)
+  ("q" nil))
+
+(with-eval-after-load "evil"
+  (defhydra+ hydra-window ()
+    ("-" evil-window-decrease-height)
+    ("+" evil-window-increase-height)
+    ("<" evil-window-decrease-width)
+    (">" evil-window-increase-width)
+    ("c" evil-window-delete)
+    ("r" evil-window-rotate-downwards)
+    ("R" evil-window-rotate-upwards)))
+
+(with-eval-after-load "ace-window"
+  (defhydra+ hydra-window ()
+    ("a" ace-window)
+    ("s" ace-swap-window)
+    ("d" ace-delete-window)))
+
+;; (with-eval-after-load "evil"
+;;   (with-eval-after-load "ace-window"
+;;     (my/defhydra 'hydra-window)))
+
+  ;;; Buffers
+
+(defhydra hydra-buffer (:color pink)
+  "Buffer"
+  ("k" kill-buffer) ;; nil arg means kill current buffer (ivy auto-selects current buffer)
+  ("K" my/kill-other-buffers :color blue)
+  ("r" read-only-mode)
+  ("s" my/switch-to-scratch)
+  ("v" view-buffer)
+  ("w" hydra-window/body :color blue)
+  ("q" nil))
+
+(with-eval-after-load "evil"
+  (defhydra+ hydra-buffer ()
+    ("l" evil-switch-to-windows-last-buffer)))
+
+(with-eval-after-load "counsel"
+  (defhydra+ hydra-buffer ()
+    ("b" ivy-switch-buffer :color blue) ; Faster than counsel-switch-buffer b/c lack of preview
+    ("B" counsel-buffer-or-recentf :color blue)))
+
+;; (with-eval-after-load "evil"
+;;   (with-eval-after-load "counsel"
+;;     (my/defhydra 'hydra-buffer)))
+
+  ;;; R-language
 
 (defhydra hydra-r (:color pink)
   "R"
@@ -50,6 +167,10 @@
   ("w" ess-change-directory)
   ("q" nil))
 
+(with-eval-after-load "poly-R"
+  (defhydra+ hydra-r-eval()
+    ("k" polymode-export :color blue)))
+
 ;; Note that several commands available in the inferior ess R
 ;; process while debugging are absent:
 ;; f (finish)
@@ -77,9 +198,3 @@
   ;; ess-debug-goto-input-event-marker
   ;; ess-debug-insert-in-forward-ring
   ("q" nil))
-
-;; Any hydras that reference each other need to wait to call my/defhydra
-;; until after both hydras have been defined. This is a current limitation
-;; of my/defhydra that may be remedied in the future. Also, the name of
-;; the function should be changed, if I can'tfigure out a way to use
-;; my/defhydra as advice for defhydra at some point.
