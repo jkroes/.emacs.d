@@ -23,3 +23,5 @@ straight/
 # No idea what created these files
 init.sh
 init.emacs_lisp
+# Treemacs cache
+.cache/

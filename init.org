@@ -73,6 +73,7 @@ To get the latest version, install from alpha.gnu.org/gnu/emacs/pretest. If inst
 
 ** treemacs
 Run ~(all-the-icons-install-fonts)~
+Doom theme should already be present in .emacs.d/lisp.
 * package manager
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;; https://github.com/raxod502/straight.el#getting-started
@@ -861,10 +862,10 @@ Use ranger for general file browsing and treemacs as your workspace/project side
     ;;           "t" 'treemacs)
     ("C-\\" 'treemacs)
     :config
-    ;; Customize node was showing nothing when expanded. Literally empty space. To see other values for this setting,
-    ;; press "o" over a file node in treemacs.
+    ;; Customize node was showing nothing when expanded. Literally empty space. Set here instead.
+    ;; To see other values for this setting, press "o" over a file node in treemacs.
     (setq treemacs-default-visit-action 'treemacs-visit-node-ace)
-    (load "treemacs-doom-theme")
+    (load "doom-themes-ext-treemacs") ; See treemacs-create-theme declarations
     (treemacs-load-theme "doom-colors"))
 
   (use-package treemacs-evil)
