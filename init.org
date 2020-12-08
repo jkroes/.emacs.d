@@ -1,3 +1,5 @@
+#+STARTUP: fold
+
 [x] Color theme
 [x] Font
 [x] Move to newly split windows, splitbelow, splitright
@@ -61,7 +63,16 @@ To get the latest version, install from alpha.gnu.org/gnu/emacs/pretest. If inst
   sudo apt-get install fonts-hack
 #+END_SRC
 
-** ripgrep
+** counsel
+*** ripgrep (rg)
+*** fzf
+
+** projectile
+*** fd-find (fdfind)
+*** ripgrep (rg)
+
+** treemacs
+Run ~(all-the-icons-install-fonts)~
 * package manager
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;; https://github.com/raxod502/straight.el#getting-started
@@ -183,7 +194,7 @@ org-indent-mode indents nested lines and shows column 0 at the indented position
     (general-def my/bookmarks-map
       :wk-full-keys nil
       "d" 'bookmark-delete
-      "e" 'edit-bookmark
+      "e" 'edit-bookmarks
       ;; For each map referencing `my/files-map' we need `:wk' "files"
       "f" '(my/files-map :wk "files")
       "r" 'bookmark-rename
@@ -233,43 +244,53 @@ Any hydras that reference each other need to wait to call my/defhydra until afte
 
 Apparently hydras can be defined in the ~:init~ of ~(use-package hydra)~, which makes no sense to me. ~defhydra~ isn't available before hydra loads, so how can we use it right away?
 
-
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package hydra
-    ;:commands hydra-r/body
-    :demand t
-    :hook (ess-r-mode . ess-r-mode-hydras)
-    :general
-    (my-leader
-      "b" 'hydra-buffer/body
-      "w" 'hydra-window/body)
-    ;; Add opinionated counsel-hydra-heads to all hydras (see :config)
-    (:keymaps 'hydra-base-map "." 'counsel-hydra-heads)
-    :config
-    ;; Display hydras in which-key
-    (with-eval-after-load "which-key"
-      (load "which-key-hacks"))
+    (use-package hydra
+      ;:commands hydra-r/body
+      :demand t
+      :hook
+      (ess-r-mode . ess-r-mode-hydras)
+      ;; Can't simply call my/defhydra2 on treemacs-helpful-hydra, because the function that toggles the hydra also creates
+      ;; the hydra on its first invocation.
+      (treemacs-mode . (lambda ()
+                         (treemacs-helpful-hydra)
+                         (my/defhydra2 'treemacs--helpful-hydra)
+                         ;; So the hydra doesn't show the first time treemacs is called
+                         (treemacs--helpful-hydra/nil)))
+      :general
+      (my-leader
+        "b" 'hydra-buffer/body
+        "w" 'hydra-window/body)
+      ;; Add opinionated counsel-hydra-heads to all hydras (see :config)
+      (:keymaps 'hydra-base-map "." 'counsel-hydra-heads)
+      :config
+      ;; Display hydras in which-key
+      (with-eval-after-load "which-key"
+        (load "which-key-hacks"))
 
-    ;; Modify the function provided by counsel to search through hydras
-    (with-eval-after-load "counsel"
-      (defun counsel-hydra-integrate (old-func &rest args)
-        "Function used to advise `counsel-hydra-heads' to work with blue and amranath hydras."
-        (hydra-keyboard-quit)
-        (apply old-func args)
-        (funcall-interactively hydra-curr-body-fn))
-      (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate))
+      ;; Modify the function provided by counsel to search through hydras
+      (with-eval-after-load "counsel"
+        (defun counsel-hydra-integrate (old-func &rest args)
+          "Function used to advise `counsel-hydra-heads' to work with blue and amranath hydras."
+          (hydra-keyboard-quit)
+          (apply old-func args)
+          (funcall-interactively hydra-curr-body-fn))
+        (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate))
 
-    (load "my-hydras")
-    (my/defhydra 'hydra-window) ; Requires my-hydras.el, which-key-hacks.el
-    (my/defhydra 'hydra-buffer)
-    (defun ess-r-mode-hydras ()
-      "Hook for ess-r-mode. The functions used as hydra heads do not exist until an ess-r-mode buffer exists, so
-    my/defhydra must be called after that buffer is created."
-      (my/defhydra 'hydra-r)
-      (my/defhydra 'hydra-r-help)
-      (my/defhydra 'hydra-r-eval)
-      (my/defhydra 'hydra-r-debug)))
+      (load "my-hydras")
+      (my/defhydra 'hydra-window) ; Requires my-hydras.el, which-key-hacks.el
+      (my/defhydra 'hydra-buffer)
+      (defun ess-r-mode-hydras ()
+        "Hook for ess-r-mode. The functions used as hydra heads do not exist until an ess-r-mode buffer exists, so
+      my/defhydra must be called after that buffer is created."
+        (my/defhydra 'hydra-r)
+        (my/defhydra 'hydra-r-help)
+        (my/defhydra 'hydra-r-eval)
+        (my/defhydra 'hydra-r-debug)))
 #+END_SRC
+
+** I am having troulbe running treemacs--helpful-hydra through my/defhydra.
+It appears #'treemacs-next-line is not a symbol.
 
 * vim emulation
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -293,6 +314,8 @@ Apparently hydras can be defined in the ~:init~ of ~(use-package hydra)~, which 
             emacs-lisp-mode
             python-mode
             ess-r-mode
+            sh-mode
+            fish-mode
             markdown-mode
             fundamental-mode
             lua-mode
@@ -814,6 +837,54 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
 
   ;;   (switch-to-buffer term-ansi-buffer-name))
 #+END_SRC
+* File browser
+
+Inspiration from https://github.com/lepisma/rogue.
+
+Use ranger for general file browsing and treemacs as your workspace/project sidebar.
+
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (use-package all-the-icons :demand t)
+
+  ;;; Commands - add those that aren't already mapped as shown by "?" in a treemacs buffer
+  ;; treemacs-edit-workspaces
+  ;; treemacs-finish-edit
+  ;; C-c c-p / c-c c-w
+  ;; save ~/.emacs.d/.cache/treemacs-persist to save workspaces
+  ;; check out integration with org-store-link
+  ;; treemacs-load-theme
+  (use-package treemacs
+    :hook
+    (treemacs-mode . (lambda () (display-line-numbers-mode -1)))
+    :general
+    ;; (:keymaps 'my/files-map
+    ;;           "t" 'treemacs)
+    ("C-\\" 'treemacs)
+    :config
+    ;; Customize node was showing nothing when expanded. Literally empty space. To see other values for this setting,
+    ;; press "o" over a file node in treemacs.
+    (setq treemacs-default-visit-action 'treemacs-visit-node-ace)
+    (load "treemacs-doom-theme")
+    (treemacs-load-theme "doom-colors"))
+
+  (use-package treemacs-evil)
+  ;; (use-package treemacs-projectile)
+  ;; (use-package treemacs-magit)
+
+  ;; For ranger
+  ;;(use-package treemacs-icons-dired
+  ;; :after treemacs dired
+  ;; :ensure t
+  ;; :config (treemacs-icons-dired-mode))
+
+  (use-package ranger
+    ;; :hook (ranger-mode . hide-mode-line)
+    :general (my-leader "r" 'ranger))
+
+#+END_SRC
+
+** TODO Find a repository of treemacs themes. They seem hard to find on their own, disconnected from the rest of the repositories that contain theme code. In particular, I like the rogue spacing and simple icons (repos, folders, text files, and code files).
+
 
 * Random packages
 #+BEGIN_SRC emacs-lisp :tangle yes
@@ -825,9 +896,6 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
   ;; Turning off lua-electric-flag via setq-local in a hook
                                           ; (use-package lua-mode)
                                           ; (use-package jupyter)
-  (use-package ranger
-    :general (my-leader "r" 'deer)
-    :config (ranger-override-dired-mode t))
 
   (use-package command-log-mode
     :diminish command-log-mode
@@ -837,6 +905,8 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
     :config (global-command-log-mode))
 
   (use-package ace-window)
+
+  (use-package fish-mode)
 #+END_SRC
 
 ** TODO Ranger launches in ansi-term but opens files in nano(?). Find a way to integrate it so you can open files in the buffer occupied by ansi-term/ranger instead, then replace deer.
