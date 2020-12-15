@@ -69,52 +69,40 @@
   ("Z" winner-redo)
   ("q" nil))
 
-(with-eval-after-load "evil"
-  (defhydra+ hydra-window ()
+(defhydra+ hydra-window ()
     ("-" evil-window-decrease-height)
     ("+" evil-window-increase-height)
     ("<" evil-window-decrease-width)
     (">" evil-window-increase-width)
     ("c" evil-window-delete)
     ("r" evil-window-rotate-downwards)
-    ("R" evil-window-rotate-upwards)))
+    ("R" evil-window-rotate-upwards))
 
-(with-eval-after-load "ace-window"
-  (defhydra+ hydra-window ()
-    ("a" ace-window)
-    ("s" ace-swap-window)
-    ("d" ace-delete-window)))
+(defhydra+ hydra-window ()
+  ("a" ace-window)
+  ("s" ace-swap-window)
+  ("d" ace-delete-window))
 
-;; (with-eval-after-load "evil"
-;;   (with-eval-after-load "ace-window"
-;;     (my/defhydra 'hydra-window)))
-
-  ;;; Buffers
+;;; Buffers
 
 (defhydra hydra-buffer (:color pink)
   "Buffer"
   ("k" kill-buffer) ;; nil arg means kill current buffer (ivy auto-selects current buffer)
   ("K" my/kill-other-buffers :color blue)
   ("r" read-only-mode)
-  ("s" my/switch-to-scratch)
-  ("v" view-buffer)
+  ;; ("s" my/switch-to-scratch)
+  ;; ("v" view-buffer)
   ("w" hydra-window/body :color blue)
   ("q" nil))
 
-(with-eval-after-load "evil"
-  (defhydra+ hydra-buffer ()
-    ("l" evil-switch-to-windows-last-buffer)))
+(defhydra+ hydra-buffer ()
+  ("l" evil-switch-to-windows-last-buffer))
 
-(with-eval-after-load "counsel"
-  (defhydra+ hydra-buffer ()
-    ("b" ivy-switch-buffer :color blue) ; Faster than counsel-switch-buffer b/c lack of preview
-    ("B" counsel-buffer-or-recentf :color blue)))
+(defhydra+ hydra-buffer ()
+  ("b" ivy-switch-buffer :color blue) ; Faster than counsel-switch-buffer b/c lack of preview
+  ("B" counsel-buffer-or-recentf :color blue))
 
-;; (with-eval-after-load "evil"
-;;   (with-eval-after-load "counsel"
-;;     (my/defhydra 'hydra-buffer)))
-
-  ;;; R-language
+;;; R-language
 
 (defhydra hydra-r (:color pink)
   "R"
@@ -167,9 +155,8 @@
   ("w" ess-change-directory)
   ("q" nil))
 
-(with-eval-after-load "poly-R"
-  (defhydra+ hydra-r-eval()
-    ("k" polymode-export :color blue)))
+(defhydra+ hydra-r-eval()
+  ("k" polymode-export :color blue))
 
 ;; Note that several commands available in the inferior ess R
 ;; process while debugging are absent:

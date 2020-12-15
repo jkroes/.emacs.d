@@ -1,4 +1,10 @@
-#+STARTUP: fold
+replace setq with gsetq, or delete gsetq-* aliaseds and use csetq
+bookmarks
+org-mode
+projectile?
+use special face for hydra-prefix
+show lines between folded nodes
+investigate notes about :custom bug and extract the cause. DOes it apply when using csetq or gsetq but not use-package?
 
 [x] Color theme
 [x] Font
@@ -43,38 +49,7 @@ jump to my files hydra, even though they are presumably similar commands.
 [] counsel-el is deprecated. (Try running the command for suggested fix).
 Change the binding at the bottom of init.el
 
-* installation
-** emacs
-*** [[info:efaq#Installing Emacs][From source]]
-To get the latest version, install from alpha.gnu.org/gnu/emacs/pretest. If installing .xz instead of .gz, drop the -g flag.
-
-*** [[https://launchpad.net/~kelleyk/+archive/ubuntu/emacs][Ubuntu]]
-#+BEGIN_SRC sh :tangle yes
-  sudo add-apt-repository ppa:kelleyk/emacs
-  sudo apt-get update
-#+END_SRC
-
-** hack font
-*** [[https://github.com/source-foundry/Hack#quick-installation][Manual]]
-
-*** Ubuntu
-#+BEGIN_SRC sh :tangle yes
-  sudo apt-get update
-  sudo apt-get install fonts-hack
-#+END_SRC
-
-** counsel
-*** ripgrep (rg)
-*** fzf
-
-** projectile
-*** fd-find (fdfind)
-*** ripgrep (rg)
-
-** treemacs
-Run ~(all-the-icons-install-fonts)~
-Doom theme should already be present in .emacs.d/lisp.
-* package manager
+* package manager                                                   :ARCHIVE:
 #+BEGIN_SRC emacs-lisp :tangle yes
   ;; https://github.com/raxod502/straight.el#getting-started
   (defvar bootstrap-version)
@@ -92,47 +67,73 @@ Doom theme should already be present in .emacs.d/lisp.
 
   ;; https://github.com/raxod502/straight.el#integration-with-use-package
   ;; https://github.com/raxod502/straight.el#integration-with-use-package-1
-  (straight-use-package 'use-package)
-  (setq straight-use-package-by-default t)
+  ;; (straight-use-package 'use-package)
+  ;; (setq straight-use-package-by-default t)
 
   ;; https://github.com/jwiegley/use-package#diminishing-and-delighting-minor-modes
-  (use-package diminish)
-
-  ;; Seems like it may be included with use-package
-  ;; (require 'bind-key)
+  (straight-use-package 'diminish)
 #+END_SRC
 
-* miscellaneous
-NOTE: Bug prevents use of :custom: https://github.com/jwiegley/use-package/issues/702. It's not clear if this was fixed by https://github.com/jwiegley/use-package/commit/b9f1fe64ee11cf99d84857d51ac74da36a0b744c. See also https://github.com/jwiegley/use-package/issues/517 Read through the thread and links of 702. The fix may not be a fix after all.  What does seem to work absolutely is to use custom-set-variables instead of :custom, set custom-file to a garbage file, then never load custom-file. That way the custom-file won't interfere with your init file custom-set-variable blocks. This suggests that it may have been fixed: https://github.com/jwiegley/use-package/pull/850 and https://github.com/jwiegley/use-package/commits/master (notice b9f1fe6 above
-here). I may have to download the latest version from GitHub, since the commits are relatively new and likely not on elpa or melpa yet.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
+* customization
+#+begin_src emacs-lisp :tangle yes
+  ;; Customizations unrelated to straight-managed packages
   (setq custom-file "~/.emacs.d/emacs-custom.el")
   (load custom-file)
+  ;; (setq custom-file null-device)
 
+  ;; https://github.com/jwiegley/use-package/pull/881
+  (defun customize-package (&rest args)
+    (let ((custom--inhibit-theme-enable nil)) ; Apply changes to theme immediately
+      (apply 'custom-theme-set-variables 'my-theme args)))
+
+  (deftheme my-theme)
+  ;; Assign my-theme second-highest precedence (after user theme). Note that load-theme invocations lower down will set
+  ;; the loaded theme to a higher precedence
+  (enable-theme 'my-theme)
+#+end_src
+* et cetera
+** load-path
+#+begin_src emacs-lisp :tangle yes
   (setq load-path (cons "~/.emacs.d/lisp" load-path))
-
+#+end_src
+** default-directory
+#+begin_src emacs-lisp :tangle yes
   (setq-default default-directory "~/.emacs.d")
-
-  ;; https://emacsthemes.com
-  (use-package solarized-theme)
-  (load-theme 'solarized-dark t)
-
+#+end_src
+** default font
+#+begin_src emacs-lisp :tangle yes
   (set-frame-font "Hack 10" nil t)
+#+end_src
+** exec-path
+#+begin_src emacs-lisp :tangle no
+  (add-to-list 'exec-path "/usr/local/bin")
+  (setq python-shell-interpreter "python3")
+#+end_src
+** Windows Subsystem for Linux
+Open links outside of WSL
 
-  ;; Open links from host Windows OS when using WSL.
+#+BEGIN_SRC emacs-lisp :tangle yes
   (when (string-match "Linux.*Microsoft.*Linux"
                       (shell-command-to-string "uname -a"))
     (setq browse-url-generic-program "/mnt/c/Windows/System32/cmd.exe"
           browse-url-generic-args '("/c" "start" "")
           browse-url-browser-function 'browse-url-generic))
-
-  ;; (add-to-list 'exec-path "/usr/local/bin")
-  ;; (setq python-shell-interpreter "python3")))
-
 #+END_SRC
+** view-mode
+Enable "q" for quit from view-mode by converting all buffers to motion state upon view mode entry. As a minor mode,
+it doesn't otherwise override the major mode's evil state upon view-mode entry.
 
-** line wrapping
+#+begin_src emacs-lisp :tangle no
+  (add-hook 'view-mode-hook 'evil-motion-state)
+#+end_src
+** Color Theme
+See https://emacsthemes.com for themes
+
+#+begin_src emacs-lisp :tangle yes
+  (straight-use-package 'solarized-theme)
+  (load-theme 'solarized-dark t)
+#+end_src
+** Line Wrapping
 1. Default behavior is soft wrapping and word-splitting at the right window edge.
 2. visual-line-mode soft wraps at right window edge and avoids word splitting.
 3. auto-fill-mode hard wraps at fill-column, which can be displayed via display-fill-column-indicator-mode.
@@ -143,16 +144,16 @@ Numerous modes should not hard-wrap: org-mode to avoid having to format each lin
 org-indent-mode indents nested lines and shows column 0 at the indented position, not at the start of the line. So technically there should be a fill line for each indented section. The text is still wrapping at fill-column amount of characters; however, it doesn't appear that way because fill-column doesn't adjust the displayed indicator for indented org sections. Thus, even if soft wrapping were enabled, you would want to disable the fill indiciator.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;; Default to hard wrapping at lines at column 80 in all modes
-  (setq-default auto-fill-function 'do-auto-fill)
-  (setq-default fill-column 120)
-
   (defun no-auto (&optional wrap-mode)
-      "Disable auto fill and indicator for specific modes"
+    "Disable auto fill and indicator for specific modes"
     (turn-off-auto-fill) ; (auto-fill-mode -1)
     (display-fill-column-indicator-mode -1)
     (if wrap-mode
         (funcall wrap-mode)))
+
+  ;; Default to hard wrapping at lines at column 80 in all modes
+  (setq-default auto-fill-function 'do-auto-fill)
+  (setq-default fill-column 120)
 
   (add-hook 'org-mode-hook (lambda () (no-auto 'visual-line-mode)))
   (add-hook 'markdown-mode-hook (lambda () (no-auto 'visual-line-mode)))
@@ -161,51 +162,77 @@ org-indent-mode indents nested lines and shows column 0 at the indented position
 #+END_SRC
 
 *** Sources
-  1. https://www.gnu.org/software/emacs/manual/html_node/emacs/Continuation-Lines.html#Continuation-Lines
-  2. https://www.gnu.org/software/emacs/manual/html_node/efaq/Turning-on-auto_002dfill-by-default.html
+1. https://www.gnu.org/software/emacs/manual/html_node/emacs/Continuation-Lines.html#Continuation-Lines
+2. https://www.gnu.org/software/emacs/manual/html_node/efaq/Turning-on-auto_002dfill-by-default.html
 
 *** TODO Investigate how auto-fill-mode interacts with auto-fill-function and which modes set values other than 'do-auto-fill
 *** TODO Rewrite no-auto for term-mode-hook
+** page-break-lines
+#+begin_src emacs-lisp :tangle yes
+  (straight-use-package 'page-break-lines)
+#+end_src
+** command-log
+#+begin_src emacs-lisp :tangle yes
+  (customize-package
+   '(command-log-mode-auto-show nil)
+   '(command-log-mode-is-global t)
+   '(command-log-mode-key-binding-open-log nil)
+   '(command-log-mode-open-log-turns-on-mode nil)
+   '(command-log-mode-window-size 50))
+
+  (straight-use-package 'command-log-mode)
+  (command-log-mode)
+  (diminish 'command-log-mode)
+
+  ;; Auto-scroll buffer as commands are logged
+  (add-hook 'command-log-mode-hook (lambda () (set (make-local-variable 'window-point-insertion-type) t)))
+#+end_src
+** ace-window
+#+begin_src emacs-lisp :tangle yes
+  (customize-package
+   '(aw-keys '(97 115 100 102 103 104 106 107 108)))
+
+  (straight-use-package 'ace-window)
+#+end_src
 
 * general
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package general
-    :config
-    (general-create-definer my-leader
-      :states '(motion insert emacs)
-      :prefix "SPC"
-      :non-normal-prefix "C-SPC")
+  (straight-use-package 'general)
 
-    ;; Top-level mappings
-    (my-leader
-      "" nil ; Unbinding the prefix itself prevents errors about binding to non-prefix keys somehow
-      "." 'clm/toggle-command-log-buffer
-      "&" 'async-shell-command
-      "e" 'eshell
-      "f" '(:prefix-command my/files-map :wk "files")
-      "t" 'ansi-term)
+  (general-create-definer my-leader
+    :states '(motion insert emacs)
+    :prefix "SPC"
+    :non-normal-prefix "C-SPC")
 
-    ;; Files
-    (general-def my/files-map
-      :wk-full-keys nil ; Allows for consistent wk replacement text during cyclical map navigation
-      "b" '(:prefix-command my/bookmarks-map :wk "bookmarks")
-      "i" 'insert-file)
+  ;; Top-level mappings
+  (my-leader
+    "" nil ; Unbinding the prefix itself prevents errors about binding to non-prefix keys somehow
+    "." 'clm/toggle-command-log-buffer
+    "&" 'async-shell-command
+    "e" 'eshell
+    "f" '(:prefix-command my/files-map :wk "files")
+    "t" 'ansi-term)
 
-    ;; Bookmarks
-    (general-def my/bookmarks-map
-      :wk-full-keys nil
-      "d" 'bookmark-delete
-      "e" 'edit-bookmarks
-      ;; For each map referencing `my/files-map' we need `:wk' "files"
-      "f" '(my/files-map :wk "files")
-      "r" 'bookmark-rename
-      "s" 'bookmark-set)
+  ;; Files
+  (general-def my/files-map
+    :wk-full-keys nil ; Allows for consistent wk replacement text during cyclical map navigation
+    "b" '(:prefix-command my/bookmarks-map :wk "bookmarks")
+    "i" 'insert-file)
 
-    ;; Help
-    (general-unbind help-map "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
-    (general-def help-map
-      "M" 'describe-minor-mode
-      "s" 'counsel-describe-symbol))
+  ;; Bookmarks
+  (general-def my/bookmarks-map
+    :wk-full-keys nil
+    "d" 'bookmark-delete
+    "e" 'edit-bookmarks
+    ;; For each map referencing `my/files-map' we need `:wk' "files"
+    "f" '(my/files-map :wk "files")
+    "r" 'bookmark-rename
+    "s" 'bookmark-set)
+
+  ;; Help
+  (general-unbind help-map "C-d" "s" "B" "C" "L" "g" "h" "n" "M-c" "RET" "C-n" "C-p" "C-t" "C-\\")
+  (general-def help-map "M" 'describe-minor-mode)
+
 #+END_SRC
 
 ** TODO Configure buffer/window of output from async-shell-command
@@ -213,350 +240,390 @@ org-indent-mode indents nested lines and shows column 0 at the indented position
 Possibly b/c the latter tend to operate in the current directory, while bookmarks can jump directories.
 
 * which-key
-which-key is the only package in .emacs.d/elpa / not installed by straight.el. I reverted to an earlier version due to issue 257, which prevented renaming which-key entries properly.
 
-This package, like hydra, is demanded to make its functions and variables available to other packages in their :init and :config
+There are split code blocks to enable testing of the config with and without which-key loaded. ~disable-transient-map-temporarily~ is used to advise functions from other packages and must be available even if which-key is not. For this reason, it is written to run even if which-key is not loaded.
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package which-key
-    :diminish which-key-mode
-    :demand t
-    :general (:keymaps 'help-map
-                       "C-h" nil ; Enable which-key navigation of help-map bindings
-                       "C-w" 'which-key-show-keymap)
-    :config
-    (defun disable-transient-map-temporarily (orig-fun &rest args)
-      "Hide which-key popup for certain transient maps"
-      (if which-key-show-transient-maps
-          (progn
-            (setq which-key-show-transient-maps nil)
-            (apply orig-fun args)
-            (setq which-key-show-transient-maps t))
-        (apply orig-fun args))))
-#+END_SRC
+  (customize-package
+   '(which-key-idle-delay 0.2)
+   '(which-key-show-docstrings t)
+   '(which-key-allow-evil-operators nil)
+   '(which-key-allow-imprecise-window-fit t)
+   '(which-key-compute-remaps t) ; E.g. w/ counsel-mode: apropos-command -> counsel-apropos
+   '(which-key-max-description-length 100)
+   '(which-key-popup-type 'side-window)
+   '(which-key-side-window-location 'bottom)
+   '(which-key-prefix-prefix "+")
+   '(which-key-separator " ")
+   '(which-key-show-operator-state-maps nil) ; Enabling leads to rapid timeout for evil (e.g., 10dj or d10j)
+   '(which-key-show-transient-maps t) ; See modified which-key--update in my fork
+   '(which-key-side-window-max-height 0.1)
+   '(which-key-sort-order 'which-key-key-order-alpha)
+   '(which-key-sort-uppercase-first nil))
+
+  (straight-use-package
+   '(which-key :type git :host github :repo "justbur/emacs-which-key"
+               :fork (:host github :repo "jkroes/emacs-which-key")))
+
+  (which-key-mode)
+  (diminish 'which-key-mode)
+
+  (general-def :keymaps 'help-map
+    "C-h" nil ; Enable which-key navigation of help-map bindings
+    "C-w" 'which-key-show-keymap)
+#+end_src
+
+#+begin_src emacs-lisp :tangle yes
+  (defun disable-transient-map-temporarily (orig-fun &rest args)
+    "Hide which-key popup for certain transient maps"
+    (if (bound-and-true-p which-key-show-transient-maps)
+        (progn
+          (setq which-key-show-transient-maps nil)
+          (apply orig-fun args)
+          (setq which-key-show-transient-maps t))
+      (apply orig-fun args)))
+#+end_src
 
 * hydra
+
 To enable which-key paging, hydras must be pink. Otherwise you can still page to find what you want, but this will exit the hydra. You will have to reenter all prefix keys again to reach the desired binding.
 
-For a given hydra, defhydra needs to be evaluated prior to all defhydra+. The use-package declaration where a hydra is defined must thus be loaded before the package that extends a hydra, assuming all the hydras are defined within ~:config~. Some of use-package's keywords imply ~:defer t~, so [[https://github.com/jwiegley/use-package#loading-packages-in-sequence][loading order]] of packages is not guaranteed without using (1) ~:after <pkg-list>~ or (2) ~:demand t~ combined with the desired order of use-package declarations. This works if you know that all of these packages will be loaded; however, it prevents the scenario where only some packages load and skip hydra-related code altogether if hydra hasn't loaded, or skip ~defhydra+~ declarations in a loading package when the hydra declaration is in an unloaded package. Another option is to simply split out the hydra definitions from the use-package declarations. Or we can specify the order in ~:config~ of hydra, using ~with-eval-after-load~. Or we can figure out a way to make everything autoload?
-
-
-Any hydras that reference each other need to wait to call my/defhydra until after both hydras have been defined. This is a current limitation of my/defhydra that may be remedied in the future. Also, the name of the function should be changed, if I can't figure out a way to use my/defhydra as advice for defhydra at some point.
-
-Apparently hydras can be defined in the ~:init~ of ~(use-package hydra)~, which makes no sense to me. ~defhydra~ isn't available before hydra loads, so how can we use it right away?
-
 #+BEGIN_SRC emacs-lisp :tangle yes
-    (use-package hydra
-      ;:commands hydra-r/body
-      :demand t
-      :hook
-      (ess-r-mode . ess-r-mode-hydras)
-      ;; Can't simply call my/defhydra2 on treemacs-helpful-hydra, because the function that toggles the hydra also creates
-      ;; the hydra on its first invocation.
-      (treemacs-mode . (lambda ()
-                         (treemacs-helpful-hydra)
-                         (my/defhydra2 'treemacs--helpful-hydra)
-                         ;; So the hydra doesn't show the first time treemacs is called
-                         (treemacs--helpful-hydra/nil)))
-      :general
-      (my-leader
-        "b" 'hydra-buffer/body
-        "w" 'hydra-window/body)
-      ;; Add opinionated counsel-hydra-heads to all hydras (see :config)
-      (:keymaps 'hydra-base-map "." 'counsel-hydra-heads)
-      :config
-      ;; Display hydras in which-key
-      (with-eval-after-load "which-key"
-        (load "which-key-hacks"))
+  (customize-package
+   '(hydra-verbose t)
+   '(hydra-is-helpful t))
 
-      ;; Modify the function provided by counsel to search through hydras
-      (with-eval-after-load "counsel"
-        (defun counsel-hydra-integrate (old-func &rest args)
-          "Function used to advise `counsel-hydra-heads' to work with blue and amranath hydras."
-          (hydra-keyboard-quit)
-          (apply old-func args)
-          (funcall-interactively hydra-curr-body-fn))
-        (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate))
+  (straight-use-package 'hydra)
 
-      (load "my-hydras")
-      (my/defhydra 'hydra-window) ; Requires my-hydras.el, which-key-hacks.el
-      (my/defhydra 'hydra-buffer)
-      (defun ess-r-mode-hydras ()
-        "Hook for ess-r-mode. The functions used as hydra heads do not exist until an ess-r-mode buffer exists, so
-      my/defhydra must be called after that buffer is created."
-        (my/defhydra 'hydra-r)
-        (my/defhydra 'hydra-r-help)
-        (my/defhydra 'hydra-r-eval)
-        (my/defhydra 'hydra-r-debug)))
+  (my-leader
+    "b" 'hydra-buffer/body
+    "w" 'hydra-window/body)
+
+  ;; Required order of operations:
+  ;; 1. Modify hydra-base-map
+  ;; 2. defhydra evaluation
+  ;; 3. defhydra+ evaluation
+  ;; 4. my/defhydra
+  ;; Some defhydra(+) rely on with-eval-after-load. To ensure my/defhydra is evaluated last, these are loaded after all
+  ;; packages that contribute functions/heads to these hydras.
+  ;; NOTE: I had issues surrounding defhydra+ with with-eval-after-load declarations.
+  (defun counsel-hydra-integrate (old-func &rest args)
+    "Function used to advise `counsel-hydra-heads' to work with blue and amranath hydras."
+    (hydra-keyboard-quit)
+    (apply old-func args)
+    (funcall-interactively hydra-curr-body-fn))
+
+  (defun ess-r-mode-hydras ()
+    "Hook for ess-r-mode. The functions used as hydra heads do not exist until an ess-r-mode buffer exists, so
+        my/defhydra must be called after that buffer is created."
+    (my/defhydra 'hydra-r)
+    (my/defhydra 'hydra-r-help)
+    (my/defhydra 'hydra-r-eval)
+    (my/defhydra 'hydra-r-debug)) ; Display hydras in which-key
+
+  (defun treemacs-mode-hydras ()
+    "Can't simply call my/defhydra2 on treemacs-helpful-hydra, because the function that toggles the hydra also
+        creates the hydra on its first invocation."
+    (treemacs-helpful-hydra)
+    (my/defhydra2 'treemacs--helpful-hydra)
+    ;; So the hydra doesn't show the first time treemacs is called
+    (treemacs--helpful-hydra/nil))
+
+  (advice-add 'counsel-hydra-heads :around 'counsel-hydra-integrate)
+  (general-def hydra-base-map "." 'counsel-hydra-heads)
+  (load "my-hydras")
+
+  (with-eval-after-load "which-key"
+    (customize-package '(hydra-is-helpful nil)) ; Disable in favor of which-key-show-transient-maps and which-key hacks
+    (load "which-key-hacks")
+    (add-hook 'ess-r-mode-hook 'ess-r-mode-hydras)
+    (add-hook 'treemacs-mode-hook 'treemacs-mode-hydras)
+    ;; (with-eval-after-load "ivy-hydra" (my/defhydra 'hydra-ivy))
+    (with-eval-after-load "counsel"
+      (with-eval-after-load "evil"
+        (with-eval-after-load "ace-window"
+          (my/defhydra 'hydra-buffer)
+          (my/defhydra 'hydra-window)))))
 #+END_SRC
 
-** I am having troulbe running treemacs--helpful-hydra through my/defhydra.
-It appears #'treemacs-next-line is not a symbol.
+** TODO Rewrite my/defhydra so that you don't have to use with-eval-after-load
 
-* vim emulation
+which-key has changed its documentation API, so you might be able to use that instead to better effect.
+
+** TODO Add an action to counsel-fzf and other file commands to open files as read-only buffers
+This will help avoid accidentally altering files you simply want to read.
+
+** TODO Make sure every hydra head is an autoload in each hydra
+
+** TODO Make hydra-ivy work with my/defhydra
+More generally, figure out how to accept hydras of different structures. Neither my/defhydra nor my/defhydra2 work for hydra-ivy, so clearly something is going on to allow all these different structures.
+Alternatively, redefine the hydras yourself to get the desired structure.
+
+* [[https://github.com/abo-abo/swiper][ivy/counsel/swiper]]
+A good expalantion of the difference between ivy-mode and counsel-mode: https://github.com/abo-abo/swiper/issues/120. E.g., ivy-mode enables ivy-based completion for describe-function, but counsel-describe-function provides an extra action to jump to definition (alt-O-d) and replaces describe-function with counsel-describe-function.
+
+Usage within minibuffer: C-h m
+Accept current candidate: C-j
+Accept current input: C-M-j
+Toggle hydra-ivy: C-o
+- ivy-rotate-preffered-builders (M) to swap regex style per ivy-preferred-re-builders
+ivy-rotate-sort (C-c C-s)
+
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package undo-fu) ; Required for undo/redo operations
+  (setq ivy-re-builders-alist '((swiper . ivy--regex)
+                                (t . ivy--regex-fuzzy))
+        ivy-help-file "~/.emacs.d/ivy-help.org")
 
-  (use-package evil-tutor :after evil
-    :general (:keymaps 'help-map "T" 'evil-tutor-start))
+  (customize-package
+   '(ivy-count-format "%d/%d ")
+   ;; BUG: C-u counsel-fzf, then C-j on candidate '..' prevents ivy from dispaying counsel-fzf results
+   '(ivy-extra-directories nil)
+   ;; View more results in minibuffer
+   '(ivy-height 25)
+   ;; Don't anchor beginning of regex queries implicitly
+   '(ivy-initial-inputs-alist nil)
+   ;; Separates functionality for ivy-switch-buffer and counsel-recentf
+   '(ivy-use-virtual-buffers nil)
+   ;; For counsel-find-file. See also remapping of ivy-done and ivy-alt-done
+   '(counsel-bookmark-avoid-dired t)
+   ;; Affects counsel-recentf. Possibly also ivy-switch-buffer with ivy-use-virtual-buffers enabled.
+   '(recentf-max-saved-items 100))
 
-  (use-package evil-escape
-    :after evil
-    :diminish evil-escape-mode
-    :config (evil-escape-mode))
+  ;; Repo is swiper, but built as three separate packages: ivy, counsel, swiper
+  (straight-use-package 'counsel)
+  ;; Straight splits repos/swiper into build/ivy, build/counsel, and build/swiper. It omits a number of files, including
+  ;; ivy-hydra.el. I do not know all such packages, but I do know I need to install ivy-hydra separately. NOTE: To see
+  ;; recipes for each, use straight-get-recipe
+  (straight-use-package 'ivy-hydra) ; provides hydra-ivy
+  (diminish 'counsel-mode)
+  (ivy-mode)
+  (counsel-mode)
 
-  ;; (use-package evil-surround :after evil)
+  (my-leader "SPC" 'execute-extended-command)
+  (general-def :keymaps 'help-map "s" 'describe-symbol)
+  (general-def :keymaps 'my/files-map
+    ;; TODO: Add an action to change dir similar to C-u
+    "f" 'counsel-fzf
+    ;; https://beyondgrep.com/feature-comparison/
+    "g" 'counsel-rg
+    "m" 'counsel-recentf
+    "s" 'swiper)
+  (general-def :keymaps 'my/bookmarks-map
+    "D" 'counsel-bookmarked-directory
+    ;; TODO: Customize counsel-bookmark action list to include delete, rename, and set
+    "j" 'counsel-bookmark)
+  (general-def :keymaps 'ivy-minibuffer-map
+    "M-m" 'ivy-mark
+    "M-u" 'ivy-unmark
+    ;; For counsel-find-file, RET should add dir to search path instead of pulling up dired
+    [remap ivy-done] 'ivy-alt-done
+    [remap ivy-alt-done] 'ivy-done)
 
-  (use-package evil
-    :config
-    ;; (defalias 'evil-insert-state 'evil-emacs-state)    ; Alternative to disabling insert-state bindings
-    (setq evil-normal-state-modes
-          '(lisp-interaction-mode                         ; *scratch*
-            emacs-lisp-mode
-            python-mode
-            ess-r-mode
-            sh-mode
-            fish-mode
-            markdown-mode
-            fundamental-mode
-            lua-mode
-            org-mode
-            SAS-mode)
-          evil-insert-state-modes
-          '(inferior-ess-r-mode))
-    (with-eval-after-load "which-key"
-      (advice-add 'evil-search-forward :around 'disable-transient-map-temporarily)
-      (advice-add 'evil-search-backward :around 'disable-transient-map-temporarily))
-    (evil-mode))
+  (customize-package '(smex-history-length 100)) ; Longer command history for sorting counsel-M-x results
+  (straight-use-package 'smex) ; For counsel-M-x
+
+  (straight-use-package 'flx) ; For anything using ivy--regex-fuzzy
 #+END_SRC
 
-* Fuzzy UI
+** TODO Create sorting function to prioritize shorter matches over longer ones, anchored over non-anchored
+E.g., customize above customize-* above *-customize. ivy doesn't seem to provide many sorting functions. When you create one, add it to ivy-sort-functions-alist. When there are multiple functions per command, ivy-rotate-sort will finally work.
+
+* helm
 #+BEGIN_SRC emacs-lisp :tangle yes
-  ;; Was having issues with history, sorting, filtering in ivy using smex (M-x)
-  ;; and/or flx (ivy in general), so I tried out prescient instead. The latter
-  ;; has a definite history file it can read and write to.
-  ;; (use-package smex)
-  ;; (use-package flx)
-  ;; TODO: Look into selectrum to replace ivy/counsel
-  (use-package prescient)
-  (use-package ivy-prescient)
-  (use-package ivy :diminish ivy-mode)
-  ;; Usage within minibuffer: C-h m
-  ;; Accept current candidate: C-j
-  ;; Accept current input: C-M-j
-  (use-package counsel ;; Installs and loads ivy and swiper as dependencies
-    :diminish counsel-mode
-    :demand t
-    :general
-    (my-leader
-      "SPC" 'counsel-M-x
-      "'" 'ivy-resume)
-    (:keymaps 'my/files-map
-              ;; TODO: Add an action to change dir similar to C-u
-              "f" 'counsel-fzf ; C-u prompts for directory selection
-              ;; https://beyondgrep.com/feature-comparison/
-              "g" 'counsel-rg ; C-x C-d to change directory
-              "m" 'counsel-recentf)
-    (:keymaps 'my/bookmarks-map
-              "D" 'counsel-bookmarked-directory
-              ;; TODO: Customize counsel-bookmark action list to include delete, rename, and set
-              "j" 'counsel-bookmark)
-    (:keymaps 'ivy-minibuffer-map
-              "M-m"  'ivy-mark
-              "M-u"  'ivy-unmark
-              ;; For counsel-find-file, RET should add dir to search path instead of pulling up dired
-              [remap ivy-done] 'ivy-alt-done
-              [remap ivy-alt-done] 'ivy-done)
-  ;; counsel-grep
-  ;; counsel-org-file
-    :config
-    (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))
-          ivy-help-file "~/.emacs.d/ivy-help.org"))
+  ;; Dependencies for source build of helm
+  ;; (straight-use-package 'async)
+  ;; (straight-use-package 'popup)
+
+  ;; Source installation, per helm recommendation
+  ;; - https://github.com/emacs-helm/helm/wiki#from-source (installation)
+  ;; - https://github.com/emacs-helm/helm/wiki#if-installed-from-source (configuration)
+  ;; (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/helm/") ; facultative when installed with make install
+  ;; (require 'helm-config)
+  ;; (my-leader
+  ;;   "SPC" 'helm-M-x)
+  ;; (use-package helm-fzf
+  ;;   :straight (helm-fzf :type git :host github :repo "ibmandura/helm-fzf"))
+  ;; From emacs-helm.sh
+  ;; (helm-mode 1)
+  ;; (define-key global-map [remap find-file] 'helm-find-files)
+  ;; (define-key global-map [remap occur] 'helm-occur)
+  ;; (define-key global-map [remap list-buffers] 'helm-buffers-list)
+  ;; (define-key global-map [remap dabbrev-expand] 'helm-dabbrev)
+  ;; (define-key global-map [remap execute-extended-command] 'helm-M-x)
+  ;; (define-key global-map [remap apropos-command] 'helm-apropos)
+  ;; (unless (boundp 'completion-in-region-function)
+  ;;   (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
+  ;;   (define-key emacs-lisp-mode-map       [remap completion-at-point] 'helm-lisp-completion-at-point))
+  ;; (add-hook 'kill-emacs-hook #'(lambda () (and (file-exists-p "$CONF_FILE") (delete-file "$CONF_FILE"))))
+
+  ;; (use-package dash)
+  ;; (use-package f)
+  ;; (use-package s)
+  ;; (use-package helm-org-rifle)
+
+
 #+END_SRC
 
-* Comments
+* evil
+#+BEGIN_SRC emacs-lisp :tangle yes
+  (setq evil-normal-state-modes
+        '(lisp-interaction-mode                         ; *scratch*
+          messages-buffer-mode
+          emacs-lisp-mode
+          python-mode
+          ess-r-mode
+          sh-mode
+          fish-mode
+          markdown-mode
+          fundamental-mode
+          lua-mode
+          org-mode
+          SAS-mode)
+        evil-insert-state-modes
+        '(inferior-ess-r-mode))
+
+  (customize-package
+   '(evil-default-state 'emacs)
+   '(evil-emacs-state-modes nil)
+   ;; Highlight closing paren at point in normal, before point in listed modes
+   '(evil-highlight-closing-paren-at-point-states '(not emacs insert replace))
+   '(evil-insert-state-modes nil)
+   '(evil-intercept-maps nil)
+   ;; Read-only modes start in default mode (should be emacs)
+   '(evil-motion-state-modes nil nil nil)
+   '(evil-overriding-maps nil)
+   '(evil-split-window-below t)
+   '(evil-undo-system 'undo-fu)
+   '(evil-vsplit-window-right t)
+   '(evil-want-keybinding nil))
+
+  (straight-use-package 'evil)
+  (evil-mode)
+
+  ;; (defalias 'evil-insert-state 'evil-emacs-state)    ; Alternative to disabling insert-state bindings
+  (advice-add 'evil-search-forward :around 'disable-transient-map-temporarily)
+  (advice-add 'evil-search-backward :around 'disable-transient-map-temporarily)
+
+  ;; For evil undo/redo operations
+  (straight-use-package 'undo-fu)
+
+  (customize-package
+   '(evil-escape-delay 0.2)
+   '(evil-escape-mode t)
+   '(evil-escape-key-sequence "kj"))
+
+  (straight-use-package 'evil-escape)
+  (evil-escape-mode)
+  (diminish 'evil-escape-mode)
+
+  ;; (straight-use-package evil-surround)
+#+END_SRC
+
+* comments
 See the README for examples, evil usage, and tips
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package evil-nerd-commenter
-    :after (:all evil counsel)
-    :general (my-leader
-               "c" '(:ignore t :wk "comments")
-               "cc" 'evilnc-comment-or-uncomment-lines
-               "cC" 'evilnc-copy-and-comment-lines
-               "ci" 'counsel-imenu-comments
-               ;; When given C-u <n>, will forward-match <n> against the rightmost
-               ;; digits of each line. E.g., on line 160, C-u <72> will target lines
-               ;; 160-172
-               "cl" 'evilnc-quick-comment-or-uncomment-to-the-line
-               "cp" 'evilnc-comment-or-uncomment-paragraphs
-               "cy" 'evilnc-comment-and-kill-ring-save
-               ;; Whether empty lines can be commented as part of a selection
-               "ce" 'evilnc-toggle-comment-empty-lines
-               ;; When toggled off, all lines in a selection are commented if any
-               ;; uncommented lines are included. Note that blank lines never count
-               "cv" 'evilnc-toggle-invert-comment-line-by-line
-               "c," 'evilnc-comment-operator
-               "c." 'evilnc-copy-and-comment-operator)
-    :config
-    (defun counsel-imenu-comments ()
-      "Use counsel to display comments in current buffer"
-      (interactive)
-      (let* ((imenu-create-index-function 'evilnc-imenu-create-index-function))
-        (unless (featurep 'counsel) (require 'counsel))
-        (counsel-imenu))))
+  (defun counsel-imenu-comments ()
+    "Use counsel to display comments in current buffer"
+    (interactive)
+    (let* ((imenu-create-index-function 'evilnc-imenu-create-index-function))
+      (unless (featurep 'counsel) (require 'counsel)) ; !Alternative to with-eval-after-load?!
+      (counsel-imenu)))
+
+  (straight-use-package 'evil-nerd-commenter)
+
+  (my-leader
+    "c" '(:ignore t :wk "comments")
+    "cc" 'evilnc-comment-or-uncomment-lines
+    "cC" 'evilnc-copy-and-comment-lines
+    "ci" 'counsel-imenu-comments
+    ;; When given C-u <n>, will forward-match <n> against the rightmost
+    ;; digits of each line. E.g., on line 160, C-u <72> will target lines
+    ;; 160-172
+    "cl" 'evilnc-quick-comment-or-uncomment-to-the-line
+    "cp" 'evilnc-comment-or-uncomment-paragraphs
+    "cy" 'evilnc-comment-and-kill-ring-save
+    ;; Whether empty lines can be commented as part of a selection
+    "ce" 'evilnc-toggle-comment-empty-lines
+    ;; When toggled off, all lines in a selection are commented if any
+    ;; uncommented lines are included. Note that blank lines never count
+    "cv" 'evilnc-toggle-invert-comment-line-by-line
+    "c," 'evilnc-comment-operator
+    "c." 'evilnc-copy-and-comment-operator)
+
 #+END_SRC
 
-* org
+* org-mode
+
+[[https://orgmode.org/org.html#index-babel_002c-languages][Languages supported by Babel]]
+
 #+BEGIN_SRC emacs-lisp :tangle yes
+  (customize-package
+   '(org-M-RET-may-split-line '((default)))
+   '(org-agenda-include-diary t)
+   '(org-agenda-restore-windows-after-quit t)
+   '(org-agenda-todo-ignore-scheduled 'future)
+   '(org-agenda-window-setup 'current-window)
+   '(org-attach-dir-relative t)
+   '(org-capture-bookmark nil)
+   '(org-catch-invisible-edits 'show)
+   '(org-cycle-separator-lines 0)
+   '(org-default-notes-file "~/.emacs.d/org/.notes")
+   '(org-directory "~/.emacs.d/org")
+   '(org-enforce-todo-checkbox-dependencies t)
+   '(org-enforce-todo-dependencies t)
+   '(org-hide-emphasis-markers t)
+   '(org-link-frame-setup
+     '((vm . vm-visit-folder-other-frame)
+       (vm-imap . vm-visit-imap-folder-other-frame)
+       (gnus . org-gnus-no-new-news)
+       (file . find-file)
+       (wl . wl-other-frame)))
+   '(org-list-allow-alphabetical t)
+   '(org-log-done 'time)
+   '(org-log-into-drawer nil)
+   '(org-log-redeadline 'time)
+   '(org-log-reschedule 'time)
+   '(org-mark-ring-length 20)
+   '(org-modules
+     '(ol-bbdb ol-bibtex ol-docview ol-eww ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-w3m))
+   '(org-pretty-entities t nil nil "Affects manually typed entities (e.g., \"\\theta\"). org-counsel-entities inserts the actual UTF-8 character.")
+   '(org-pretty-entities-include-sub-superscripts nil)
+   '(org-projectile-projects-file "projects.org")
+   '(org-return-follows-link t)
+   '(org-src-window-setup 'current-window)
+   '(org-startup-folded nil)
+   '(org-startup-indented t)
+   '(org-todo-keyword-faces
+     '(("TODO" . org-warning)
+       ("STARTED" . "yellow")
+       ("DONE" . "green")
+       ("WAITING" . "blue")))
+   '(org-todo-keywords
+     '((sequence "TODO(t)" "WAITING(w@/!)" "STARTED(s!)" "|" "DONE(d)")))
+   '(org-use-fast-todo-selection 'expert))
 
-  ;; TODO: Investigate projectile
-  ;; https://docs.projectile.mx/projectile/index.html
-  (use-package projectile
-    :general (my-leader "p" 'projectile-command-map))
+  (customize-package
+   '(org-structure-template-alist '(("e" . "src emacs-lisp :tangle yes")
+                                    ("r" . "src R :tangle no")
+                                    ("p" . "src python :tangle no"))))
 
-  ;; TODO: Investigate org-projectile source code (the docs are sparse)
-  (use-package org-projectile
-    :config
-    (org-projectile-per-project) ; Per-project org files
-    ;; Add all org files contained in projectile directories to org-agenda-files
-    (setq org-agenda-files (append org-agenda-files projectile-known-projects))
-    ;; Adds a TODO capture template activated by letter p (see org-capture) that
-    ;; captures to <current-project>/TODO.org for org-capture or
-    ;; <selected-project>/TODO.org for org-projectile-todo-completing-read
-    ;; and replaces the default t(ask) template stored in ~/.notes normally
-    (push (org-projectile-project-todo-entry) org-capture-templates))
-
-
-  (use-package async)
-  (use-package popup)
-;; Installed from source per Wiki instructions
-(use-package helm)
-
-
-  (use-package dash)
-  (use-package f)
-  (use-package s)
-  (use-package helm-org-rifle)
-
-  ;; TODO: Investigate later:
-  ;; sparse trees (e.g., to hide finished tasks)
-  ;; drawers
-  ;; blocks
-  ;; links
-  ;; todo subsequences
-  ;; habits
-  ;; priorities
-  ;; cookies [%]
-  ;; tags
-  ;; properties
-  ;; column view
-  ;; details for dates and times, including clocking
-  ;; refile, archive, capture refile and templates
-  ;; working with attachments
-  ;; agenda onward
-  ;; diary
-
-  ;;;; TODO:
-  ;; Find command to add repeating timers rather than editing manually
-  ;; Make RET convert plain text under cursor or selected to link. Currenlty it
-  ;; only follows existing links, so one-half vimwiki functionality
-  ;;;;; Bind the following:
-  ;; org-set-property-and-value: sets property block
-  ;; org-delete-property
-  ;; C-u c-u c-u c-t: change todo state, regardless of state blocking (like
-  ;; ordered property)
-  ;; org-check-deadlines (c-c / d): show past-due or do within
-  ;;      org-deadline-warning-days Reminders can be appended; e.g., <2004-02-29
-  ;;      -5d> uses a 5-day advance notice Positives (+5m) indicate repeaters
-  ;;      (repeating tasks). These must come before reminders.
-  ;; org-check-before-date (c-c / b): checks deadliens and scheduled items before
-  ;; date
-  ;; org-check-after-date (c-c / a)
-  ;; https://www.spacemacs.org/layers/+emacs/org/README.html
+  (if (file-directory-p "/mnt/d/org") ; Using work PC
+      (setq org-agenda-files (append org-agenda-files "mnt/d/org")))
 
   (load "my-org-functions.el")
   (add-hook 'org-after-todo-statistics-hook 'my/org-summary-todo)
 
   (my-leader "o" '(:prefix-command my/global-org-map :wk "org-global"))
-  (defun my/org-programming ()
-    (interactive)
-    (my/org-file org-directory "programming.org"))
-  (defun my/org-home ()
-    (interactive)
-    (my/org-file org-directory "home.org"))
-  (defun my/org-work ()
-    (interactive)
-    (my/org-file "/mnt/d/org" "work_diary.org"))
-  (setq org-agenda-files (append org-agenda-files "mnt/d/org"))
   (general-def my/global-org-map
     :wk-full-keys nil
-    ;; Insert LaTeX-like symbols
     "a" 'org-agenda ; Dispatcher
+    "c" 'counsel-org-capture ; Capture to org-default-notes-file
     "e" 'counsel-org-entity ; https://orgmode.org/manual/Special-Symbols.html
     "l" 'org-insert-link-global
-    ;; "o" 'org-open-at-point-global
-    "o" '(:ignore t :wk "org-files")
-    ;; "ow" '
-    "op" 'my/org-programming
-    "oh" 'my/org-home
-    "ow" 'my/org-work
-    ;; Capture to org-default-notes-file
-    "c" 'counsel-org-capture
-    ;; org-projectile-capture-for-current-project
-    ;; NOTE: May not list all projects known by org-agenda since it relies on
-    ;; projectile-relevant-known-projects and org-projectile-projects-file
-    "p" 'org-projectile-project-todo-completing-read)
+    "o" 'org-open-at-point-global)
 
-  ;; For some reason, this doesn't work if added to general-define-key below
-  (evil-define-key 'normal org-mode-map
-    (kbd "DEL") 'org-mark-ring-goto)
-    ;; (kbd "DEL")
-    ;; (lambda ()
-    ;;   (interactive)
-    ;;   (if (equal 1 (length (seq-uniq (cl-subseq org-mark-ring 0
-    ;;                                             org-mark-ring-length))))
-    ;;       (evil-backward-char)
-    ;;     (org-mark-ring-goto))))
-
-  ;;;; Existing bindings that I didn't change:
-  ;; C-c ' (org-edit-src-code and org-edit-src-exit)
-  ;; tab (org-cycle)
-  ;; S-tab (global-org-cycle)
-  ;;;;; Stucture (list/heading) editing
-  ;; org-meta-return (m-ret): insert heading or item at current level
-  ;;     org-insert-heading
-  ;; org-insert-heading-respect-content (c-ret): Insert heading at end of subtree
-  ;;     org-insert-heading-after-current
-  ;; org-insert-todo-heading (m-s-ret): insert todo heading or checkbox item
-  ;; org-insert-todo-heading-respect-content (c-s-ret): Insert todo heading at end of subtree
-  ;; org-insert-subheading: Insert subheading
-  ;; org-insert-todo-subheading
-  (add-hook 'org-mode-hook
-            (lambda ()
-              (general-define-key
-              :states 'motion
-              :keymaps 'org-mode-map
-              "RET" 'my/org-open-at-point-in-emacs
-              "g" '(:ignore t :wk "Entry navigation")
-              "gh" 'outline-previous-visible-heading
-              "gl" 'outline-next-visible-heading
-              "gk" 'org-backward-heading-same-level
-              "gj" 'org-forward-heading-same-level)
-              "U" 'outline-up-heading ; Navigate up a heading level
-              (general-define-key
-               :states '(motion insert)
-              "M-h" 'org-metaleft ; Promote/dedent heading/list item
-              "M-l" 'org-metaright ; Demote/indent heading/list item
-              "M-j" 'org-shiftmetadown ;; Move heading or list item down
-              "M-k" 'org-shiftmetaup
-              "M-H" 'org-shiftmetaleft ;; Like metaleft for subtrees/sublists
-              "M-L" 'org-shiftmetaright
-              "M-J" 'org-metadown ;; Move subtree/sublist up/down
-              "M-K" 'org-metaup
-              ;; Respects lists when filling
-              "M-q" 'org-fill-paragraph)))
-
+  (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
   (general-define-key
    :prefix-command 'my/org-map
    ;; Highly varied. For list items, with prefix create checkbox else toggle
@@ -611,53 +678,160 @@ See the README for examples, evil usage, and tips
    "J" 'org-shiftdown
    "K" 'org-shiftup)
 
-  (my-leader :keymaps 'org-mode-map "m" 'my/org-map)
+  (general-def :keymaps 'org-mode-map
+    "<C-tab>" 'org-force-cycle-archived
+    "M-h" 'org-metaleft ; Promote/dedent heading/list item
+    "M-l" 'org-metaright ; Demote/indent heading/list item
+    "M-j" 'org-shiftmetadown ;; Move heading or list item down
+    "M-k" 'org-shiftmetaup
+    "M-H" 'org-shiftmetaleft ;; Promote/dedent subtrees/sublists
+    "M-L" 'org-shiftmetaright
+    "M-J" 'org-metadown ;; Move subtree/sublist up/down
+    "M-K" 'org-metaup
+    ;; Respects lists when filling
+    "M-q" 'org-fill-paragraph)
+
+  (general-def :keymaps 'org-mode-map :states 'motion
+    "RET" 'my/org-open-at-point-in-emacs
+    "g" '(:ignore t :wk "Entry navigation")
+    "gh" 'outline-previous-visible-heading
+    "gl" 'outline-next-visible-heading
+    "gk" 'org-backward-heading-same-level
+    "gj" 'org-forward-heading-same-level)
+
+  ;; Does not work as part of general-def. May be related to this:
+  ;; https://github.com/noctuid/general.el#why-dont-some-evil-keybindings-work-immediately
+  (evil-define-key 'normal org-mode-map
+    "Reverses my/org-open-at-point-in-emacs"
+    (kbd "DEL") 'org-mark-ring-goto)
+    ;; (lambda ()
+    ;;   (interactive)
+    ;;   (if (equal 1 (length (seq-uniq (cl-subseq org-mark-ring 0
+    ;;                                             org-mark-ring-length))))
+    ;;       (evil-backward-char)
+    ;;     (org-mark-ring-goto))))
 #+END_SRC
 
-* Company
+** TODO Convert evil-define-key to a general statement
+See comments above code. My gut feeling is evil has some sort of buffer-local setting that general isn't overriding normally.
+** TODO Notes and todos
+TODO: Investigate later:
+sparse trees (e.g., to hide finished tasks)
+drawers
+blocks
+links
+todo subsequences
+habits
+priorities
+cookies [%]
+tags
+properties
+column view
+details for dates and times, including clocking
+refile, archive, capture refile and templates
+working with attachments
+agenda onward
+diary
+
+TODO:
+Find command to add repeating timers rather than editing manually
+Make RET convert plain text under cursor or selected to link. Currenlty it
+only follows existing links, so one-half vimwiki functionality
+Bind the following:
+org-set-property-and-value: sets property block
+org-delete-property
+C-u c-u c-u c-t: change todo state, regardless of state blocking (like
+ordered property)
+org-check-deadlines (c-c / d): show past-due or do within
+     org-deadline-warning-days Reminders can be appended; e.g., <2004-02-29
+     -5d> uses a 5-day advance notice Positives (+5m) indicate repeaters
+     (repeating tasks). These must come before reminders.
+org-check-before-date (c-c / b): checks deadliens and scheduled items before
+date
+org-check-after-date (c-c / a)
+https://www.spacemacs.org/layers/+emacs/org/README.html
+
+For org-mode-map:
+
+Existing bindings that I didn't change:
+C-c ' (org-edit-src-code and org-edit-src-exit)
+tab (org-cycle)
+S-tab (global-org-cycle)
+
+Stucture (list/heading) editing
+org-meta-return (m-ret): insert heading or item at current level
+org-insert-heading
+org-insert-heading-respect-content (c-ret): Insert heading at end of subtree. Similar to C-u M-ret.
+Is there a function for C-u C-u M-ret???
+org-insert-heading-after-current
+org-insert-todo-heading (m-s-ret): insert todo heading or checkbox item
+org-insert-todo-heading-respect-content (c-s-ret): Insert todo heading at end of subtree
+org-insert-subheading: Insert subheading
+org-insert-todo-subheading
+
+org-edit-src-save
+** TODO Figure out attachments and links, so you can navigate by ret and del, so you can use c-\ to open treemacs, select a parent org file, then quickly navigate down its links/attachments using del and ret in normal mode.
+* company
 When used with lsp-mode, company-box provides custom icons and popup documentation to the right of completion items, similar to coc.nvim.
 
 For the love of God, global-company-mode is being modified outside of the custom system, but I cannot fucking figure out where from! I had to ditch it in favor of individual mode activation in :hook. I also couldn't override universal company box mode ~:hook (company-mode . company-box-mode)~, so I switched that to a per-mode setting.
 
-I disabled ess-r-mode's use of company-box, because the latter would prompt for resolution between objects of the same name in different packages, which was extremely aggravating when using the tidyverse.
-
 #+begin_src emacs-lisp :tangle yes
-  (use-package company
-    :init
-    (defun mode-specific-C-h ()
-      "Programming language-specific help for company-active-map"
-      (interactive)
-      (pcase major-mode
-        ('ess-r-mode (show-company-doc-as-ess-help))
-        (_ (company-show-doc-buffer))))
+  (customize-package
+   '(company-frontends
+     ;; Remove company-echo-metadata-frontend to speed up candidate navigation
+     '(company-pseudo-tooltip-unless-just-one-frontend company-preview-if-just-one-frontend))
+   '(company-idle-delay 0)
+   '(company-minimum-prefix-length 0.2)
+   '(company-selection-wrap-around t)
+   '(company-tooltip-align-annotations t)
+   '(company-tooltip-limit 20))
 
-    (defun show-company-doc-as-ess-help ()
-      "Show ess help if available, else show company help"
-      (interactive)
-      (let* ((selected (nth company-selection company-candidates))
-             (obj-help (ess-display-help-on-object selected)))
-        (unless obj-help
-          (company-show-doc-buffer))))
-    :hook
-    (emacs-lisp-mode . company-mode)
-    (ess-r-mode . company-mode)
-    :general
-    (:keymaps 'company-mode-map
-              "<tab>" 'company-indent-or-complete-common)
-    (:keymaps 'company-active-map
-              "C-h" 'mode-specific-C-h
-              "M-n"  nil
-              "M-p"  nil
-              "C-n"  'company-select-next
-              "C-p"  'company-select-previous))
+  (straight-use-package 'company)
 
-  (use-package company-box
-    :diminish company-box-mode
-    :hook
-    ;;When ess-eldoc-mode is enabled, it vanishes the company completion menu, at least with company-box enabled.
-    ;; Did it affect lsp-based company completion? Test this if you ever reenable lsp-mode for ess-r.
-    ;;(ess-r-mode . (lambda () (setq ess-eldoc-mode -1)))
-    (emacs-lisp-mode . company-box-mode))
+  (customize-package
+   '(company-box-doc-enable t)
+   '(company-box-enable-icon t))
+
+  (straight-use-package 'company-box)
+  (diminish 'company-box-mode)
+
+  (general-def :keymaps 'company-mode-map
+    "<tab>" 'company-indent-or-complete-common)
+
+  (general-def :keymaps 'company-active-map
+    "C-h" 'mode-specific-C-h
+    "M-n"  nil
+    "M-p"  nil
+    "C-n"  'company-select-next
+    "C-p"  'company-select-previous)
+
+  (defun mode-specific-C-h ()
+    "Programming language-specific help for company-active-map"
+    (interactive)
+    (pcase major-mode
+      ('ess-r-mode (show-company-doc-as-ess-help))
+      (_ (company-show-doc-buffer))))
+
+  (defun show-company-doc-as-ess-help ()
+    "Show ess help if available, else show company help"
+    (interactive)
+    (let* ((selected (nth company-selection company-candidates))
+           (obj-help (ess-display-help-on-object selected)))
+      (unless obj-help
+        (company-show-doc-buffer))))
+
+  (add-hook 'emacs-lisp-mode-hook 'company-mode)
+  (add-hook 'emacs-lisp-mode-hook 'company-box-mode)
+  (add-hook 'ess-r-mode-hook 'company-mode)
+
+  ;; I disabled ess-r-mode's use of company-box, because the latter would prompt for resolution between objects of the
+  ;; same name in different packages, which was extremely aggravating when using the tidyverse.
+  ;; (add-hook 'ess-r-mode-hook 'company-box-mode)
+
+  ;; When ess-eldoc-mode is enabled, it vanishes the company completion menu, at least with company-box enabled.
+  ;; Did it affect lsp-based company completion? Test this if you ever reenable lsp-mode for ess-r.
+  ;; (ess-r-mode . (lambda () (setq ess-eldoc-mode -1)))
 #+end_src
 
 * LSP
@@ -673,39 +847,72 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
   ;;   :hook ((python-mode . yas-minor-mode)
   ;;          (ess-r-mode . yas-minor-mode)))
 
-  (use-package lsp-mode
-    :hook ((python-mode . lsp)
-           ;; (ess-r-mode . lsp)
-           (lsp-mode . lsp-enable-which-key-integration))
-    ;; :commands lsp
-    :config
-    (setq read-process-output-max (* 1024 1024)
-          lsp-prefer-capf t
-          lsp-idle-delay 0.500))
+  (setq read-process-output-max (* 1024 1024)
+        lsp-prefer-capf t
+        lsp-idle-delay 0.500)
 
-  (use-package lsp-ui
-    :commands lsp-ui-mode
-    :config
-    (defun scroll-down-lsp-ui ()
-      "Enable scrolling documentation child frames when using lsp-ui-doc-glance"
-      (interactive)
-      (if (lsp-ui-doc--frame-visible-p)
-          (let ((kmap (make-sparse-keymap)))
-            (define-key kmap (kbd "q")
-              '(lambda ()
-                 (interactive)
-                 (lsp-ui-doc-unfocus-frame)
-                 (setq overriding-terminal-local-map nil)
-                 (setq which-key-show-transient-maps t)))
-            (setq which-key-show-transient-maps nil)
-            (setq overriding-terminal-local-map kmap)
-            (lsp-ui-doc-focus-frame)))
-      (evil-scroll-page-down 1))
-    (general-define-key
-     :states '(motion insert emacs)
-     "C-f" 'scroll-down-lsp-ui)
-    ;; Disable underlines in lsp-ui-doc child frames
-    (custom-set-faces '(nobreak-space ((t nil)))))
+  (customize-package
+   '(lsp-auto-guess-root t)
+   '(lsp-completion-provider t)
+   '(lsp-document-sync-method nil)
+   '(lsp-eldoc-enable-hover nil)
+   '(lsp-eldoc-render-all nil)
+   '(lsp-enable-snippet nil)
+   '(lsp-enable-text-document-color t)
+   '(lsp-headerline-breadcrumb-enable nil)
+   '(lsp-log-io t)
+   '(lsp-print-performance t)
+   '(lsp-pyls-plugins-jedi-completion-include-params t)
+   '(lsp-signature-auto-activate t)
+   '(lsp-signature-doc-lines 10)
+   '(lsp-signature-render-documentation t))
+
+  (straight-use-package 'lsp-mode)
+
+  (add-hook 'python-mode-hook 'lsp)
+  ;; (add-hook 'ess-r-mode-hook 'lsp)
+  (add-hook 'lsp-mode 'lsp-enable-which-key-integration)
+
+  (customize-package
+   '(lsp-ui-doc-alignment 'window)
+   '(lsp-ui-doc-border "#93a1a1")
+   '(lsp-ui-doc-enable t)
+   '(lsp-ui-doc-header nil)
+   '(lsp-ui-doc-include-signature t)
+   '(lsp-ui-doc-max-width 150)
+   '(lsp-ui-doc-position 'top)
+   '(lsp-ui-doc-use-childframe t)
+   '(lsp-ui-doc-use-webkit nil)
+   '(lsp-ui-sideline-enable nil)
+   '(lsp-ui-sideline-show-code-actions nil)
+   '(lsp-ui-sideline-show-diagnostics nil)
+   '(lsp-ui-sideline-show-hover t)
+   '(lsp-ui-sideline-show-symbol nil)
+   '(lsp-ui-sideline-update-mode 'point))
+
+  (straight-use-package 'lsp-ui)
+
+  (general-def '(motion insert emacs)
+   "C-f" 'scroll-down-lsp-ui)
+
+  ;; Disable underlines in lsp-ui-doc child frames
+  (custom-set-faces '(nobreak-space ((t nil))))
+
+  (defun scroll-down-lsp-ui ()
+    "Enable scrolling documentation child frames when using lsp-ui-doc-glance"
+    (interactive)
+    (if (lsp-ui-doc--frame-visible-p)
+        (let ((kmap (make-sparse-keymap)))
+          (define-key kmap (kbd "q")
+            '(lambda ()
+               (interactive)
+               (lsp-ui-doc-unfocus-frame)
+               (setq overriding-terminal-local-map nil)
+               (setq which-key-show-transient-maps t)))
+          (setq which-key-show-transient-maps nil)
+          (setq overriding-terminal-local-map kmap)
+          (lsp-ui-doc-focus-frame)))
+    (evil-scroll-page-down 1))
 #+END_SRC
 
 ** TODO Finish setting up lsp package extensions,
@@ -725,7 +932,6 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
    "i" 'eval-print-last-sexp    ; "i" for insert(ing result)
    "r" 'eval-region)
 
-  ;; "<backtab>" 'counsel-el ; counsel-assisted completion
   (my-leader :keymaps 'emacs-lisp-mode-map "m" 'my/elisp-map)
 #+END_SRC
 
@@ -733,55 +939,76 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
   Major-mode binding (i.e., ~(my-leader :keymaps 'ess-r-mode-map "m" 'hydra-r/body)~) is more efficient than buffer-local binding (i.e., ~(my-leader :keymaps 'local "m" 'hydra-r/body)~) in the body of a hook (i.e., ~config-ess-r-mode~).
 
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package ess
-    :general
-    (my-leader :keymaps 'ess-r-mode-map "m" 'hydra-r/body)
-    :hook (ess-r-mode . config-ess-r-mode)
-    :init
-    (defun config-ess-r-mode ()
-      (ess-set-style 'RStudio)
-      ;; (setq-local ess-indent-offset 4) ; RStudio style uses a value of 2
+  (setq ess-nuke-trailing-whitespace-p t
+        ;; ess-S-quit-kill-buffers-p 'ask
+        inhibit-field-text-motion nil) ; prompt acts as beginning of line if prompt is read-only
 
-      ;; Rely on electric-pair-mode instead of skeleton
-      (local-set-key (kbd "{") 'self-insert-command)
-      (local-set-key (kbd "}") 'self-insert-command)
+  (customize-package
+   '(comint-prompt-read-only t) ; Read-only prompt (\">\" in ess-R)
+   '(comint-use-prompt-regexp nil) ; nil enables evil motions
+   '(comint-scroll-show-maximum-output t)
+   '(comint-scroll-to-bottom-on-input t)
+   '(ess-ask-for-ess-directory nil)
+   '(ess-eldoc-abbreviation-style 'mild)
+   ;; Show function signature in echo area when inside function and on symbol. May not show until first argument has been
+   ;; completed.
+   '(ess-eldoc-show-on-symbol t)
+   '(ess-eval-visibly nil)
+   ;; I suspect this is the reason comments were forced toward the right margin in R scripts
+   '(ess-indent-with-fancy-comments nil)
+   '(ess-use-company t) ; How does this differ from adding company-mode to ess-r-mode-hook???
+   '(ess-style 'RStudio))
 
-      ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
-      ;; if electric-layout-mode is enabled (it is not by default)
-      (setq-local electric-layout-rules nil))
-    :config
-    ;; Prevent window displaying company documentation buffer from vanishing when invoking a binding not in company--electric-commands
-    ;; (defun forget-saved-window-config ()
-    ;;   (setq company--electric-saved-window-configuration nil))
-    ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
+  (straight-use-package 'ess)
 
-    ;; Override Windows' help_type option of "html", to open help in help buffer, not browser (see contents of .Rprofile)
-    (pcase system-type
-      ('windows-nt
-       ;; iESS searches the paths listed in the variable exec-path for inferior-ess-r-program
-       (add-to-list 'exec-path "c:/Users/jkroes/Documents/R/R-3.6.2/bin")
-       ;; Sets R_USER and R_LIBS_USER
-       (setenv "R_USER" "c:/Users/jkroes/Documents")
-       ;; run-ess-r fails when this is set to Rterm
-       (setq inferior-ess-r-program "R")
-       (setenv "R_PROFILE_USER" "C:/Users/jkroes/.emacs.d/.Rprofile")
-       ;; RStudio downloads pandoc with rmarkdown, but outside of RStudio
-       ;; you need to notify R of the executable's directory
-       (setenv "RSTUDIO_PANDOC" "C:/Users/jkroes/AppData/Local/Pandoc"))
-      ('darwin (setenv "R_PROFILE_USER" "~/.emacs.d/.Rprofile")))
+  (my-leader :keymaps 'ess-r-mode-map "m" 'hydra-r/body)
 
-    (setq ess-nuke-trailing-whitespace-p t
-          ;; ess-S-quit-kill-buffers-p 'ask
-          inhibit-field-text-motion nil)) ; prompt acts as beginning of line if prompt is read-only
+  (add-hook 'ess-r-mode-hook 'config-ess-r-mode)
 
-  (use-package poly-markdown)
+  (defun config-ess-r-mode ()
+    (ess-set-style 'RStudio)
+    ;; (setq-local ess-indent-offset 4) ; RStudio style uses a value of 2
+
+    ;; Rely on electric-pair-mode instead of skeleton
+    (local-set-key (kbd "{") 'self-insert-command)
+    (local-set-key (kbd "}") 'self-insert-command)
+
+    ;; electric-layout-rules interferes with ess-roxy-newline-and-indent
+    ;; if electric-layout-mode is enabled (it is not by default)
+    (setq-local electric-layout-rules nil))
+
+  ;; Override Windows' help_type option of "html", to open help in help buffer, not browser (see contents of .Rprofile)
+  (pcase system-type
+    ('windows-nt
+     ;; iESS searches the paths listed in the variable exec-path for inferior-ess-r-program
+     (add-to-list 'exec-path "c:/Users/jkroes/Documents/R/R-3.6.2/bin")
+     ;; Sets R_USER and R_LIBS_USER
+     (setenv "R_USER" "c:/Users/jkroes/Documents")
+     ;; run-ess-r fails when this is set to Rterm
+     (setq inferior-ess-r-program "R")
+     (setenv "R_PROFILE_USER" "C:/Users/jkroes/.emacs.d/.Rprofile")
+     ;; RStudio downloads pandoc with rmarkdown, but outside of RStudio
+     ;; you need to notify R of the executable's directory
+     (setenv "RSTUDIO_PANDOC" "C:/Users/jkroes/AppData/Local/Pandoc"))
+    ('darwin (setenv "R_PROFILE_USER" "~/.emacs.d/.Rprofile")))
+
+  (straight-use-package 'poly-markdown)
+
   ;; NOTE: ess-r configuration and bindings are available inside chunks, where R-mode is active
   ;; I have bound polymode-export (render) to SPC-m-e-k
-  (use-package poly-R)
+  (straight-use-package 'poly-R)
+
+  ;; Prevent window displaying company documentation buffer from vanishing when invoking a binding not in
+  ;; company--electric-commands
+  ;; (defun forget-saved-window-config ()
+  ;;   (setq company--electric-saved-window-configuration nil))
+  ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
 #+END_SRC
 
-* Terminal
+* Terminal and shell scripts
 #+BEGIN_SRC emacs-lisp :tangle yes
+  (straight-use-package 'fish-mode)
+
   ;; Modified ansi-term to avoid read-from-minibuffer prompt
   (setq explicit-shell-file-name "/usr/bin/fish")
 
@@ -838,91 +1065,224 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
 
   ;;   (switch-to-buffer term-ansi-buffer-name))
 #+END_SRC
-* File browser
 
-Inspiration from https://github.com/lepisma/rogue.
+
+* file browsers
 
 Use ranger for general file browsing and treemacs as your workspace/project sidebar.
 
+** treemacs
+Inspiration from https://github.com/lepisma/rogue.
+
+To toggle treemacs, use C-\. To switch to a treemacs window, use C-|. You can use normal windmove commands to move out of the window, just not in, per the current setting of ~treemacs-is-never-other-window~. The upside of this is that, e.g., delete-other-windows ignores treemacs.
+
+_If general-def isn't working, use general-define-key as done below._
+
 #+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package all-the-icons :demand t)
+  (straight-use-package 'all-the-icons)
 
-  ;;; Commands - add those that aren't already mapped as shown by "?" in a treemacs buffer
-  ;; treemacs-edit-workspaces
-  ;; treemacs-finish-edit
-  ;; C-c c-p / c-c c-w
-  ;; save ~/.emacs.d/.cache/treemacs-persist to save workspaces
-  ;; check out integration with org-store-link
-  ;; treemacs-load-theme
-  (use-package treemacs
-    :hook
-    (treemacs-mode . (lambda () (display-line-numbers-mode -1)))
-    :general
-    ;; (:keymaps 'my/files-map
-    ;;           "t" 'treemacs)
-    ("C-\\" 'treemacs)
-    :config
-    ;; Customize node was showing nothing when expanded. Literally empty space. Set here instead.
-    ;; To see other values for this setting, press "o" over a file node in treemacs.
-    (setq treemacs-default-visit-action 'treemacs-visit-node-ace)
-    (load "doom-themes-ext-treemacs") ; See treemacs-create-theme declarations
-    (treemacs-load-theme "doom-colors"))
+  ;; Customize node was showing nothing when expanded. Literally empty space. Set here instead.
+  ;; To see other values for this setting, press "o" over a file node in treemacs.
+  (setq treemacs-default-visit-action 'treemacs-visit-node-ace)
 
-  (use-package treemacs-evil)
-  ;; (use-package treemacs-projectile)
-  ;; (use-package treemacs-magit)
+  (customize-package
+   '(treemacs-filewatch-mode t)
+   '(treemacs-follow-mode t)
+   '(treemacs-fringe-indicator-mode t)
+   '(treemacs-git-mode 'deferred)
+   '(treemacs-is-never-other-window t)
+   '(treemacs-user-mode-line-format 'none)
+   '(treemacs-workspace-switch-cleanup 'all))
 
-  ;; For ranger
-  ;;(use-package treemacs-icons-dired
-  ;; :after treemacs dired
-  ;; :ensure t
-  ;; :config (treemacs-icons-dired-mode))
+  (straight-use-package 'treemacs)
+  (require 'treemacs)
 
-  (use-package ranger
-    ;; :hook (ranger-mode . hide-mode-line)
-    :general (my-leader "r" 'ranger))
+  (add-hook 'treemacs-mode (lambda () (display-line-numbers-mode -1)))
 
+  (autoload 'treemacs-load-theme "treemacs-themes")
+  (load "doom-themes-ext-treemacs") ; See treemacs-create-theme declarations
+  (treemacs-load-theme "doom-colors")
+
+  (general-define-key :keymaps '(motion insert emacs)
+    "C-\\" 'treemacs
+    "C-|" 'treemacs-select-window)
+
+  (general-define-key :keymaps 'my/files-map
+    "p" '(:keymap treemacs-project-map)
+    "w" '(:keymap treemacs-workspace-map))
+
+  (straight-use-package 'treemacs-evil)
+  (require 'treemacs-evil)
 #+END_SRC
 
+** TODO Find a way to use :wk for treemacs project and workspace (without interfering with descriptoin of hydra-window)
 ** TODO Find a repository of treemacs themes. They seem hard to find on their own, disconnected from the rest of the repositories that contain theme code. In particular, I like the rogue spacing and simple icons (repos, folders, text files, and code files).
+** TODO Find a way to commit different ~/.emacs.d/.cache/treemacs-persist for different computers.
+** TODO Check out integration of treemacs with org-store-link
+** TODO Any compelling reason to use treemacs-projectile?
+** TODO Checkout  magit and treemacs-magit.
 
+** ranger
+#+begin_src emacs-lisp :tangle yes
+  (customize-package
+   '(ranger-deer-show-details nil)
+   '(ranger-override-dired-mode t)
+   '(ranger-show-hidden t))
 
-* Random packages
-#+BEGIN_SRC emacs-lisp :tangle yes
-  (use-package page-break-lines)
-  ;; (use-package osx-browse)
-  ;; Potential ideas for fixing indentation? Didn't work when tried:
-  ;; https://stackoverflow.com/questions/4643206/how-to-configure-indentation-in-emacs-lua-mode
-  ;; https://github.com/kengonakajima/lua-mode/blob/master/my-lua.el
-  ;; Turning off lua-electric-flag via setq-local in a hook
-                                          ; (use-package lua-mode)
-                                          ; (use-package jupyter)
+  (straight-use-package 'ranger)
 
-  (use-package command-log-mode
-    :diminish command-log-mode
-    ;; Auto-scroll buffer as commands are logged
-    :hook (command-log-mode . (lambda ()
-                                (set (make-local-variable 'window-point-insertion-type) t)))
-    :config (global-command-log-mode))
+  (my-leader "r" 'ranger)
+  ;; (add-hook 'ranger-mode-hook 'hide-mode-line)
+#+end_src
+*** TODO Ranger launches in ansi-term but opens files in nano(?). Find a way to integrate it so you can open files in the buffer occupied by ansi-term/ranger instead, then replace deer.
+* Notes                                                             :ARCHIVE:
+** Installation
+*** emacs
+**** [[info:efaq#Installing Emacs][From source]]
+To get the latest version, install from alpha.gnu.org/gnu/emacs/pretest. If installing .xz instead of .gz, drop the -g flag.
 
-  (use-package ace-window)
-
-  (use-package fish-mode)
+**** [[https://launchpad.net/~kelleyk/+archive/ubuntu/emacs][Ubuntu]]
+#+BEGIN_SRC sh :tangle no
+  sudo add-apt-repository ppa:kelleyk/emacs
+  sudo apt-get update
 #+END_SRC
 
-** TODO Ranger launches in ansi-term but opens files in nano(?). Find a way to integrate it so you can open files in the buffer occupied by ansi-term/ranger instead, then replace deer.
+*** hack font
+**** [[https://github.com/source-foundry/Hack#quick-installation][Manual]]
 
-* Hacks
-I started experiencing constant messages about a missing function, something
-about org and timer. straight.el mentioned org-related issues, and this issue
-arose once I switched to straight. Probably related somehow. No idea how this
-fixes it, but the messages disappeared.
-Solution from https://github.com/seagle0128/.emacs.d/issues/129.
-NOTE: Issue disappeared recently.
-
-#+BEGIN_SRC emacs-lisp :tangle yes
-  ;; (org-reload)
+**** Ubuntu
+#+BEGIN_SRC sh :tangle no
+  sudo apt-get update
+  sudo apt-get install fonts-hack
 #+END_SRC
+
+*** counsel
+**** ripgrep (rg)
+**** fzf
+
+*** projectile
+**** fd-find (fdfind)
+**** ripgrep (rg)
+
+*** treemacs
+Run ~(all-the-icons-install-fonts)~
+Doom theme should already be present in .emacs.d/lisp.
+
+** (Auto)loads, require, and void functions or variables
+
+straight-use-package registers, clones (to .emacs.d/straight/repos/), builds (to .emacs.d/straight/build/), and loads your package. Loading means adding the package to the load-path and evaluating the package's autoload file, which is created by straight.el in the build folder.
+
+To use a packaged function in this config without generating a void function error, a package must have been loaded and must provide the function as an autoload. If an autoload is not created by the package, you can create an autoload before using the function. If you don't want to create an autoload, you must instead ~require~ the package.
+
+You can use functions like ~boundp~ and ~bound-and-true-p~ to protect against void-variable errors for variables and customizable options, or you can create and set the variable in advance of the package loading. In fact, customizable options must sometimes be set in advance of the package loading for the set value to take effect (more on this below).
+
+** Customization
+
+*** TL;DR
+
+I use custom-theme-set-variables and a non-~user~ theme to set options, and setq otherwise. I use both prior to loading a package, unless I need to change an option on the fly.
+
+setq before a package is loaded is USUALLY eqivalent to custom-set-variables, because the package will run the :set function the first time its defcustom statements are evaluated, substituting any customized or non-customized value for the default value to pass to the :set function. The one exception is if defcustom relies on ~:initialize custom-initialize-set~. After a package is loaded, however, you will need to use custom-set-variables to trigger :set again.
+
+For barebones options--those without any keyword options--there is no difference between setq and custom-set-variables. Whether or not setting an option before or after a package is loaded are equally valid depends on the package's full code (see which-key).
+
+If a variable or option aren't what you expect: check that the value is a permissible value for an option whose defcustom includes a :type or :option keyword, check whether you setq or customized before the package was loaded, check the keywords of the defcustom for an option, check whether the variable or option is buffer-local, and check whether any other package or section of your config file sets or customizes the variable or option.
+
+*** User Interface
+
+~customize~ invokes the customization UI, where you can set the value of customizable user options. Options are also indicated in help buffers by the text "You can customize this variable." At the heart of the UI is ~custom-set-variables~, which is either written by the UI to the end of init.el or in an external ~custom-file~. An important distinction between e.g. ~setq~ and ~custom-set-variables~ is that ~setq~ sets the value of a void symbol, and ~custom-set-variables~ only sets or modifies the property-list. See [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Symbol-Components.html#Symbol-Components][9.1 Symbol Components]]. For this reason, a customized option that has not yet had its associated ~defcustom~ evaluated will throw a void-variable error. If the symbol is not previously void, custom-set-variables will update its value. Otherwise, a customized option's value will be set once its associated ~defcustom~ is evaluated, usually when the package defining it is loaded.
+
+The UI offers alternatives for setting options changed in a UI session: "Apply" and "Apply and save". The former customization is specific to the current emacs session; the latter saves the customization for future sessions. The former sets the ~customized-value~ and ~backup-value~ properties of the option symbol; the latter sets the ~saved-value~ property. Both set the ~user~ portion of the theme-value property. See [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Variable-Definitions.html][15.3 Defining Customization Variables (directly after Function: custom-add-frequent-value)]].
+
+*** defcustom
+
+In its simplest form, ~defcustom~ is similar to ~defvar~ in that it only sets a variable to a default value if the symbol is void (i.e., has no value), but it additionally ignores the default value if the ~saved-value~ property is set. The default value is stored in the ~standard-value~ property. See the source of custom.el (~defun custom-initialized-*~).
+
+#+begin_src emacs-lisp :tangle no
+  (put 'is-saved 'saved-value '(1))
+  (defcustom is-saved 2 "")
+  is-saved ;; 1
+#+end_src
+
+To actually set a variable, the :set function is used, while the :initialize function determines under what conditions to use the :set function. See [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Variable-Definitions.html][15.3 Defining Customization Variables]].
+
+**** :set
+
+custom-set-variables invokes the :set keyword of defcustom, unlike setq. Many packages omit this keyword, which defaults to using set-default. The value passed to it is determined by the ~saved-value~ property, the bound value, and the default value specified in ~defcustom~, in that order. The setter function is contained in the ~custom-set~ property of an option.
+
+Note that there is nothing blocking defcustom from completely ignoring the value passed to it--nothing aside from good coding practice. Take the following example:
+
+#+begin_src emacs-lisp :tangle no
+  (custom-set-variables
+   '(tricky 1))
+
+  (defcustom tricky 2 ""
+    :set (lambda (symbol value)
+           (set-default symbol 3)))
+#+end_src
+
+The value of ~tricky~ is 3, not 1 as the user customizing the option likely hoped. We could have gone further and used an entirely unrelated symbol (e.g., ~'trickier~) in lieu of ~symbol~.
+
+**** :initialize
+When ~:initialize~ is ~custom-initialize-set~, evaluating the defcustom will only run the setter function for void variables. Thus, only setting an option's value through ~custom-set-options~ will allow you to run the setter function with a non-default value. ~setq~ will not.
+
+The other two keyword values (~custom-initialize-reset~ and ~custom-initialize-changed~) produce equivalent results for ~setq~ and ~custom-set-variables~, assuming setq is used prior to evaluating defcustom. The former always invokes ~:set~ when the ~defcustom~ is evaluated, while the latter does so for "changed" variables (bound or customized), and ~set-default~ for void, uncustomized variables.
+
+*** custom-reevaluate-setting
+
+A call to custom-reevalute-setting will reset the option to its saved value through the customization system or its standard value. In this case, setq may be overriden, whereas an option set through custom-set-variables would not be. See [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Variable-Definitions.html#Variable-Definitions][defining customization variables]].
+
+#+begin_src emacs-lisp :tangle yes
+  (custom-set-variables '(hair 1))
+  (defcustom hair 2 "")
+  (setq hair 3)
+  (custom-reevaluate-setting 'hair) ; 1
+
+  (setq hare 1)
+  (defcustom hare 2 "")
+  (setq hare 3)
+  (custom-reevaluate-setting 'hare) ; 2
+#+end_src
+
+*** which-key
+
+**** TL;DR
+
+Just using customize over setq for options isn't always enough. Sometimes the values need to be set before a package is loaded, because the package code doesn't properly update the options for later customization.
+
+**** Details
+
+There is a known bug with which-key-echo-keystrokes (wkek). If it is greater than the value of which-key-idle-delay (wkid), the value of which-key-idle-delay seems to be ignored. The actual delay seems to be about 4x the value of wkek. The defcustom for wkek uses a default value of 1/4 of wkid's value. This value is evaluated at the time of wkek's defcustom definition, so the value of wkid needs to be set before which-key.el is loaded, in order to set wkek to a compatible value. Luckily the documentation notes that you should set this variable before loading which-key.
+
+Test results:
+1. Using (init-custom-set 'which-key-idle-delay 0.2)
+   which-key-idle-delay: 1 -> 0.2
+   which-key-echo-keystrokes: 0.05 -> 0.25 (1/4 of wkid's standard value)
+2. Using (setq which-key-idle-delay 0.2)
+   which-key-idle-delay: 1 -> 0.2
+   which-key-echo-keystrokes: 0.05 (1/4 of wkid's altered value)
+
+Note that which-key--setup-echo-keystrokes is called to reset which-key-echo-keystrokes in response to calling which-key-mode, which-key-setup-side-window-bottom, and which-key-setup-minibuffer--none of which ensure it has the right setting based on the current setting of which-key-idle-delay.
+
+The best option for which-key developers in the future may be to use a :set function for wkid that updates wkek when wkid changes. That way, wkid's reverse dependencies are never out of sync. Maybe even add an option to disable update of future dependencies for users who want to set those options themselves.
+
+*** DEPRECATED: csetq
+
+An early solution for a setter that works for both variables and options is abo abo's csetq macro, now in wide use. It checks symbols for a ~custom-set~ symbol property, invoking its value if the property is set. My issue 856 for use-package revealed that :custom failed to customize minor mode variables properly. PR 881 aimed to fix that by using custom-theme-set-variables, around which custom-set-variables is a thin wrapper.
+
+*** Random Sources
+
+https://www.reddit.com/r/emacs/comments/exnxha/withemacs_almost_all_you_need_to_know_about/
+https://stackoverflow.com/questions/22915019/emacs-setq-before-loading
+https://www.gnu.org/software/emacs/manual/html_node/emacs/Locals.html#Locals
+https://www.gnu.org/software/emacs/manual/html_node/eintr/defcustom.html#defcustom
+https://www.gnu.org/software/emacs/manual/html_node/elisp/Customization.html#Customization (Writing defcustoms)
+https://www.reddit.com/r/emacs/comments/67pzh5/using_customsetvariables_programmatically/
+https://opensource.com/article/20/3/variables-emacs
+http://emacs.1067599.n8.nabble.com/which-one-to-use-custom-set-variables-customize-set-variable-or-customize-set-value-td378730.html
+Top answer for https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el
+See claim that custom-set-variables is equivalent to csetq, but also the first comment thread: https://oremacs.com/2015/01/17/setting-up-ediff/
+https://www.reddit.com/r/emacs/comments/g46sg2/a_solution_to_the_agony_of_customsetvariables_and/ Ignore the article and focus on the comments. They discuss using a garbage custom file (good if you use customize-set-variable and/or custom-set-variables instead of csetq. One person also recommends using (when (featurep 'PACKAGE-autoloads) ...) in lieu of use-package's :demand, :defer, :after, etc., keywords, to detect if a package has been installed with the relevant autoloads file. This can be used if a package will be installed later, as opposed to detecting if a package has already been loaded.
 
 * Local Variables
 # Local Variables:

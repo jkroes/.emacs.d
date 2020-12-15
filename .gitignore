@@ -19,7 +19,17 @@ eshell/
 var/prescient-save.el
 # Emacs creates this weird file
 2
-straight/
+
+# Ingore straight's contents
+/straight/*
+# Except these folders
+!/straight/versions/
+# !/straight/repos/
+# Ignore straight/repos' contents
+# straight/repos/*
+# Except this folder
+# !/straight/repos/emacs-init-custom/
+
 # No idea what created these files
 init.sh
 init.emacs_lisp
