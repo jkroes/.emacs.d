@@ -1,3 +1,213 @@
+* Historic Moments
+
+** +1
+- Tribal village
+
+** +2
+- Level a barbarian camp
+
+** +3
+- Level a barbarian camp within 6 tiles of your cities
+
+** +4
+
+** +5
+
+Barbarian Camp Destroyed
++2 Era Score for leveling a Barbarian Camp.
++3 Era Score if the Barbarian Camp is within 6 tiles of one of your cities.
+
+This Historic Moment becomes obsolete in the Medieval Era.
+
+Met New Civilization
++1 Era Score when contact has been made with a new civilization.
++3 Era Score for making contact with all civilizations in the world.
++5 Era Score if your civilization is the first to meet all other civilizations in the world.
+
+First Discovery of a New Continent
++4 Era Score if your civilization’s explorers are the first in the world to find the continent.
+
+Establish a City
++1 Era Score on a Desert tile.
++1 Era Score on a Snow tile.
++1 Era Score on a Tundra tile.
++1 Era Score if within 5 tiles of another civilization’s city.
++2 Era Score on a new continent.
++3 Era Score if within 2 tiles of a Natural Wonder.
++3 Era Score if the city puts your civilization over the threshold to become the largest in the world (at least 3 more cities than its next biggest rival).
+
+Pantheon Founded
++1 Era Score when your people adopt Belief in a Pantheon.
++2 Era Score if the Pantheon is the world’s first.
+
+Religion Founded
++2 Era Score when a Great Prophet founds a Religion in your civilization.
++3 Era Score if it is the first Religion in the world.
++3 Era Score when the final Belief has been added.
++5 Era Score if your Religion is the first in the world to add its final Belief and become complete.
++3 Era Score if the city from an enemy civilization converts to your Religion.
++4 Era Score if the Holy City of another Religion converts to your Religion.
+
++1 Era Score if your Religion launches an Inquisition.
++2 Era Score if it is the first Inquisition in the world.
+Discover a Natural Wonder
++3 Era Score if your civilization is the first in the world to discover the Natural Wonder.
+
+Build a World Wonder
++4 Era Score for completing a World Wonder.
++3 Era Score if it is an Old World Wonder (from a bypassed Era).
+
+Unique Building, District, Tile Improvement, or Unit Constructed
++4 Era Score when your civilization completes the construction of a specific Unique feature for the first time.
+
+City-State’s First Suzerain
++2 Era Score for becoming the first Suzerain of a city-state.
+
+This Historic Moment becomes obsolete in the Medieval Era.
+
+Great Person Recruited
++1 Era Score if a Great Person of any type joins your civilization.
++1 Era Score if an Old Great Person of any type joins your civilization.
++3 Era Score if the Great Person is lured by Gold.
++3 Era Score if the Great Person is lured by Faith.
+
+Trading Post Established in New Civilization
++1 Era Score when the first Trading Post in a civilization is established.
++5 Era Score if it is the first Trading Post in the world.
++3 Era Score for establishing a Trading Post in all civilizations.
++5 Era Score if you are the first to establish a Trading Post in all civilizations.
+
+First Civic or Technology of New Era
++1 Era Score when your civilization obtains the first Civ or Technology of a new Era.
++2 Era Score if it is the world’s first.
+
+Splendid District Completed
++3 Era Score for completing your civilization’s first Campus with a starting adjacency bonus of 3 Science or higher.
++3 Era Score for completing your civilization’s first Commercial Hub with a starting adjacency bonus of 4 Gold or higher.
++3 Era Score for completing your civilization’s first Harbor with a starting adjacency bonus of 4 Gold or higher.
++3 Era Score for completing your civilization’s first Holy Site with a starting adjacency bonus of 3 Faith or higher.
++3 Era Score for completing your civilization’s first Industrial Zone with a starting adjacency bonus of 4 Production or higher.
++3 Era Score for completing your civilization’s first Theater Square with a starting adjacency bonus of 3 Culture or higher.
+
+Governor Fully Promoted
++1 Era Score when a Governor is fully promoted for the first time in your civilization.
+
+All Governors Appointed
++1 Era Score when all available Governors have been appointed.
+
+Free City Joins
++2 Era Score when a Free City pledges Loyalty to your civilization.
+
+City Returns to Original Owner
++2 Era Score when a rebelling city has returned to your civilization.
+
+Strategic Resource Potential Unleashed
++1 Era Score when you build a unit that makes use of a Strategic Resource for the first time, like Oil or Niter.
++2 Era Score if you are the first civilization to use this Strategic Resource.
+
+Artifact Extracted
++1 Era Score when an Artifact has been extracted by an Archaeologist.
+
+City-State Army Levied
++1 Era Score when your civilization levies the military forces of a city-state.
++2 Era Score if your civilization levies the military forces of a city-state within striking distance of an enemy civilization.
+
+Levied Army Stands Down
++2 Era Score when your civilization uses Envoys to convince a city-state’s levied army to stand down.
+
+Enemy City-State Pacified
++2 Era Score when your civilization’s use of Envoys topples a hostile city-state’s Suzerain, convincing it to end hostilities with you.
+
+First Military Unit Formed: Armada, Army, Corps, Fleet
++1 Era Score the first time your civilization forms an Armada, Army, Corps, or Fleet.
++2 Era Score if it is the first in the world.
+
+Unit Promoted with Distinction
++1 Era Score when one of your units reaches its fourth level of promotion.
+
+First Unit Promoted with Distinction
++1 Era Score when one of your units reaches its fourth promotion for the first time in your civilization.
+
+Enemy Formation Defeated
++1 Era Score when one of your units defeats an enemy unit with a superior military formation.
+
+Enemy Veteran Defeated
++ 3 Era Score when one of your units defeats an enemy unit with at least 2 more promotions than it.
+
+Admiral Defeats Enemy
++2 Era Score when one of your Great Admirals has overseen their first victorious offensive against an enemy unit.
+
+General Defeats Enemy
++2 Era Score when one of your Great Generals has overseen their first victorious offensive against an enemy unit.
+
+Cause for War
++2 Era Score when your civilization uses a Casus Belli to make war on another civilization.
+Foreign Capital Taken
++4 Era Score when your civilization has taken control of a foreign power’s original capital city.
+
+Final Foreign City Taken
++5 Era Score when your civilization has taken control of a civilization’s last remaining city.
+
+City Population Increase
++1 Era Score when a city reaches 10 Population for the first time in your civilization (Large).
++1 Era Score when a city reaches 15 Population for the first time in your civilization (Enormous).
++1 Era Score when a city reaches 20 Population for the first time in your civilization (Gigantic).
++2 Era Score if the city is the first in the world to reach the population tier.
+
+Note that the Historic Moment for a Large City becomes obsolete in the Modern Era.
+
+First Seafaring Unit Completed
++2 Era Score for the first seafaring unit to be completed in your civilization.
++3 Era Score if it is the first seafaring unit to be completed in the world.
+
+First Flying Unit Completed
++3 Era Score when your civilization completes their first flying unit.
++5 Era Score if it is the first flying unit to be completed in the world.
+
+World Circumnavigated
++3 Era Score when your civilization has revealed a tile in every vertical line of the map.
++5 Era Score if your civilization is the first in the world to do so.
+
+Emergencies
++3 Era Score if you succeed as a member in an Emergency.
++4 Era Score if you succeed in defending yourself as a target of an Emergency.
+
+Master Spy Earned
++1 Era Score when one of your Spies reaches its maximum promotion level.
++2 Era Score if it is the first time one of your Spies has reached maximum promotion level.
+
+First Neighborhood Completed
++2 Era Score for completing your civilization’s first Neighborhood district.
++3 Era Score if it is the first Neighborhood district in the world.
+
+First Tier Government
++2 Era Score when your civilizations adopts Tier 1, Tier 2, or Tier 3 of its Government.
++2 Era Score if they are the first to adopt Tier 1, Tier 2, or Tier 3 of its Government in the world.
+
+Note that the first goes obsolete in the Medieval era, the second in the Renaissance Era, and the third in the Atomic Era.
+
+Landed on the Moon
++1 Era Score for sending a successful mission to land on the moon.
++1 Era Score if your civilization is the first to do so.
+
+Operation Ivy Completed
++1 Era Score when the scientists of your civilization complete Operation Ivy.
+
+This Historic Moment becomes obsolete in the Medieval Era.
+
+Satellite Launched Into Orbit
++1 Era Score when your civilization launches their first satellite into orbit.
++1 Era Score if your civilization launches the first satellite into orbit in the world.
+
+Manhattan Project Completed
++1 Era Score if your scientists complete the Manhattan Project.
+
+Mars Component Launched
++1 Era Score if your civilization launches their first component for the Mars spacecraft.
++1 Era Score if it is the first completed component for the Mars spacecraft in the world.
+
+
+
 * Governors
 
 * Districts

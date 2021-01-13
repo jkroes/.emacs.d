@@ -30,6 +30,10 @@
   (let ((custom--inhibit-theme-enable nil)) ; Apply changes to theme immediately
     (apply 'custom-theme-set-variables 'my-theme args)))
 
+(defun customize-package-face (&rest args)
+  (let ((custom--inhibit-theme-enable nil)) ; Apply changes to theme immediately
+    (apply 'custom-theme-set-faces 'my-theme args)))
+
 (deftheme my-theme)
 ;; Assign my-theme second-highest precedence (after user theme). Note that load-theme invocations lower down will set
 ;; the loaded theme to a higher precedence
@@ -84,6 +88,10 @@
 
 (customize-package
  '(aw-keys '(97 115 100 102 103 104 106 107 108)))
+
+;; Larger ace-window letters (https://oremacs.com/2015/02/27/ace-window-leading-char/)
+(customize-package-face
+ '(aw-leading-char-face ((t (:inherit ace-jump-face-foreground :height 3.0)))))
 
 (straight-use-package 'ace-window)
 
@@ -656,6 +664,9 @@
    ;; you need to notify R of the executable's directory
    (setenv "RSTUDIO_PANDOC" "C:/Users/jkroes/AppData/Local/Pandoc"))
   ('darwin (setenv "R_PROFILE_USER" "~/.emacs.d/.Rprofile")))
+
+;; Disabling this while I render Word documents from Rmarkdown.
+(customize-package '(polymode-display-output-file nil))
 
 (straight-use-package 'poly-markdown)
 

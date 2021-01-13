@@ -37,6 +37,5 @@
  ("solarized-emacs" . "92dcca5537fe8e3ce8a10885ef23ead4d151d9d7")
  ("straight.el" . "f6663b1de0fb5d9c64528e4f7f8bb914f49bb6d2")
  ("swiper" . "6a22192f11a4aa0d43692bf685fd9b9d75911d00")
- ("treemacs" . "389bca1c3bdd4c4cf8245d6c4bdf8aa875e40d14")
- ("use-package" . "caa92f1d64fc25480551757d854b4b49981dfa6b"))
+ ("treemacs" . "389bca1c3bdd4c4cf8245d6c4bdf8aa875e40d14"))
 :beta

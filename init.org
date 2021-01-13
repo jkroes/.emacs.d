@@ -86,6 +86,10 @@ Change the binding at the bottom of init.el
     (let ((custom--inhibit-theme-enable nil)) ; Apply changes to theme immediately
       (apply 'custom-theme-set-variables 'my-theme args)))
 
+  (defun customize-package-face (&rest args)
+    (let ((custom--inhibit-theme-enable nil)) ; Apply changes to theme immediately
+      (apply 'custom-theme-set-faces 'my-theme args)))
+
   (deftheme my-theme)
   ;; Assign my-theme second-highest precedence (after user theme). Note that load-theme invocations lower down will set
   ;; the loaded theme to a higher precedence
@@ -191,6 +195,10 @@ org-indent-mode indents nested lines and shows column 0 at the indented position
 #+begin_src emacs-lisp :tangle yes
   (customize-package
    '(aw-keys '(97 115 100 102 103 104 106 107 108)))
+
+  ;; Larger ace-window letters (https://oremacs.com/2015/02/27/ace-window-leading-char/)
+  (customize-package-face
+   '(aw-leading-char-face ((t (:inherit ace-jump-face-foreground :height 3.0)))))
 
   (straight-use-package 'ace-window)
 #+end_src
@@ -833,7 +841,7 @@ For the love of God, global-company-mode is being modified outside of the custom
   ;; Did it affect lsp-based company completion? Test this if you ever reenable lsp-mode for ess-r.
   ;; (ess-r-mode . (lambda () (setq ess-eldoc-mode -1)))
 #+end_src
-
+** TODO Add bindings for company-show-doc-buffer and the ess help function (currenlty C-c C-v) outside of company completion
 * LSP
 The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could be the size of the file, latex, lsp-mode itself, the R language server, or something else. Note that without lsp-mode, to get full completion you will need to evaluate the loaded libraries in an iess-r buffer, as well as any objects you want completed. Test whether this has been fixed by issue 1383 sometime.
 
@@ -992,6 +1000,9 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
      (setenv "RSTUDIO_PANDOC" "C:/Users/jkroes/AppData/Local/Pandoc"))
     ('darwin (setenv "R_PROFILE_USER" "~/.emacs.d/.Rprofile")))
 
+  ;; Disabling this while I render Word documents from Rmarkdown.
+  (customize-package '(polymode-display-output-file nil))
+
   (straight-use-package 'poly-markdown)
 
   ;; NOTE: ess-r configuration and bindings are available inside chunks, where R-mode is active
@@ -1004,6 +1015,15 @@ The VOC inventory .Rmd report was crashing lsp-r for unknown reasons. It could b
   ;;   (setq company--electric-saved-window-configuration nil))
   ;; (advice-add 'company-pre-command :before 'forget-saved-window-config)
 #+END_SRC
+
+** TODO Make polymode-display-output-file conditional on the Rmarkdown output type
+I want to display PDFs in a buffer, but not Word documents. Word documents by default open a zip-archive buffer. Unless there is a way to open it outside of Emacs, or properly within Emacs, it should be disabled.
+
+** TODO Fix the broken undo system for polymode, or find an undo package that works. Maybe built-in undo? I only installed undo-fu b/c of an evil-related prompt or error.
+
+** TODO Fix the insertion of ` at the bottom of chunks. Currently, the cursor jumps to an adjacent chunk, at least if no text is present between the chunks.
+
+** TODO Fix the disappearing face (reappears on typing a character) for chunks and sticking visual selection face within chunks (until moving cursor between selection and an adjacent unselected line)
 
 * Terminal and shell scripts
 #+BEGIN_SRC emacs-lisp :tangle yes
